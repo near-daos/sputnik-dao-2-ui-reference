@@ -137,7 +137,6 @@ export const Proposal = (props) => {
     [props.data.votes]
   )
 
-
   return (
     <>
       {props.data.kind ?
@@ -222,8 +221,8 @@ export const Proposal = (props) => {
                 }
               </div>
               <div className="float-right h4-responsive"><a className="white-text btn-link"
-                                                            href={"#/" + props.dao + "/" + props.id}
-                                                            target="_blank"><MDBIcon icon="link"/></a> #{props.id}</div>
+                                                            href={"#/" + props.dao + "/" + props.id}><MDBIcon
+                icon="link"/></a> #{props.id}</div>
               <div className="clearfix"/>
               <MDBCardText>
                 <MDBBox
@@ -307,8 +306,7 @@ export const Proposal = (props) => {
                 */}
                 <div className="clearfix"/>
               </MDBCardText>
-
-              {props.council.includes(window.walletConnection.getAccountId()) ?
+              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -346,7 +344,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {props.council.includes(window.walletConnection.getAccountId()) ?
+              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -365,7 +363,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {props.council.includes(window.walletConnection.getAccountId()) ?
+              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -464,7 +462,7 @@ export const Proposal = (props) => {
                       :
                       <MDBIcon icon='trash-alt' size="2x" className='amber-text mr-1'/>
                     }
-                    <span className="white-text h3-responsive">{votes.rejected}</span>
+                    <span className="white-text h3-responsive">{votes.removed}</span>
                   </div>
                 </li>
 
@@ -520,7 +518,7 @@ export const Proposal = (props) => {
 
 const ProposalPage = () => {
   const [proposals, setProposals] = useState(null);
-  const [council, setCouncil] = useState([]);
+  const [daoPolicy, setDaoPolicy] = useState([]);
 
   let {dao, proposal} = useParams();
   const [showError, setShowError] = useState(null);
@@ -529,18 +527,23 @@ const ProposalPage = () => {
   useEffect(
     () => {
       window.contract = new Contract(window.walletConnection.account(), dao, {
-        viewMethods: ['get_council', 'get_bond', 'get_proposal', 'get_num_proposals', 'get_proposals', 'get_vote_period', 'get_purpose'],
-        changeMethods: ['vote', 'add_proposal', 'finalize'],
+        viewMethods: [
+          'get_config', 'get_policy', 'get_staking_contract', 'get_available_amount', 'delegation_total_supply',
+          'get_proposals', 'get_last_proposal_id', 'get_proposal', 'get_bounty', 'get_bounties', 'get_last_bounty_id',
+          'get_bounty_claims', 'get_bounty_number_of_claims', 'delegation_balance_of', 'has_blob'
+        ],
+        changeMethods: ['add_proposal', 'act_proposal'],
       })
     },
     [dao]
   )
 
+
   useEffect(
     () => {
-      window.contract.get_council()
+      window.contract.get_policy()
         .then(r => {
-          setCouncil(r);
+          setDaoPolicy(r);
         }).catch((e) => {
         console.log(e);
         setShowError(e);
@@ -549,12 +552,10 @@ const ProposalPage = () => {
     [dao]
   )
 
-
   useEffect(
     () => {
       window.contract.get_proposals({from_index: parseInt(proposal), limit: 1})
         .then(list => {
-          console.log(list)
           const t = []
           list.map((item, key) => {
             const t2 = {}
@@ -569,42 +570,50 @@ const ProposalPage = () => {
 
 
   return (
-    <MDBView className="w-100 h-100" style={{minHeight: "100vh"}}>
-      <MDBMask className="d-flex justify-content-center grey lighten-2 align-items-center gradient"/>
-      <Navbar/>
-      <MDBContainer style={{minHeight: "100vh"}} className="mt-5">
-        <MDBCol className="col-12 col-sm-8 col-lg-6 mx-auto mb-3">
-          <MDBCard>
-            <MDBCardBody className="text-left p-4 m-4">
-              <MDBBox><b>Proposal DAO:</b> {dao}</MDBBox>
-              <MDBBox><b>Council:</b> {council.map((item, key) => (<span>{item}{" "}</span>))}</MDBBox>
-              <hr/>
-              <MDBLink to={"/" + dao} className="btn-secondary text-center">BACK TO DAO</MDBLink>
-            </MDBCardBody>
-          </MDBCard>
-        </MDBCol>
+    <>
+      {
+        (daoPolicy && daoPolicy.roles) ?
+          <MDBView className="w-100 h-100" style={{minHeight: "100vh"}}>
+            <MDBMask className="d-flex justify-content-center grey lighten-2 align-items-center gradient"/>
+            <Navbar/>
+            <MDBContainer style={{minHeight: "100vh"}} className="mt-5">
+              <MDBCol className="col-12 col-sm-8 col-lg-6 mx-auto mb-3">
+                <MDBCard className="stylish-color-dark">
+                  <MDBCardBody className="text-left p-4 m-4 white-text">
+                    <MDBBox><b>Proposal DAO:</b> {dao}</MDBBox>
+                    <MDBBox><b>Council:</b>
+                      {daoPolicy && daoPolicy.roles ? daoPolicy.roles[1].kind.Group.map((item, key) => <div
+                        key={key}>{item}</div>) : null}
+                    </MDBBox>
+                    <hr/>
+                    <MDBLink to={"/" + dao} className="elegant-color white-text text-center">BACK TO DAO</MDBLink>
+                  </MDBCardBody>
+                </MDBCard>
+              </MDBCol>
 
-        {proposals !== null ?
-          proposals.map((item, key) => (
-            <Proposal data={item} key={parseInt(proposal)} id={parseInt(proposal)} council={council}
-                      setShowError={setShowError} dao={dao}/>
-          ))
+              {proposals !== null ?
+                proposals.map((item, key) => (
+                  <Proposal data={item} key={parseInt(proposal)} id={parseInt(proposal)} setShowError={setShowError}
+                            dao={dao}
+                            daoPolicy={daoPolicy}/>
+                ))
+                : null
+              }
+
+              {proposals !== null && proposals.length === 0 ?
+                <MDBCard className="text-center p-4 m-4">
+                  <MDBBox>Sorry, nothing was found</MDBBox>
+                </MDBCard>
+                : null}
+
+            </MDBContainer>
+            <Footer/>
+          </MDBView>
           : null
-        }
-
-        {proposals !== null && proposals.length === 0 ?
-          <MDBCard className="text-center p-4 m-4">
-            <MDBBox>Sorry, nothing was found</MDBBox>
-          </MDBCard>
-          : null}
-
-      </MDBContainer>
-      <Footer/>
-    </MDBView>
+      }
+    </>
   );
 
 }
 
 export default ProposalPage;
-
-

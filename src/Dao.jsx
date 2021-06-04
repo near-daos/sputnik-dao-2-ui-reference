@@ -47,8 +47,6 @@ const Dao = () => {
   const mutationCtx = useGlobalMutation()
   const [numberProposals, setNumberProposals] = useState(0);
   const [proposals, setProposals] = useState(null);
-  const [council, setCouncil] = useState([]);
-  const [daoVotePeriod, setDaoVotePeriod] = useState(0);
   const [showError, setShowError] = useState(null);
   const [addProposalModal, setAddProposalModal] = useState(false);
   const [newProposalCouncilMember, setNewProposalCouncilMember] = useState(false);
@@ -246,6 +244,19 @@ const Dao = () => {
   }
 
   const toggleNewToken = () => {
+    setProposalTarget({
+        value: nearConfig.tokenFactory,
+        valid: true,
+        message: "",
+      }
+    )
+    setProposalTokenOwner({
+        value: stateCtx.config.contract,
+        valid: true,
+        message: "",
+      }
+    )
+
     setNewProposalToken(!newProposalToken);
     setAddProposalModal(false);
   }
@@ -880,258 +891,262 @@ const Dao = () => {
   }
 
   return (
-    <MDBView className="w-100 h-100" style={{minHeight: "100vh"}}>
-      <MDBMask className="d-flex justify-content-center align-items-center unique-color-dark gradient"/>
-      <Navbar/>
-      <MDBContainer style={{minHeight: "100vh"}}>
-        <MDBAlert color="danger" className="text-center">
-          Beta software. Test in prod. <b>Not audited.</b> Use at your own risk!
-        </MDBAlert>
-        {stateCtx.config.contract && !selectDao ?
-          <>
-            <MDBRow>
-              <MDBCol className="col-12 p-3 mx-auto">
-                <MDBCard className="stylish-color">
-                  <MDBCardBody>
-                    <MDBRow>
-                      <MDBCol>
-                        <MDBCard className="p-0 m-2 stylish-color-dark white-text">
-                          <MDBCardHeader className="h4-responsive">Council:</MDBCardHeader>
-                          <MDBCardBody className="p-4">
-                            {daoPolicy ? daoPolicy.roles[1].kind.Group.map((item, key) => <div
-                              key={key}>{item}</div>) : null}
-                          </MDBCardBody>
-                        </MDBCard>
-                      </MDBCol>
-                      <MDBCol className="col-12 col-md-6">
-                        <MDBCard className="p-0 m-2 stylish-color-dark white-text">
-                          <MDBCardHeader className="h5-responsive">
-                            <MDBRow>
-                              <MDBCol>
-                                Properties:
-                              </MDBCol>
-                              <MDBCol className="">
-                                <MDBBox className="text-right">
-                                  <MDBBtn size="sm" onClick={handleDaoChange} color="elegant">Change DAO</MDBBtn>
-                                </MDBBox>
-                              </MDBCol>
-                            </MDBRow>
-                          </MDBCardHeader>
-                          <MDBCardBody className="p-2">
+    <>
+      <MDBView className="w-100 h-100" style={{minHeight: "100vh"}}>
+        <MDBMask className="d-flex justify-content-center align-items-center unique-color-dark gradient"/>
+        <Navbar/>
+        <MDBContainer style={{minHeight: "100vh"}}>
+          <MDBAlert color="danger" className="text-center">
+            Beta software. Test in prod. <b>Not audited.</b> Use at your own risk!
+          </MDBAlert>
+          {stateCtx.config.contract && !selectDao ?
+            <>
+              <MDBRow>
+                <MDBCol className="col-12 p-3 mx-auto">
+                  <MDBCard className="stylish-color">
+                    <MDBCardBody>
+                      <MDBRow>
+                        <MDBCol>
+                          <MDBCard className="p-0 m-2 stylish-color-dark white-text">
+                            <MDBCardHeader className="h4-responsive">Council:</MDBCardHeader>
+                            <MDBCardBody className="p-4">
+                              {daoPolicy ? daoPolicy.roles[1].kind.Group.map((item, key) => <div
+                                key={key}>{item}</div>) : null}
+                            </MDBCardBody>
+                          </MDBCard>
+                        </MDBCol>
+                        <MDBCol className="col-12 col-md-6">
+                          <MDBCard className="p-0 m-2 stylish-color-dark white-text">
+                            <MDBCardHeader className="h5-responsive">
+                              <MDBRow>
+                                <MDBCol>
+                                  Properties:
+                                </MDBCol>
+                                <MDBCol className="">
+                                  <MDBBox className="text-right">
+                                    <MDBBtn size="sm" onClick={handleDaoChange} color="elegant">Change DAO</MDBBtn>
+                                  </MDBBox>
+                                </MDBCol>
+                              </MDBRow>
+                            </MDBCardHeader>
+                            <MDBCardBody className="p-2">
 
 
-                            <ul>
-                              <li>Network: <a className="white-text btn-link" target="_blank"
-                                              href={stateCtx.config.network.explorerUrl}>{stateCtx.config.network.networkId}</a>
-                              </li>
-                              <li>DAO: {stateCtx.config.contract}</li>
-                              <li>Bond:{" "}
-                                <span
-                                  style={{fontSize: 12}}>Ⓝ{" "}</span>{daoPolicy && daoPolicy.proposal_bond !== null ? (new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear)).toString() : ''}
-                              </li>
-                              <li>Purpose:{" "}
-                                {
-                                  daoConfig ? daoConfig.purpose.split(" ").map((item, key) => (
-                                    /(((https?:\/\/)|(www\.))[^\s]+)/g.test(item) ?
-                                      <a className="white-text btn-link" target="_blank"
-                                         href={item}>{item}{" "}</a> : <>{item}{" "}</>
-                                  )) : null
-                                }
-                              </li>
-                              <li>Vote Period: {daoVotePeriod ? timestampToReadable(daoVotePeriod) : ''}</li>
-                              <li>Staking Contract: {daoStaking ? daoStaking : ''}</li>
-                              <li>DAO Funds: Ⓝ {daoState ? daoState : ''}</li>
-                            </ul>
-                          </MDBCardBody>
-                        </MDBCard>
-                      </MDBCol>
-                    </MDBRow>
-                    {window.walletConnection.getAccountId() ?
-                      <MDBRow className="mx-auto p-2">
-                        <MDBCol className="text-center">
-                          <MDBBtn style={{borderRadius: 10}} size="sm" onClick={toggleProposalModal} color="elegant">ADD
-                            NEW PROPOSAL</MDBBtn>
+                              <ul>
+                                <li>Network: <a className="white-text btn-link" target="_blank"
+                                                href={stateCtx.config.network.explorerUrl}>{stateCtx.config.network.networkId}</a>
+                                </li>
+                                <li>DAO: {stateCtx.config.contract}</li>
+                                <li>Bond:{" "}
+                                  <span
+                                    style={{fontSize: 12}}>Ⓝ{" "}</span>{daoPolicy && daoPolicy.proposal_bond !== null ? (new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear)).toString() : ''}
+                                </li>
+                                <li>Purpose:{" "}
+                                  {
+                                    daoConfig ? daoConfig.purpose.split(" ").map((item, key) => (
+                                      /(((https?:\/\/)|(www\.))[^\s]+)/g.test(item) ?
+                                        <a className="white-text btn-link" target="_blank"
+                                           href={item}>{item}{" "}</a> : <>{item}{" "}</>
+                                    )) : null
+                                  }
+                                </li>
+                                <li>Vote
+                                  Period: {daoPolicy ? timestampToReadable(daoPolicy.proposal_period) : ''}</li>
+                                <li>Staking Contract: {daoStaking ? daoStaking : ''}</li>
+                                <li>DAO Funds: Ⓝ {daoState ? daoState : ''}</li>
+                              </ul>
+                            </MDBCardBody>
+                          </MDBCard>
                         </MDBCol>
                       </MDBRow>
-                      : null}
-                  </MDBCardBody>
-                </MDBCard>
-              </MDBCol>
-            </MDBRow>
+                      {window.walletConnection.getAccountId() ?
+                        <MDBRow className="mx-auto p-2">
+                          <MDBCol className="text-center">
+                            <MDBBtn style={{borderRadius: 10}} size="sm" onClick={toggleProposalModal}
+                                    color="elegant">ADD
+                              NEW PROPOSAL</MDBBtn>
+                          </MDBCol>
+                        </MDBRow>
+                        : null}
+                    </MDBCardBody>
+                  </MDBCard>
+                </MDBCol>
+              </MDBRow>
 
-            <MDBRow>
-              <MDBCol className="col-12 p-3 mx-auto">
-                <MDBCard className="stylish-color-dark white-text">
-                  <MDBCardBody>
-                    <MDBRow center>
-                      <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
-                        <div className='custom-control custom-switch mr-2'>
-                          <input
-                            type='checkbox'
-                            className='custom-control-input'
-                            id='switchAll'
-                            checked={switchState.switchAll}
-                            onChange={handleSwitchChange('switchAll')}
-                            readOnly
-                          />
-                          <label className='custom-control-label' htmlFor='switchAll'>
-                            Show All
-                          </label>
-                        </div>
-                      </MDBCard>
-                      <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
-                        <div className='custom-control custom-switch mr-2'>
-                          <input
-                            type='checkbox'
-                            className='custom-control-input'
-                            id='switchInProgress'
-                            checked={switchState.switchInProgress}
-                            onChange={handleSwitchChange('switchInProgress')}
-                            readOnly
-                          />
-                          <label className='custom-control-label' htmlFor='switchInProgress'>
-                            In Progress
-                          </label>
-                        </div>
-                      </MDBCard>
-                      <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
-                        <div className='custom-control custom-switch mr-2'>
-                          <input
-                            type='checkbox'
-                            className='custom-control-input'
-                            id='switchDone'
-                            checked={switchState.switchDone}
-                            onChange={handleSwitchChange('switchDone')}
-                            readOnly
-                          />
-                          <label className='custom-control-label' htmlFor='switchDone'>
-                            Done
-                          </label>
-                        </div>
-                      </MDBCard>
-                      <MDBCard className="p-2 mb-2 stylish-color-dark white-text">
-                        <div className='custom-control custom-switch mr-2'>
-                          <input
-                            type='checkbox'
-                            className='custom-control-input'
-                            id='switchExpired'
-                            checked={switchState.switchExpired}
-                            onChange={handleSwitchChange('switchExpired')}
-                            readOnly
-                          />
-                          <label className='custom-control-label' htmlFor='switchExpired'>
-                            Expired
-                          </label>
-                        </div>
-                      </MDBCard>
+              <MDBRow>
+                <MDBCol className="col-12 p-3 mx-auto">
+                  <MDBCard className="stylish-color-dark white-text">
+                    <MDBCardBody>
+                      <MDBRow center>
+                        <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
+                          <div className='custom-control custom-switch mr-2'>
+                            <input
+                              type='checkbox'
+                              className='custom-control-input'
+                              id='switchAll'
+                              checked={switchState.switchAll}
+                              onChange={handleSwitchChange('switchAll')}
+                              readOnly
+                            />
+                            <label className='custom-control-label' htmlFor='switchAll'>
+                              Show All
+                            </label>
+                          </div>
+                        </MDBCard>
+                        <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
+                          <div className='custom-control custom-switch mr-2'>
+                            <input
+                              type='checkbox'
+                              className='custom-control-input'
+                              id='switchInProgress'
+                              checked={switchState.switchInProgress}
+                              onChange={handleSwitchChange('switchInProgress')}
+                              readOnly
+                            />
+                            <label className='custom-control-label' htmlFor='switchInProgress'>
+                              In Progress
+                            </label>
+                          </div>
+                        </MDBCard>
+                        <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
+                          <div className='custom-control custom-switch mr-2'>
+                            <input
+                              type='checkbox'
+                              className='custom-control-input'
+                              id='switchDone'
+                              checked={switchState.switchDone}
+                              onChange={handleSwitchChange('switchDone')}
+                              readOnly
+                            />
+                            <label className='custom-control-label' htmlFor='switchDone'>
+                              Done
+                            </label>
+                          </div>
+                        </MDBCard>
+                        <MDBCard className="p-2 mb-2 stylish-color-dark white-text">
+                          <div className='custom-control custom-switch mr-2'>
+                            <input
+                              type='checkbox'
+                              className='custom-control-input'
+                              id='switchExpired'
+                              checked={switchState.switchExpired}
+                              onChange={handleSwitchChange('switchExpired')}
+                              readOnly
+                            />
+                            <label className='custom-control-label' htmlFor='switchExpired'>
+                              Expired
+                            </label>
+                          </div>
+                        </MDBCard>
 
-                    </MDBRow>
-                  </MDBCardBody>
-                </MDBCard>
-              </MDBCol>
-            </MDBRow>
+                      </MDBRow>
+                    </MDBCardBody>
+                  </MDBCard>
+                </MDBCol>
+              </MDBRow>
 
-            <MDBRow className="">
-              {numberProposals > 0 && proposals !== null ?
-                proposals.sort((a, b) => b.key >= a.key ? 1 : -1).map((item, key) => (
-                  <>
-                    {
-                      (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) > new Date() && item.status === 'InProgress' && switchState.switchInProgress)
-                      || (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) < new Date() && item.status === 'InProgress' && switchState.switchExpired)
-                      || item.status === 'Expired' && switchState.switchExpired
-                      || switchState.switchAll
-                      || (item.status === 'Rejected' && switchState.switchDone)
-                      || (item.status === 'Approved' && switchState.switchDone)
-                      || (item.status === 'Removed' && switchState.switchDone)
-                      || (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) > new Date() && item.status === 'InProgress' && item.key >= stateCtx.config.lastShownProposal && switchState.switchNew)
+              <MDBRow className="">
+                {numberProposals > 0 && proposals !== null ?
+                  proposals.sort((a, b) => b.key >= a.key ? 1 : -1).map((item, key) => (
+                    <>
+                      {
+                        (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) > new Date() && item.status === 'InProgress' && switchState.switchInProgress)
+                        || (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) < new Date() && item.status === 'InProgress' && switchState.switchExpired)
+                        || item.status === 'Expired' && switchState.switchExpired
+                        || switchState.switchAll
+                        || (item.status === 'Rejected' && switchState.switchDone)
+                        || (item.status === 'Approved' && switchState.switchDone)
+                        || (item.status === 'Removed' && switchState.switchDone)
+                        || (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) > new Date() && item.status === 'InProgress' && item.key >= stateCtx.config.lastShownProposal && switchState.switchNew)
 
-                        ?
-                        <Proposal dao={stateCtx.config.contract} data={item} key={item.id} id={item.id}
-                                  daoPolicy={daoPolicy} council={daoPolicy.roles[1].kind.Group}
-                                  setShowError={setShowError}/>
-                        : null
-                    }
-                  </>
-                ))
+                          ?
+                          <Proposal dao={stateCtx.config.contract} data={item} key={item.id} id={item.id}
+                                    daoPolicy={daoPolicy}
+                                    setShowError={setShowError}/>
+                          : null
+                      }
+                    </>
+                  ))
+                  : null
+                }
+              </MDBRow>
+              {showError !== null ?
+                <MDBNotification
+                  autohide={36000}
+                  bodyClassName="p-5 font-weight-bold white-text"
+                  className="stylish-color-dark"
+                  closeClassName="white-text"
+                  fade
+                  icon="bell"
+                  iconClassName="orange-text"
+                  message={showError.toString().trim()}
+                  show
+                  text=""
+                  title=""
+                  titleClassName="elegant-color-dark white-text"
+                  style={{
+                    position: "fixed",
+                    top: "60px",
+                    right: "10px",
+                    zIndex: 9999
+                  }}
+                />
                 : null
               }
-            </MDBRow>
-            {showError !== null ?
-              <MDBNotification
-                autohide={36000}
-                bodyClassName="p-5 font-weight-bold white-text"
-                className="stylish-color-dark"
-                closeClassName="white-text"
-                fade
-                icon="bell"
-                iconClassName="orange-text"
-                message={showError.toString().trim()}
-                show
-                text=""
-                title=""
-                titleClassName="elegant-color-dark white-text"
-                style={{
-                  position: "fixed",
-                  top: "60px",
-                  right: "10px",
-                  zIndex: 9999
-                }}
-              />
-              : null
-            }
 
-            {showNewProposalNotification ?
-              <MDBNotification
-                autohide={36000}
-                bodyClassName="p-5 font-weight-bold white-text"
-                className="stylish-color-dark"
-                closeClassName="white-text"
-                fade
-                icon="bell"
-                iconClassName="orange-text"
-                message="A new proposal has been added!"
-                show
-                text=""
-                title=""
-                titleClassName="elegant-color-dark white-text"
-                style={{
-                  position: "fixed",
-                  top: "60px",
-                  left: "10px",
-                  zIndex: 9999
-                }}
-              />
-              : null
-            }
-            <MDBModal isOpen={addProposalModal} toggle={toggleProposalModal} centered position="center" size="lg">
-              <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                              titleClass="w-100 font-weight-bold"
-                              toggle={toggleProposalModal}>
-                Select Proposal Type
-              </MDBModalHeader>
-              <MDBModalBody style={{background: 'rgb(213, 211, 211)'}}>
-                <MDBRow>
-                  <MDBCol className="col-12 col-md-6 col-lg-4">
-                    <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-                      <MDBCardBody className="text-center white-text">
-                        <MDBIcon icon="user-secret" size="4x"/>
-                        <hr/>
-                        <a href="#" onClick={toggleNewCouncilMember} className="stretched-link grey-text white-hover">Council
-                          Member</a>
-                      </MDBCardBody>
-                    </MDBCard>
-                  </MDBCol>
-                  <MDBCol className="col-12 col-md-6 col-lg-4">
-                    <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-                      <MDBCardBody className="text-center white-text">
-                        <MDBIcon icon="hand-holding-usd" size="4x"/>
-                        <hr/>
-                        <a href="#" onClick={toggleNewPayout}
-                           className="stretched-link grey-text white-hover">Payout</a> </MDBCardBody>
-                    </MDBCard>
-                  </MDBCol>
-                  <MDBCol className="col-12 col-md-6 col-lg-4">
-                    <MDBLink to="#">
+              {showNewProposalNotification ?
+                <MDBNotification
+                  autohide={36000}
+                  bodyClassName="p-5 font-weight-bold white-text"
+                  className="stylish-color-dark"
+                  closeClassName="white-text"
+                  fade
+                  icon="bell"
+                  iconClassName="orange-text"
+                  message="A new proposal has been added!"
+                  show
+                  text=""
+                  title=""
+                  titleClassName="elegant-color-dark white-text"
+                  style={{
+                    position: "fixed",
+                    top: "60px",
+                    left: "10px",
+                    zIndex: 9999
+                  }}
+                />
+                : null
+              }
+              <MDBModal isOpen={addProposalModal} toggle={toggleProposalModal} centered position="center" size="lg">
+                <MDBModalHeader className="text-center stylish-color white-text border-dark"
+                                titleClass="w-100 font-weight-bold"
+                                toggle={toggleProposalModal}>
+                  Select Proposal Type
+                </MDBModalHeader>
+                <MDBModalBody style={{background: 'rgb(213, 211, 211)'}}>
+                  <MDBRow>
+                    <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
+                      <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                        <MDBCardBody className="text-center white-text">
+                          <MDBIcon icon="user-secret" size="4x"/>
+                          <hr/>
+                          <a href="#" onClick={toggleNewCouncilMember}
+                             className="stretched-link grey-text white-hover">Council
+                            Member</a>
+                        </MDBCardBody>
+                      </MDBCard>
+                    </MDBCol>
+                    <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
+                      <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                        <MDBCardBody className="text-center white-text">
+                          <MDBIcon icon="hand-holding-usd" size="4x"/>
+                          <hr/>
+                          <a href="#" onClick={toggleNewPayout}
+                             className="stretched-link grey-text white-hover">Payout</a>
+                        </MDBCardBody>
+                      </MDBCard>
+                    </MDBCol>
+                    <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
                       <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                         <MDBCardBody className="text-center white-text">
                           <MDBIcon icon="tractor" size="4x"/>
@@ -1140,248 +1155,241 @@ const Dao = () => {
                              className="stretched-link grey-text white-hover">Token farm</a>
                         </MDBCardBody>
                       </MDBCard>
-                    </MDBLink>
-                  </MDBCol> <
-                  MDBCol className="col-12 col-md-6 col-lg-4">
-                  <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-                    <MDBCardBody className="text-center white-text">
-                      <MDBIcon icon="tools" size="4x"/>
-                      <hr/>
-                      <MDBBox style={{fontSize: 12}} className="grey-text">Function <br/>Custom</MDBBox>
-                    </MDBCardBody>
-                  </MDBCard>
-                </MDBCol>
-                </MDBRow>
-              </MDBModalBody>
-            </MDBModal>
-
-
-            {/* --------------------------------------------------------------------------------------------------- */}
-            {/* --------------------------------------- Add council member ---------------------------------------- */}
-            {/* --------------------------------------------------------------------------------------------------- */}
-            <MDBModal isOpen={newProposalCouncilMember} toggle={toggleNewCouncilMember} centered position="center"
-                      size="lg">
-              <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                              titleClass="w-100 font-weight-bold"
-                              toggle={toggleNewCouncilMember}>
-                Add Council Member
-              </MDBModalHeader>
-              <form className="needs-validation mx-3 grey-text"
-                    name="newProposalCouncilMember"
-                    noValidate
-                    method="post"
-                    onSubmit={submitProposal}
-              >
-                <MDBModalBody>
-                  <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
-                            onChange={changeHandler} label="Enter account"
-                            required group>
-                    <div className="invalid-feedback">
-                      {proposalTarget.message}
-                    </div>
-                  </MDBInput>
-                  <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
-                            required label="Enter description" group>
-                    <div className="invalid-feedback">
-                      {proposalDescription.message}
-                    </div>
-                  </MDBInput>
-                  {daoPolicy ?
-                    <MDBAlert color="warning">
-                      You will pay a deposit of <span
-                      style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
-                      add this proposal!
-                    </MDBAlert>
-                    : null}
-                  <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected or
-                    expired.</MDBBox>
+                    </MDBCol>
+                  </MDBRow>
                 </MDBModalBody>
-                <MDBModalFooter className="justify-content-center">
-                  <MDBBtn color="elegant" type="submit">
-                    Submit
-                    {showSpinner ?
-                      <div className="spinner-border spinner-border-sm ml-2" role="status">
-                        <span className="sr-only">Loading...</span>
+              </MDBModal>
+
+
+              {/* --------------------------------------------------------------------------------------------------- */}
+              {/* --------------------------------------- Add council member ---------------------------------------- */}
+              {/* --------------------------------------------------------------------------------------------------- */}
+              <MDBModal isOpen={newProposalCouncilMember} toggle={toggleNewCouncilMember} centered position="center"
+                        size="lg">
+                <MDBModalHeader className="text-center stylish-color white-text border-dark"
+                                titleClass="w-100 font-weight-bold"
+                                toggle={toggleNewCouncilMember}>
+                  Add Council Member
+                </MDBModalHeader>
+                <form className="needs-validation mx-3 grey-text"
+                      name="newProposalCouncilMember"
+                      noValidate
+                      method="post"
+                      onSubmit={submitProposal}
+                >
+                  <MDBModalBody>
+                    <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
+                              onChange={changeHandler} label="Enter account"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTarget.message}
                       </div>
-                      : null}
-                  </MDBBtn>
-                </MDBModalFooter>
-              </form>
-            </MDBModal>
-
-
-            {/* --------------------------------------------------------------------------------------------------- */}
-            {/* --------------------------------------- Add payout ------------------------------------------------ */}
-            {/* --------------------------------------------------------------------------------------------------- */}
-            <MDBModal isOpen={newProposalPayout} toggle={toggleNewPayout} centered position="center"
-                      size="lg">
-              <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                              titleClass="w-100 font-weight-bold"
-                              toggle={toggleNewPayout}>
-                Add Payout
-              </MDBModalHeader>
-              <form className="needs-validation mx-3 grey-text"
-                    name="newProposalPayout"
-                    noValidate
-                    method="post"
-                    onSubmit={submitProposal}
-              >
-                <MDBModalBody>
-                  <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
-                            onChange={changeHandler} label="Enter receiver account"
-                            required group>
-                    <div className="invalid-feedback">
-                      {proposalTarget.message}
-                    </div>
-                  </MDBInput>
-                  <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
-                            required label="Enter description" group>
-                    <div className="invalid-feedback">
-                      {proposalDescription.message}
-                    </div>
-                  </MDBInput>
-                  <MDBInput value={proposalAmount.value} name="proposalAmount" onChange={changeHandler} required
-                            label="Payout in NEAR" group>
-                    <div className="invalid-feedback">
-                      {proposalAmount.message}
-                    </div>
-                  </MDBInput>
-                  {daoPolicy ?
-                    <MDBAlert color="warning">
-                      You will pay a deposit of <span
-                      style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
-                      add this proposal!
-                    </MDBAlert>
-                    : null}
-                  <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected or
-                    expired.</MDBBox>
-                </MDBModalBody>
-                <MDBModalFooter className="justify-content-center">
-                  <MDBBtn color="elegant" type="submit">
-                    Submit
-                    {showSpinner ?
-                      <div className="spinner-border spinner-border-sm ml-2" role="status">
-                        <span className="sr-only">Loading...</span>
+                    </MDBInput>
+                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
+                              required label="Enter description" group>
+                      <div className="invalid-feedback">
+                        {proposalDescription.message}
                       </div>
+                    </MDBInput>
+                    {daoPolicy ?
+                      <MDBAlert color="warning">
+                        You will pay a deposit of <span
+                        style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
+                        add this proposal!
+                      </MDBAlert>
                       : null}
-                  </MDBBtn>
-                </MDBModalFooter>
-              </form>
-            </MDBModal>
+                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
+                      or
+                      expired.</MDBBox>
+                  </MDBModalBody>
+                  <MDBModalFooter className="justify-content-center">
+                    <MDBBtn color="elegant" type="submit">
+                      Submit
+                      {showSpinner ?
+                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                        : null}
+                    </MDBBtn>
+                  </MDBModalFooter>
+                </form>
+              </MDBModal>
 
-            {/* --------------------------------------------------------------------------------------------------- */}
-            {/* --------------------------------------- Token Farm ------------------------------------------------ */}
-            {/* --------------------------------------------------------------------------------------------------- */}
-            <MDBModal isOpen={newProposalToken} toggle={toggleNewToken} centered position="center"
-                      size="lg">
-              <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                              titleClass="w-100 font-weight-bold"
-                              toggle={toggleNewToken}>
-                Create a new Token
-              </MDBModalHeader>
-              <form className="needs-validation mx-3 grey-text"
-                    name="newProposalToken"
-                    noValidate
-                    method="post"
-                    onSubmit={submitProposal}
-              >
-                <MDBModalBody>
-                  <MDBInput disabled={disableTarget} name="proposalTokenOwner" value={proposalTokenOwner.value}
-                            onChange={changeHandler} label="Enter owner account"
-                            required group>
-                    <div className="invalid-feedback">
-                      {proposalTokenOwner.message}
-                    </div>
-                  </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTokenSupply" value={proposalTokenSupply.value}
-                            onChange={changeHandler} label="Total Supply"
-                            required group>
-                    <div className="invalid-feedback">
-                      {proposalTokenSupply.message}
-                    </div>
-                  </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTokenName" value={proposalTokenName.value}
-                            onChange={changeHandler} label="Token Name"
-                            required group>
-                    <div className="invalid-feedback">
-                      {proposalTokenName.message}
-                    </div>
-                  </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTokenSymbol" value={proposalTokenSymbol.value}
-                            onChange={changeHandler} label="Token Symbol"
-                            required group>
-                    <div className="invalid-feedback">
-                      {proposalTokenSymbol.message}
-                    </div>
-                  </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTokenIcon" value={proposalTokenIcon.value}
-                            onChange={changeHandler} label="Token Icon URL"
-                            required group>
-                    <div className="invalid-feedback">
-                      {proposalTokenIcon.message}
-                    </div>
-                  </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTokenDecimals" value={proposalTokenDecimals.value}
-                            onChange={changeHandler} label="Token Decimals"
-                            required group>
-                    <div className="invalid-feedback">
-                      {proposalTokenDecimals.message}
-                    </div>
-                  </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
-                            onChange={changeHandler} label="Enter receiver account"
-                            group>
-                    <div className="invalid-feedback">
-                      {proposalTarget.message}
-                    </div>
-                  </MDBInput>
-                  <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
-                            required label="Enter description" group>
-                    <div className="invalid-feedback">
-                      {proposalDescription.message}
-                    </div>
-                  </MDBInput>
-                  {daoPolicy ?
-                    <>
-                    <MDBAlert color="warning">
-                      You will pay a deposit of <span
-                      style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
-                      add this proposal!
-                    </MDBAlert>
-                    <MDBAlert color="warning">
-                      Please make sure DAO has at least <span
-                      style={{fontSize: 13}}>Ⓝ</span>5 (for deposit) at the time of approval!
-                    </MDBAlert>
-                    </>
-                    : null}
-                  <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected or
-                    expired.</MDBBox>
-                </MDBModalBody>
-                <MDBModalFooter className="justify-content-center">
-                  <MDBBtn color="elegant" type="submit">
-                    Submit
-                    {showSpinner ?
-                      <div className="spinner-border spinner-border-sm ml-2" role="status">
-                        <span className="sr-only">Loading...</span>
+
+              {/* --------------------------------------------------------------------------------------------------- */}
+              {/* --------------------------------------- Add payout ------------------------------------------------ */}
+              {/* --------------------------------------------------------------------------------------------------- */}
+              <MDBModal isOpen={newProposalPayout} toggle={toggleNewPayout} centered position="center"
+                        size="lg">
+                <MDBModalHeader className="text-center stylish-color white-text border-dark"
+                                titleClass="w-100 font-weight-bold"
+                                toggle={toggleNewPayout}>
+                  Add Payout
+                </MDBModalHeader>
+                <form className="needs-validation mx-3 grey-text"
+                      name="newProposalPayout"
+                      noValidate
+                      method="post"
+                      onSubmit={submitProposal}
+                >
+                  <MDBModalBody>
+                    <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
+                              onChange={changeHandler} label="Enter receiver account"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTarget.message}
                       </div>
+                    </MDBInput>
+                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
+                              required label="Enter description" group>
+                      <div className="invalid-feedback">
+                        {proposalDescription.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput value={proposalAmount.value} name="proposalAmount" onChange={changeHandler} required
+                              label="Payout in NEAR" group>
+                      <div className="invalid-feedback">
+                        {proposalAmount.message}
+                      </div>
+                    </MDBInput>
+                    {daoPolicy ?
+                      <MDBAlert color="warning">
+                        You will pay a deposit of <span
+                        style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
+                        add this proposal!
+                      </MDBAlert>
                       : null}
-                  </MDBBtn>
-                </MDBModalFooter>
-              </form>
-            </MDBModal>
+                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
+                      or
+                      expired.</MDBBox>
+                  </MDBModalBody>
+                  <MDBModalFooter className="justify-content-center">
+                    <MDBBtn color="elegant" type="submit">
+                      Submit
+                      {showSpinner ?
+                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                        : null}
+                    </MDBBtn>
+                  </MDBModalFooter>
+                </form>
+              </MDBModal>
+
+              {/* --------------------------------------------------------------------------------------------------- */}
+              {/* --------------------------------------- Token Farm ------------------------------------------------ */}
+              {/* --------------------------------------------------------------------------------------------------- */}
+              <MDBModal isOpen={newProposalToken} toggle={toggleNewToken} centered position="center"
+                        size="lg">
+                <MDBModalHeader className="text-center stylish-color white-text border-dark"
+                                titleClass="w-100 font-weight-bold"
+                                toggle={toggleNewToken}>
+                  Create a new Token
+                </MDBModalHeader>
+                <form className="needs-validation mx-3 grey-text"
+                      name="newProposalToken"
+                      noValidate
+                      method="post"
+                      onSubmit={submitProposal}
+                >
+                  <MDBModalBody>
+                    <MDBInput disabled={true} name="proposalTokenOwner" value={proposalTokenOwner.value}
+                              onChange={changeHandler} label="Enter owner account"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTokenOwner.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalTokenSupply" value={proposalTokenSupply.value}
+                              onChange={changeHandler} label="Total Supply"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTokenSupply.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalTokenName" value={proposalTokenName.value}
+                              onChange={changeHandler} label="Token Name"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTokenName.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalTokenSymbol" value={proposalTokenSymbol.value}
+                              onChange={changeHandler} label="Token Symbol"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTokenSymbol.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalTokenIcon" value={proposalTokenIcon.value}
+                              onChange={changeHandler} label="Token Icon URL"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTokenIcon.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalTokenDecimals" value={proposalTokenDecimals.value}
+                              onChange={changeHandler} label="Token Decimals"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTokenDecimals.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput disabled={true} name="proposalTarget" value={proposalTarget.value}
+                              onChange={changeHandler} label="Enter receiver account"
+                              group>
+                      <div className="invalid-feedback">
+                        {proposalTarget.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
+                              required label="Enter description" group>
+                      <div className="invalid-feedback">
+                        {proposalDescription.message}
+                      </div>
+                    </MDBInput>
+                    {daoPolicy ?
+                      <>
+                        <MDBAlert color="warning">
+                          You will pay a deposit of <span
+                          style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
+                          add this proposal!
+                        </MDBAlert>
+                        <MDBAlert color="warning">
+                          Please make sure DAO has at least <span
+                          style={{fontSize: 13}}>Ⓝ</span>5 (for deposit) at the time of approval!
+                        </MDBAlert>
+                      </>
+                      : null}
+                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
+                      or
+                      expired.</MDBBox>
+                  </MDBModalBody>
+                  <MDBModalFooter className="justify-content-center">
+                    <MDBBtn color="elegant" type="submit">
+                      Submit
+                      {showSpinner ?
+                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                        : null}
+                    </MDBBtn>
+                  </MDBModalFooter>
+                </form>
+              </MDBModal>
 
 
-          </>
-          : null}
-        {selectDao ?
-          <Selector setShowError={setShowError} setSelectDao={setSelectDao}/>
-          : null
-        }
-        {showLoading && !selectDao ? <Loading/> : null}
-      </MDBContainer>
-      <Footer/>
-    </MDBView>
-
+            </>
+            : null}
+          {selectDao ?
+            <Selector setShowError={setShowError} setSelectDao={setSelectDao}/>
+            : null
+          }
+          {showLoading && !selectDao ? <Loading/> : null}
+        </MDBContainer>
+        <Footer/>
+      </MDBView>
+    </>
   )
 }
 

@@ -2,7 +2,7 @@ import getConfig from "../config";
 
 const readDefaultState = () => {
   try {
-    return JSON.parse(window.localStorage.getItem('dao_storage'))
+    return JSON.parse(window.localStorage.getItem('sputnik_v2_storage'))
   } catch (err) {
     return {}
   }

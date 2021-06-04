@@ -64,7 +64,7 @@ export const ContainerProvider = ({children}) => {
 
   useEffect(() => {
     window.localStorage.setItem(
-      'dao_storage',
+      'sputnik_v2_storage',
       JSON.stringify({
         factory: state.config.factory,
         contract: state.config.contract,

@@ -338,11 +338,26 @@ const DaoInfo = (props) => {
   const [daoPolicy, setDaoPolicy] = useState(null);
   const [collapseState, setCollapseState] = useState(false);
   const [daoState, setDaoState] = useState(0);
+  const [daoExists, setDaoExists] = useState(true);
 
   const contract = new Contract(window.walletConnection.account(), contractId, {
     viewMethods: ['get_config', 'get_policy', 'get_staking_contract', 'get_available_amount', 'delegation_total_supply', 'get_last_proposal_id'],
     changeMethods: [],
   })
+
+
+  useEffect(
+    () => {
+      if (contractId !== "") {
+        accountExists(contractId).then(r => {
+          setDaoExists(r);
+        }).catch((e) => {
+          console.log(e);
+        })
+      }
+    },
+    []
+  )
 
 
   useEffect(
@@ -388,13 +403,22 @@ const DaoInfo = (props) => {
                  borderBottomLeftRadius: 25,
                  borderBottomRightRadius: 25
                }}>
-        <MDBCardHeader color="white-text stylish-color" className="h5-responsive"
-                       style={{borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
-          <div>
-            <div className="float-left mt-2">{props.item.replace("." + nearConfig.contractName, "")}</div>
-            <div className="float-right h4-responsive">Ⓝ {daoState}</div>
-          </div>
-        </MDBCardHeader>
+        {daoExists ?
+          <MDBCardHeader color="white-text stylish-color" className="h5-responsive"
+                         style={{borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
+            <div>
+              <div className="float-left mt-2">{props.item.replace("." + nearConfig.contractName, "")}</div>
+              <div className="float-right h4-responsive">Ⓝ {daoState}</div>
+            </div>
+          </MDBCardHeader>
+          :
+          <MDBCardHeader color="white-text stylish-color" className="h5-responsive"
+                         style={{borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
+            <div>
+              <div className="float-left mt-2">DAO removed</div>
+            </div>
+          </MDBCardHeader>
+        }
         <MDBCardBody className="grey darken-1 white-text"
                      style={{borderBottomLeftRadius: 25, borderBottomRightRadius: 25}}>
           <div className="text-left">
@@ -438,21 +462,25 @@ const DaoInfo = (props) => {
               </MDBCard>
             </div>
             <hr/>
-            <div className="float-left">
-              <MDBBtn
-                color="elegant"
-                size="sm"
-                onClick={toggleCollapse}
-              >
-                council{" "}
-                <MDBIcon icon={!collapseState ? "arrow-down" : "arrow-up"}/>
-              </MDBBtn>
-            </div>
-            <div className="float-right">
-              <MDBBtn name={props.item} onClick={props.handleSelect} color="elegant" size="sm"
-                      className="float-right">SELECT</MDBBtn>
-            </div>
-            <div className="clearfix"/>
+            {daoExists ?
+              <>
+                <div className="float-left">
+                  <MDBBtn
+                    color="elegant"
+                    size="sm"
+                    onClick={toggleCollapse}
+                  >
+                    council{" "}
+                    <MDBIcon icon={!collapseState ? "arrow-down" : "arrow-up"}/>
+                  </MDBBtn>
+                </div>
+                <div className="float-right">
+                  <MDBBtn name={props.item} onClick={props.handleSelect} color="elegant" size="sm"
+                          className="float-right">SELECT</MDBBtn>
+                </div>
+                <div className="clearfix"/>
+              </>
+              : null}
           </div>
           {collapseState ?
             <div>
@@ -482,17 +510,6 @@ const Selector = (props) => {
   useEffect(() => {
       window.factoryContract.get_dao_list()
         .then(r => {
-          /*
-          let a = [];
-          r.map(async (item,key) => {
-            if (await accountExists(item)) {
-              console.log(item);
-              a.push(item);
-            }
-            console.log(a);
-            setDaoList(a);
-          })
-          */
           setDaoList(r);
           setShowLoading(false);
         }).catch((e) => {
@@ -524,16 +541,19 @@ const Selector = (props) => {
     setShowNewDaoModal(!showNewDaoModal);
   }
 
+  /*
   useEffect(() => {
       daoList.map(async (item, key) => {
+        console.log(key)
         if (await accountExists(item)) {
-          setDaoListFixed(prevState => ([...prevState, item]));
+          setDaoListFixed(prevState => ([...prevState, {key: key, dao: item}]));
         }
       })
       setShowLoading(false)
     },
     [daoList]
   )
+   */
 
 
   return (
@@ -549,7 +569,7 @@ const Selector = (props) => {
         {showLoading ? <Loading/> : null}
         <MDBCardBody className="text-center">
           <MDBRow>
-            {!showLoading && daoListFixed ? daoListFixed.map((item, key) => (
+            {!showLoading && daoList ? daoList.map((item, key) => (
               <MDBCol lg="6" md="12">
                 <DaoInfo item={item} key={key} handleSelect={handleSelect}/>
               </MDBCol>

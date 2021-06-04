@@ -13,6 +13,7 @@ function getConfig(env) {
         helperUrl: 'https://helper.mainnet.near.org',
         explorerUrl: 'https://explorer.mainnet.near.org',
         pk: '2gtDEwdLuUBawzFLAnCS9gUso3Ph76bRzMpVrtb66f3J',
+        tokenFactory: 'tkn.near',
       }
     case 'development':
     case 'testnet':
@@ -24,6 +25,7 @@ function getConfig(env) {
         helperUrl: 'https://helper.testnet.near.org',
         explorerUrl: 'https://explorer.testnet.near.org',
         pk: 'G8JpvUhKqfr89puEKgbBqUxQzCMfJfPSRvKw4EJoiZpZ',
+        tokenFactory: 'tokenfactory.testnet',
       }
     case 'betanet':
       return {
@@ -33,7 +35,8 @@ function getConfig(env) {
         walletUrl: 'https://wallet.betanet.near.org',
         helperUrl: 'https://helper.betanet.near.org',
         explorerUrl: 'https://explorer.betanet.near.org',
-        pk: null,
+        pk: 'G8JpvUhKqfr89puEKgbBqUxQzCMfJfPSRvKw4EJoiZpZ',
+        tokenFactory: 'tokenfactory.testnet',
       }
     case 'local':
       return {
