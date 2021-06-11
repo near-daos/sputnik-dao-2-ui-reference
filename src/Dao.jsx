@@ -50,6 +50,7 @@ const Dao = () => {
   const [showError, setShowError] = useState(null);
   const [addProposalModal, setAddProposalModal] = useState(false);
   const [newProposalCouncilMember, setNewProposalCouncilMember] = useState(false);
+  const [removeProposalCouncilMember, setRemoveProposalCouncilMember] = useState(false);
   const [newProposalPayout, setNewProposalPayout] = useState(false);
   const [newProposalToken, setNewProposalToken] = useState(false);
   const [selectDao, setSelectDao] = useState(false);
@@ -238,6 +239,11 @@ const Dao = () => {
     setAddProposalModal(false);
   }
 
+  const toggleRemoveCouncilMember = () => {
+    setRemoveProposalCouncilMember(!removeProposalCouncilMember);
+    setAddProposalModal(false);
+  }
+
   const toggleNewPayout = () => {
     setNewProposalPayout(!newProposalPayout);
     setAddProposalModal(false);
@@ -372,7 +378,6 @@ const Dao = () => {
     }
   }
 
-
   const validateProposalDiscussion = (field, name, showMessage) => {
     let categories = parseForumUrl(name);
     /* Hardcoded exclusion of rucommunity.sputnikdao.near from field validation */
@@ -393,6 +398,15 @@ const Dao = () => {
     }
   }
 
+  const validateTokenSupply = (field, name, showMessage) => {
+    if (name && !isNaN(name) && name < 100000000000000000000000000000) {
+      return true;
+    } else {
+      showMessage("Maximum total supply is 10e30 (u128)", 'warning', field);
+      return false;
+    }
+  }
+
   const validateField = (field, value) => {
     switch (field) {
       case "proposalKind":
@@ -405,7 +419,7 @@ const Dao = () => {
       case "proposalTokenOwner":
         return validateString(field, value, showMessage.bind(this));
       case "proposalTokenSupply":
-        return validateString(field, value, showMessage.bind(this));
+        return validateTokenSupply(field, value, showMessage.bind(this));
       case "proposalTokenName":
         return validateString(field, value, showMessage.bind(this));
       case "proposalTokenSymbol":
@@ -413,57 +427,13 @@ const Dao = () => {
       case "proposalTokenIcon":
         return validateString(field, value, showMessage.bind(this));
       case "proposalTokenDecimals":
-        return validateString(field, value, showMessage.bind(this));
+        return validateNumber(field, value, showMessage.bind(this));
       case "proposalDiscussion":
         return validateProposalDiscussion(field, value, showMessage.bind(this));
       case "proposalAmount":
       case "votePeriod":
         return validateNumber(field, value, showMessage.bind(this));
     }
-  };
-
-  const changeSelectHandler = (event) => {
-    if (event.target.value === "NewCouncil" || event.target.value === "RemoveCouncil") {
-      setShowCouncilChange(true)
-      setShowPayout(false)
-      setShowChangePurpose(false)
-      setShowVotePeriod(false)
-      setDisableTarget(false)
-      setProposalTarget({value: '', valid: true, message: ''});
-    }
-
-    if (event.target.value === "ChangeVotePeriod") {
-      setShowVotePeriod(true)
-      setShowPayout(false)
-      setShowChangePurpose(false)
-      setShowCouncilChange(false)
-      setProposalTarget({value: window.walletConnection.getAccountId(), valid: true, message: ''});
-      setDisableTarget(true)
-    }
-
-    if (event.target.value === "ChangePurpose") {
-      setShowChangePurpose(true)
-      setShowPayout(false)
-      setShowVotePeriod(false)
-      setShowCouncilChange(false)
-      setProposalTarget({value: window.walletConnection.getAccountId(), valid: true, message: ''});
-      setDisableTarget(true)
-    }
-
-    if (event.target.value === "Payout") {
-      setShowPayout(true)
-      setShowChangePurpose(false)
-      setShowVotePeriod(false)
-      setShowCouncilChange(false)
-      setDisableTarget(false)
-      setProposalTarget({value: '', valid: true, message: ''});
-    }
-
-
-    if (event.target.name === "proposalKind") {
-      setProposalKind({value: event.target.value, valid: !!event.target.value});
-    }
-
   };
 
   const changeHandler = (event) => {
@@ -571,19 +541,19 @@ const Dao = () => {
           setProposalTokenOwner(prevState => ({...prevState, message: message}));
           break;
         case "proposalTokenSupply":
-          setProposalTokenOwner(prevState => ({...prevState, message: message}));
+          setProposalTokenSupply(prevState => ({...prevState, message: message}));
           break;
         case "proposalTokenName":
-          setProposalTokenOwner(prevState => ({...prevState, message: message}));
+          setProposalTokenName(prevState => ({...prevState, message: message}));
           break;
         case "proposalTokenSymbol":
-          setProposalTokenOwner(prevState => ({...prevState, message: message}));
+          setProposalTokenSymbol(prevState => ({...prevState, message: message}));
           break;
         case "proposalTokenIcon":
-          setProposalTokenOwner(prevState => ({...prevState, message: message}));
+          setProposalTokenIcon(prevState => ({...prevState, message: message}));
           break;
         case "proposalTokenDecimals":
-          setProposalTokenOwner(prevState => ({...prevState, message: message}));
+          setProposalTokenDecimals(prevState => ({...prevState, message: message}));
           break;
         case "proposalDiscussion":
           setProposalDiscussion(prevState => ({...prevState, message: message}));
@@ -696,10 +666,9 @@ const Dao = () => {
     }
     if (e.target.name === 'newProposalCouncilMember') {
       const nearAccountValid = await accountExists(proposalTarget.value);
-      let validateTarget = validateField("proposalTarget", proposalTarget.value);
       let validateDescription = validateField("proposalDescription", proposalDescription.value);
 
-      if (validateTarget && nearAccountValid && validateDescription) {
+      if (nearAccountValid && validateDescription) {
         try {
           setShowSpinner(true);
           await window.contract.add_proposal({
@@ -721,7 +690,81 @@ const Dao = () => {
         } finally {
           setShowSpinner(false);
         }
+      } else {
+
+        if (!nearAccountValid) {
+          e.target.proposalTarget.className += " is-invalid";
+          e.target.proposalTarget.classList.remove("is-valid");
+          setProposalTarget({value: proposalTarget.value, valid: false, message: 'user account does not exist!'});
+        } else {
+          setProposalTarget({value: proposalTarget.value, valid: true, message: ''});
+          e.target.proposalTarget.classList.remove("is-invalid");
+          e.target.proposalTarget.className += " is-valid";
+        }
+
+        if (!validateDescription) {
+          e.target.proposalDescription.className += " is-invalid";
+          e.target.proposalDescription.classList.remove("is-valid");
+        } else {
+          e.target.proposalDescription.classList.remove("is-invalid");
+          e.target.proposalDescription.className += " is-valid";
+        }
       }
+    }
+
+
+    {/* --------------------------------------------------------------------------------------------------- */
+    }
+    {/* --------------------------------------- Remove council member ---------------------------------------- */
+    }
+    {/* --------------------------------------------------------------------------------------------------- */
+    }
+    if (e.target.name === 'removeProposalCouncilMember') {
+      const councilAccountValid = daoPolicy.roles[1].kind.Group.includes(proposalTarget.value)
+      let validateDescription = validateField("proposalDescription", proposalDescription.value);
+
+      if (councilAccountValid && validateDescription) {
+        try {
+          setShowSpinner(true);
+          await window.contract.add_proposal({
+              proposal: {
+                description: (e.target.proposalDescription.value).trim(),
+                kind: {
+                  RemoveMemberFromRole: {
+                    member_id: e.target.proposalTarget.value,
+                    role: "council"
+                  }
+                }
+              },
+            },
+            new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
+          )
+        } catch (e) {
+          console.log(e);
+          setShowError(e);
+        } finally {
+          setShowSpinner(false);
+        }
+      } else {
+        if (!councilAccountValid) {
+          e.target.proposalTarget.className += " is-invalid";
+          e.target.proposalTarget.classList.remove("is-valid");
+          setProposalTarget({value: proposalTarget.value, valid: false, message: 'user account is not in council!'});
+        } else {
+          setProposalTarget({value: proposalTarget.value, valid: true, message: ''});
+          e.target.proposalTarget.classList.remove("is-invalid");
+          e.target.proposalTarget.className += " is-valid";
+        }
+
+        if (!validateDescription) {
+          e.target.proposalDescription.className += " is-invalid";
+          e.target.proposalDescription.classList.remove("is-valid");
+        } else {
+          e.target.proposalDescription.classList.remove("is-invalid");
+          e.target.proposalDescription.className += " is-valid";
+        }
+      }
+
     }
 
     {/* --------------------------------------------------------------------------------------------------- */
@@ -769,31 +812,31 @@ const Dao = () => {
     {/* --------------------------------------------------------------------------------------------------- */
     }
     if (e.target.name === 'newProposalToken') {
-      const stringifyObject = require('stringify-object');
-      const nearAccountValid = await accountExists(proposalTarget.value);
-      let validateTarget = validateField("proposalTarget", proposalTarget.value);
       let validateDescription = validateField("proposalDescription", proposalDescription.value);
-      const supply = new Decimal(e.target.proposalTokenSupply.value.trim());
-      const supplyYokto = supply.mul(yoktoNear).toFixed();
+      let validateTokenDecimals = validateField("proposalTokenDecimals", proposalTokenDecimals.value);
+      let validateTokenSupply = validateField("proposalTokenSupply", proposalTokenSupply.value);
+      let validateTokenName = validateField("proposalTokenName", proposalTokenName.value);
+      let validateTokenSymbol = validateField("proposalTokenSymbol", proposalTokenSymbol.value);
 
-      const argsList = {
-        args: {
-          owner_id: e.target.proposalTokenOwner.value.trim(),
-          total_supply: supplyYokto,
-          metadata: {
-            spec: "ft-1.0.0",
-            name: e.target.proposalTokenName.value.trim(),
-            symbol: e.target.proposalTokenSymbol.value.trim(),
-            icon: e.target.proposalTokenIcon.value.trim(),
-            decimals: '^' + e.target.proposalTokenDecimals.value + '^',
+
+
+      if (validateDescription && validateTokenDecimals && validateTokenName && validateTokenSupply && validateTokenSymbol) {
+        const supply = new Decimal(e.target.proposalTokenSupply.value.trim()).toFixed(0);
+        const argsList = {
+          args: {
+            owner_id: e.target.proposalTokenOwner.value.trim(),
+            total_supply: supply,
+            metadata: {
+              spec: "ft-1.0.0",
+              name: e.target.proposalTokenName.value.trim(),
+              symbol: e.target.proposalTokenSymbol.value.trim(),
+              icon: e.target.proposalTokenIcon.value.trim(),
+              decimals: '^' + e.target.proposalTokenDecimals.value + '^',
+            },
           },
-        },
-      }
-      //console.log(JSON.stringify(argsList).replaceAll('^"', '').replaceAll('"^', ''));
-      const args = Buffer.from(JSON.stringify(argsList).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
+        }
+        const args = Buffer.from(JSON.stringify(argsList).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
 
-
-      if (validateTarget && nearAccountValid && validateDescription) {
         try {
           setShowSpinner(true);
           await window.contract.add_proposal({
@@ -820,72 +863,50 @@ const Dao = () => {
         } finally {
           setShowSpinner(false);
         }
+      } else {
+
+        if (!validateDescription) {
+          e.target.proposalDescription.className += " is-invalid";
+          e.target.proposalDescription.classList.remove("is-valid");
+        } else {
+          e.target.proposalDescription.classList.remove("is-invalid");
+          e.target.proposalDescription.className += " is-valid";
+        }
+
+        if (!validateTokenName) {
+          e.target.proposalTokenName.className += " is-invalid";
+          e.target.proposalTokenName.classList.remove("is-valid");
+        } else {
+          e.target.proposalTokenName.classList.remove("is-invalid");
+          e.target.proposalTokenName.className += " is-valid";
+        }
+
+        if (!validateTokenSymbol) {
+          e.target.proposalTokenSymbol.className += " is-invalid";
+          e.target.proposalTokenSymbol.classList.remove("is-valid");
+        } else {
+          e.target.proposalTokenSymbol.classList.remove("is-invalid");
+          e.target.proposalTokenSymbol.className += " is-valid";
+        }
+
+        if (!validateTokenSupply) {
+          e.target.proposalTokenSupply.className += " is-invalid";
+          e.target.proposalTokenSupply.classList.remove("is-valid");
+        } else {
+          e.target.proposalTokenSupply.classList.remove("is-invalid");
+          e.target.proposalTokenSupply.className += " is-valid";
+        }
+
+        if (!validateTokenDecimals) {
+          e.target.proposalTokenDecimals.className += " is-invalid";
+          e.target.proposalTokenDecimals.classList.remove("is-valid");
+        } else {
+          e.target.proposalTokenDecimals.classList.remove("is-invalid");
+          e.target.proposalTokenDecimals.className += " is-valid";
+        }
+
       }
     }
-
-    /*
-    const nearAccountValid = await accountExists(proposalTarget.value);
-    let validateTarget = validateField("proposalTarget", proposalTarget.value);
-    let validateDescription = validateField("proposalDescription", proposalDescription.value);
-    //let validateDiscussion = validateField("proposalDiscussion", proposalDiscussion.value);
-    let validateChangePurpose = validateField("changePurpose", changePurpose.value);
-    let validateAmount = validateField("proposalAmount", proposalAmount.value);
-
-
-    if (showChangePurpose) {
-      if (!validateChangePurpose) {
-        e.target.changePurpose.className += " is-invalid";
-        e.target.changePurpose.classList.remove("is-valid");
-      } else {
-        e.target.changePurpose.classList.remove("is-invalid");
-        e.target.changePurpose.className += " is-valid";
-      }
-    }*/
-
-
-    /*
-        if (showPayout) {
-          if (!validateAmount) {
-            e.target.proposalAmount.className += " is-invalid";
-            e.target.proposalAmount.classList.remove("is-valid");
-          } else {
-            e.target.proposalAmount.classList.remove("is-invalid");
-            e.target.proposalAmount.className += " is-valid";
-          }
-        }
-
-        const parseForum = parseForumUrl(e.target.proposalDiscussion.value);
-
-        if (showPayout) {
-          if (e.target.proposalKind.value !== 'false' && nearAccountValid && validateTarget && validateDescription && validateAmount && validateDiscussion) {
-            try {
-              setShowSpinner(true);
-              const amount = new Decimal(e.target.proposalAmount.value);
-              const amountYokto = amount.mul(yoktoNear).toFixed();
-
-              await window.contract.add_proposal({
-                  proposal: {
-                    target: e.target.proposalTarget.value,
-                    description: (e.target.proposalDescription.value + " " + parseForum).trim(),
-                    kind: {
-                      type: e.target.proposalKind.value,
-                      amount: amountYokto,
-                    }
-                  },
-                },
-                new Decimal("30000000000000").toString(), bond.toString(),
-              )
-
-            } catch (e) {
-              console.log(e);
-              setShowError(e);
-            } finally {
-              setShowSpinner(false);
-            }
-          }
-        }
-
-         */
 
 
   }
@@ -1046,7 +1067,7 @@ const Dao = () => {
               </MDBRow>
 
               <MDBRow className="">
-                {numberProposals > 0 && proposals !== null ?
+                {daoPolicy && numberProposals > 0 && proposals !== null ?
                   proposals.sort((a, b) => b.key >= a.key ? 1 : -1).map((item, key) => (
                     <>
                       {
@@ -1117,48 +1138,55 @@ const Dao = () => {
                 />
                 : null
               }
-              <MDBModal isOpen={addProposalModal} toggle={toggleProposalModal} centered position="center" size="lg">
-                <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                                titleClass="w-100 font-weight-bold"
-                                toggle={toggleProposalModal}>
-                  Select Proposal Type
-                </MDBModalHeader>
-                <MDBModalBody style={{background: 'rgb(213, 211, 211)'}}>
-                  <MDBRow>
-                    <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
-                      <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-                        <MDBCardBody className="text-center white-text">
-                          <MDBIcon icon="user-secret" size="4x"/>
-                          <hr/>
-                          <a href="#" onClick={toggleNewCouncilMember}
-                             className="stretched-link grey-text white-hover">Council
-                            Member</a>
-                        </MDBCardBody>
-                      </MDBCard>
-                    </MDBCol>
-                    <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
-                      <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-                        <MDBCardBody className="text-center white-text">
-                          <MDBIcon icon="hand-holding-usd" size="4x"/>
-                          <hr/>
-                          <a href="#" onClick={toggleNewPayout}
-                             className="stretched-link grey-text white-hover">Payout</a>
-                        </MDBCardBody>
-                      </MDBCard>
-                    </MDBCol>
-                    <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
-                      <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-                        <MDBCardBody className="text-center white-text">
-                          <MDBIcon icon="tractor" size="4x"/>
-                          <hr/>
-                          <a href="#" onClick={toggleNewToken}
-                             className="stretched-link grey-text white-hover">Token farm</a>
-                        </MDBCardBody>
-                      </MDBCard>
-                    </MDBCol>
-                  </MDBRow>
-                </MDBModalBody>
-              </MDBModal>
+              {daoPolicy ?
+                <MDBModal isOpen={addProposalModal} toggle={toggleProposalModal} centered position="center" size="lg">
+                  <MDBModalHeader className="text-center stylish-color white-text border-dark"
+                                  titleClass="w-100 font-weight-bold"
+                                  toggle={toggleProposalModal}>
+                    Select Proposal Type
+                  </MDBModalHeader>
+                  <MDBModalBody style={{background: 'rgb(213, 211, 211)'}}>
+                    <MDBRow>
+                      <MDBCol className="col-12 col-md-6 col-lg-5 mb-1">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                          <MDBCardBody className="text-center white-text">
+                            <MDBIcon icon="user-secret" size="4x"/>
+                            <hr/>
+                            <div>Council
+                              Member
+                            </div>
+                            <MDBBtn onClick={toggleNewCouncilMember}
+                                    color="blue-grey" size="sm" className="float-left">Add</MDBBtn>
+                            <MDBBtn disabled={daoPolicy.roles[1].kind.Group.length < 2}
+                                    onClick={toggleRemoveCouncilMember} color="red" size="sm"
+                                    className="float-right">Remove</MDBBtn>
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                          <MDBCardBody className="text-center white-text">
+                            <MDBIcon icon="hand-holding-usd" size="4x"/>
+                            <hr/>
+                            <a href="#" onClick={toggleNewPayout}
+                               className="stretched-link grey-text white-hover">Payout</a>
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                          <MDBCardBody className="text-center white-text">
+                            <MDBIcon icon="tractor" size="4x"/>
+                            <hr/>
+                            <a href="#" onClick={toggleNewToken}
+                               className="stretched-link grey-text white-hover">Token farm</a>
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
+                    </MDBRow>
+                  </MDBModalBody>
+                </MDBModal>
+                : null}
 
 
               {/* --------------------------------------------------------------------------------------------------- */}
@@ -1173,6 +1201,62 @@ const Dao = () => {
                 </MDBModalHeader>
                 <form className="needs-validation mx-3 grey-text"
                       name="newProposalCouncilMember"
+                      noValidate
+                      method="post"
+                      onSubmit={submitProposal}
+                >
+                  <MDBModalBody>
+                    <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
+                              onChange={changeHandler} label="Enter account"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTarget.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
+                              required label="Enter description" group>
+                      <div className="invalid-feedback">
+                        {proposalDescription.message}
+                      </div>
+                    </MDBInput>
+                    {daoPolicy ?
+                      <MDBAlert color="warning">
+                        You will pay a deposit of <span
+                        style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
+                        add this proposal!
+                      </MDBAlert>
+                      : null}
+                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
+                      or
+                      expired.</MDBBox>
+                  </MDBModalBody>
+                  <MDBModalFooter className="justify-content-center">
+                    <MDBBtn color="elegant" type="submit">
+                      Submit
+                      {showSpinner ?
+                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                        : null}
+                    </MDBBtn>
+                  </MDBModalFooter>
+                </form>
+              </MDBModal>
+
+
+              {/* --------------------------------------------------------------------------------------------------- */}
+              {/* --------------------------------------- Remove council member ---------------------------------------- */}
+              {/* --------------------------------------------------------------------------------------------------- */}
+              <MDBModal isOpen={removeProposalCouncilMember} toggle={toggleRemoveCouncilMember} centered
+                        position="center"
+                        size="lg">
+                <MDBModalHeader className="text-center stylish-color white-text border-dark"
+                                titleClass="w-100 font-weight-bold"
+                                toggle={toggleRemoveCouncilMember}>
+                  Remove Council Member
+                </MDBModalHeader>
+                <form className="needs-validation mx-3 grey-text"
+                      name="removeProposalCouncilMember"
                       noValidate
                       method="post"
                       onSubmit={submitProposal}
