@@ -277,9 +277,9 @@ export const Proposal = (props) => {
                          href={stateCtx.config.network.explorerUrl + "/accounts/" + JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.owner_id}>
                         {JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.owner_id}</a>
                     </MDBBox>
-                    <MDBBox className="float-left h6-responsive white-text" style={{width: '80%'}}>
+                    <MDBBox className="float-left h5-responsive white-text" style={{width: '80%'}}>
                       total
-                      supply:{" "}{new Decimal(JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.total_supply).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                      supply:{" "}{new Decimal(JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.total_supply).div(new Decimal(10).pow(JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.metadata.decimals)).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                     </MDBBox>
                     <MDBBox className="float-left h5-responsive white-text" style={{width: '80%'}}>
                       decimals:{" "}{JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.metadata.decimals}
@@ -641,4 +641,5 @@ const ProposalPage = () => {
 }
 
 export default ProposalPage;
+
 

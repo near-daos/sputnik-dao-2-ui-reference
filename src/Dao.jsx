@@ -104,7 +104,7 @@ const Dao = () => {
   });
 
   const [proposalTokenDecimals, setProposalTokenDecimals] = useState({
-    value: "",
+    value: "18",
     valid: true,
     message: "",
   });
@@ -398,11 +398,20 @@ const Dao = () => {
     }
   }
 
-  const validateTokenSupply = (field, name, showMessage) => {
-    if (name && !isNaN(name) && name < 100000000000000000000000000000) {
+  const validateDecimals = (field, name, showMessage) => {
+    if (name && !isNaN(name) && name > 0 && name <=24) {
       return true;
     } else {
-      showMessage("Maximum total supply is 10e30 (u128)", 'warning', field);
+      showMessage("Please enter number between 1 and 24", 'warning', field);
+      return false;
+    }
+  }
+
+  const validateTokenSupply = (field, name, showMessage) => {
+    if (name && !isNaN(name) && name > 0 && name < 100000000000000000000000000000) {
+      return true;
+    } else {
+      showMessage("Enter number between 1 and 10e30 (Maximum total supply u128)", 'warning', field);
       return false;
     }
   }
@@ -427,7 +436,7 @@ const Dao = () => {
       case "proposalTokenIcon":
         return validateString(field, value, showMessage.bind(this));
       case "proposalTokenDecimals":
-        return validateNumber(field, value, showMessage.bind(this));
+        return validateDecimals(field, value, showMessage.bind(this));
       case "proposalDiscussion":
         return validateProposalDiscussion(field, value, showMessage.bind(this));
       case "proposalAmount":
@@ -821,11 +830,10 @@ const Dao = () => {
 
 
       if (validateDescription && validateTokenDecimals && validateTokenName && validateTokenSupply && validateTokenSymbol) {
-        const supply = new Decimal(e.target.proposalTokenSupply.value.trim()).toFixed(0);
         const argsList = {
           args: {
             owner_id: e.target.proposalTokenOwner.value.trim(),
-            total_supply: supply,
+            total_supply:  new Decimal(e.target.proposalTokenSupply.value.trim()).mul(new Decimal(10).pow(e.target.proposalTokenDecimals.value)).round(0, 0).toFixed(0),
             metadata: {
               spec: "ft-1.0.0",
               name: e.target.proposalTokenName.value.trim(),
@@ -836,6 +844,7 @@ const Dao = () => {
           },
         }
         const args = Buffer.from(JSON.stringify(argsList).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
+        //console.log(argsList);
 
         try {
           setShowSpinner(true);
@@ -863,6 +872,8 @@ const Dao = () => {
         } finally {
           setShowSpinner(false);
         }
+
+
       } else {
 
         if (!validateDescription) {
@@ -1405,7 +1416,7 @@ const Dao = () => {
                         {proposalTokenSymbol.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalTokenIcon" value={proposalTokenIcon.value}
+                    <MDBInput disabled={true} name="proposalTokenIcon" value={proposalTokenIcon.value}
                               onChange={changeHandler} label="Token Icon URL"
                               required group>
                       <div className="invalid-feedback">
