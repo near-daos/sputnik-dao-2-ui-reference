@@ -148,6 +148,12 @@ export const Proposal = (props) => {
     }
   }
 
+  let inRoles = false;
+  for (let r in props.roles) {
+    if (props.roles[r].kind.Group.includes(window.walletConnection.getAccountId())) {
+      inRoles = true;
+    }
+  };
   return (
     <>
       {props.data.kind ?
@@ -331,7 +337,7 @@ export const Proposal = (props) => {
                 <div className="clearfix"/>
               </MDBCardText>
 
-              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {inRoles ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -369,7 +375,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {inRoles ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -388,7 +394,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {inRoles ?
                 <MDBTooltip
                   tag="span"
                   placement="top"

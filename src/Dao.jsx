@@ -921,7 +921,8 @@ const Dao = () => {
 
 
   }
-
+  let roles = daoPolicy ? daoPolicy.roles.filter((item) => item.name !== 'all') : []
+  console.log(roles)
   return (
     <>
       <MDBView className="w-100 h-100" style={{minHeight: "100vh"}}>
@@ -939,13 +940,14 @@ const Dao = () => {
                     <MDBCardBody>
                       <MDBRow>
                         <MDBCol>
-                          <MDBCard className="p-0 m-2 stylish-color-dark white-text">
-                            <MDBCardHeader className="h4-responsive">Council:</MDBCardHeader>
-                            <MDBCardBody className="p-4">
-                              {daoPolicy ? daoPolicy.roles[1].kind.Group.map((item, key) => <div
-                                key={key}>{item}</div>) : null}
-                            </MDBCardBody>
-                          </MDBCard>
+                          {roles.map((item, key) => 
+                            <MDBCard className="p-0 m-2 stylish-color-dark white-text" key={key}>
+                              <MDBCardHeader className="h4-responsive">{item.name}</MDBCardHeader>
+                              <MDBCardBody className="p-4">
+                                {item.kind.Group.map((i, k) => <div
+                                  key={k}>{i}</div>)}
+                              </MDBCardBody>
+                          </MDBCard>)}
                         </MDBCol>
                         <MDBCol className="col-12 col-md-6">
                           <MDBCard className="p-0 m-2 stylish-color-dark white-text">
@@ -1094,7 +1096,8 @@ const Dao = () => {
                           ?
                           <Proposal dao={stateCtx.config.contract} data={item} key={item.id} id={item.id}
                                     daoPolicy={daoPolicy}
-                                    setShowError={setShowError}/>
+                                    setShowError={setShowError}
+                                    roles={roles}/>
                           : null
                       }
                     </>
