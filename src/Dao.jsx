@@ -922,7 +922,6 @@ const Dao = () => {
 
   }
   let roles = daoPolicy ? daoPolicy.roles.filter((item) => item.name !== 'all') : []
-  console.log(roles)
   return (
     <>
       <MDBView className="w-100 h-100" style={{minHeight: "100vh"}}>
