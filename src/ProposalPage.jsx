@@ -21,6 +21,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import {useParams} from "react-router-dom";
 import Decimal from "decimal.js";
+import ReactJson from 'react-json-view'
 
 export const Proposal = (props) => {
   const [showSpinner, setShowSpinner] = useState(false);
@@ -139,7 +140,7 @@ export const Proposal = (props) => {
   )
 
   let jsonError = false;
-  if (props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0] && props.data.kind.FunctionCall.actions[0].method_name === 'create_token') {
+  if (props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0]) {
     try {
       JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args))
     } catch (e) {
@@ -148,12 +149,6 @@ export const Proposal = (props) => {
     }
   }
 
-  let inRoles = false;
-  for (let r in props.roles) {
-    if (props.roles[r].kind.Group.includes(window.walletConnection.getAccountId())) {
-      inRoles = true;
-    }
-  };
   return (
     <>
       {props.data.kind ?
@@ -175,7 +170,7 @@ export const Proposal = (props) => {
               {props.data.kind === 'ChangePolicy' ? "Change Policy: " : null}
               {props.data.kind.AddMemberToRole && props.data.kind.AddMemberToRole.role === 'council' ? "Add " + props.data.kind.AddMemberToRole.member_id + " to the council" : null}
               {props.data.kind.RemoveMemberFromRole && props.data.kind.RemoveMemberFromRole.role === 'council' ? "Remove " + props.data.kind.RemoveMemberFromRole.member_id + " from the council" : null}
-              {props.data.kind.Transfer ? "Request for payout Ⓝ" + (props.data.kind.Transfer.amount / yoktoNear).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " to " + props.data.kind.Transfer.receiver_id : null}
+              {props.data.kind.Transfer ? "Request for payout " + (props.data.kind.Transfer.token_id === "" ? "Ⓝ" : " ") + (props.data.kind.Transfer.amount / yoktoNear).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " to " + props.data.kind.Transfer.receiver_id : null}
               {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "Create token" : null}
               {props.data.kind === 'UpgradeSelf' ? "UpgradeSelf: " + props.data.target : null}
               {props.data.kind === 'UpgradeRemote' ? "UpgradeRemote: " + props.data.target : null}
@@ -204,13 +199,20 @@ export const Proposal = (props) => {
             <MDBCardBody className="white-text">
               <div className="float-left">
                 {jsonError ?
-                  <MDBAlert color="danger" className="font-small text-center">This proposal is created with an incorrect data, please consider removing and creating a new one</MDBAlert>
-                : null}
+                  <MDBAlert color="danger" className="font-small text-center">This proposal is created with an incorrect
+                    data, please consider removing and creating a new one</MDBAlert>
+                  : null}
                 {props.data.kind.AddMemberToRole || props.data.kind.RemoveMemberFromRole ?
                   <MDBIcon icon="user-secret" className="white-text mr-2 d-inline-block" size="2x"/> : null}
 
                 {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ?
                   <MDBIcon icon="tractor" className="white-text mr-2 d-inline-block" size="2x"/> : null}
+
+                {props.data.kind.FunctionCall && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name !== 'create_token'?
+                  <MDBIcon icon="cogs" className="white-text mr-2 d-inline-block" size="2x"/> : null}
+
+                {props.data.kind.Transfer ?
+                  <MDBIcon icon="money-check-alt" className="white-text mr-2 d-inline-block" size="2x"/> : null}
 
                 {props.data.status === 'Rejected' ?
                   <MDBBadge color="danger">Rejected</MDBBadge>
@@ -275,6 +277,18 @@ export const Proposal = (props) => {
                   {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "owner" : "target"}
                 </div>
 
+
+                {!jsonError && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name !== 'create_token' && props.data.kind.FunctionCall.actions[0] && atob(props.data.kind.FunctionCall.actions[0].args) ?
+                  <>
+                    <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
+                      <a className="text-right float-right white-text btn-link" target="_blank"
+                         style={{wordBreak: "break-word"}}
+                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id}>
+                        {props.data.kind.FunctionCall.receiver_id}</a>
+                    </MDBBox>
+                  </>
+                  : null}
+
                 {!jsonError && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' && JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args ?
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
@@ -335,9 +349,58 @@ export const Proposal = (props) => {
                   </MDBBox>
                 */}
                 <div className="clearfix"/>
+
+                {props.data.kind.Transfer ?
+                  <>
+                    <div className="float-left text-muted h4-responsive">
+                      amount
+                    </div>
+                    <MDBBox className="float-right h4-responsive white-text">
+                      {(props.data.kind.Transfer.token_id === "" ? "Ⓝ" : props.data.kind.Transfer.token_id + " ")}
+                      {(props.data.kind.Transfer.amount / yoktoNear).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                    </MDBBox>
+                    <br/>
+                    <div className="clearfix"/>
+                  </>
+                  : null}
+
+                {!jsonError && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0] && atob(props.data.kind.FunctionCall.actions[0].args) ?
+                  <>
+                    <div className="float-left text-muted h4-responsive">
+                      deposit
+                    </div>
+                    <MDBBox className="float-right h4-responsive white-text">
+                      {new Decimal(props.data.kind.FunctionCall.actions[0].deposit).div(yoktoNear).toString()}
+                    </MDBBox>
+                    <br/>
+                    <div className="clearfix"/>
+                    <div className="float-left text-muted h4-responsive">
+                      method
+                    </div>
+                    <MDBBox className="float-right h4-responsive white-text">
+                      <samp className="font-small">{props.data.kind.FunctionCall.actions[0].method_name}</samp>
+                    </MDBBox>
+                    <br/>
+                    <div className="clearfix"/>
+                    <div className="float-left text-muted h4-responsive">
+                      args
+                    </div>
+                    <MDBBox className="float-right h4-responsive white-text">
+                      <MDBCard style={{maxWidth: 500}}>
+                        <ReactJson collapsed={true} displayDataTypes={false} displayArrayKey={false} name={false}
+                                   theme="tomorrow" style={{wordBreak: 'break-all'}}
+                                   src={JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args))}/>
+                      </MDBCard>
+                    </MDBBox>
+                    <br/>
+                    <div className="clearfix"/>
+                  </>
+                  : null}
+
+
               </MDBCardText>
 
-              {inRoles ?
+              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -375,7 +438,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {inRoles ?
+              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -394,7 +457,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {inRoles ?
+              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
                 <MDBTooltip
                   tag="span"
                   placement="top"

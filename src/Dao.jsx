@@ -53,6 +53,7 @@ const Dao = () => {
   const [removeProposalCouncilMember, setRemoveProposalCouncilMember] = useState(false);
   const [newProposalPayout, setNewProposalPayout] = useState(false);
   const [newProposalToken, setNewProposalToken] = useState(false);
+  const [newProposalCustomCall, setNewProposalCustomCall] = useState(false);
   const [selectDao, setSelectDao] = useState(false);
   const [showNewProposalNotification, setShowNewProposalNotification] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
@@ -109,6 +110,24 @@ const Dao = () => {
     message: "",
   });
 
+  const [proposalCustomMethodName, setProposalCustomMethodName] = useState({
+    value: "",
+    valid: true,
+    message: "",
+  });
+
+  const [proposalCustomDeposit, setProposalCustomDeposit] = useState({
+    value: "",
+    valid: true,
+    message: "",
+  });
+
+  const [proposalCustomArgs, setProposalCustomArgs] = useState({
+    value: "",
+    valid: true,
+    message: "",
+  });
+
   const [proposalKind, setProposalKind] = useState({
     value: "",
     valid: true,
@@ -134,6 +153,11 @@ const Dao = () => {
     valid: true,
     message: "",
   });
+  const [proposalFT, setProposalFT] = useState({
+    value: "",
+    valid: true,
+    message: "",
+  });
   const [votePeriod, setVotePeriod] = useState({
     value: "",
     valid: true,
@@ -144,6 +168,8 @@ const Dao = () => {
     valid: true,
     message: "",
   });
+  const [paymentOption, setPaymentOption] = useState("NEAR");
+
 
   let {dao} = useParams();
 
@@ -268,6 +294,12 @@ const Dao = () => {
   }
 
 
+  const toggleCustomCall = () => {
+    setNewProposalCustomCall(!newProposalCustomCall);
+    setAddProposalModal(false);
+  }
+
+
   const nearConfig = getConfig(process.env.NODE_ENV || 'development')
   const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
   const connection = new nearApi.Connection(nearConfig.nodeUrl, provider, {});
@@ -370,10 +402,10 @@ const Dao = () => {
     }
   }
   const validateLongString = (field, name, showMessage) => {
-    if (name && name.length >= 3 && name.length <= 1024) {
+    if (name && name.length >= 2 && name.length <= 4024) {
       return true;
     } else {
-      showMessage("> 3 and < 1024 chars", 'warning', field);
+      showMessage("> 2 and < 4024 chars", 'warning', field);
       return false;
     }
   }
@@ -399,7 +431,7 @@ const Dao = () => {
   }
 
   const validateDecimals = (field, name, showMessage) => {
-    if (name && !isNaN(name) && name > 0 && name <=24) {
+    if (name && !isNaN(name) && name > 0 && name <= 24) {
       return true;
     } else {
       showMessage("Please enter number between 1 and 24", 'warning', field);
@@ -422,6 +454,7 @@ const Dao = () => {
         return value !== 'false';
       case "proposalTarget":
       case "changePurpose":
+      case "proposalFT":
         return validateString(field, value, showMessage.bind(this));
       case "proposalDescription":
         return validateLongString(field, value, showMessage.bind(this));
@@ -437,6 +470,12 @@ const Dao = () => {
         return validateString(field, value, showMessage.bind(this));
       case "proposalTokenDecimals":
         return validateDecimals(field, value, showMessage.bind(this));
+      case "proposalCustomMethodName":
+        return validateString(field, value, showMessage.bind(this));
+      case "proposalCustomDeposit":
+        return validateDecimals(field, value, showMessage.bind(this));
+      case "proposalCustomArgs":
+        return validateLongString(field, value, showMessage.bind(this));
       case "proposalDiscussion":
         return validateProposalDiscussion(field, value, showMessage.bind(this));
       case "proposalAmount":
@@ -502,6 +541,30 @@ const Dao = () => {
       });
     }
 
+    if (event.target.name === "proposalCustomMethodName") {
+      setProposalCustomMethodName({
+        value: event.target.value.toLowerCase(),
+        valid: !!event.target.value,
+        message: proposalCustomMethodName.message
+      });
+    }
+
+    if (event.target.name === "proposalCustomDeposit") {
+      setProposalCustomDeposit({
+        value: event.target.value.toLowerCase(),
+        valid: !!event.target.value,
+        message: proposalCustomDeposit.message
+      });
+    }
+
+    if (event.target.name === "proposalCustomArgs") {
+      setProposalCustomArgs({
+        value: event.target.value,
+        valid: !!event.target.value,
+        message: proposalCustomArgs.message
+      });
+    }
+
     if (event.target.name === "proposalDescription") {
       setProposalDescription({
         value: event.target.value,
@@ -518,6 +581,9 @@ const Dao = () => {
     }
     if (event.target.name === "proposalAmount") {
       setProposalAmount({value: event.target.value, valid: !!event.target.value, message: proposalAmount.message});
+    }
+    if (event.target.name === "proposalFT") {
+      setProposalFT({value: event.target.value, valid: !!event.target.value, message: proposalFT.message});
     }
     if (event.target.name === "votePeriod") {
       setVotePeriod({value: event.target.value, valid: !!event.target.value, message: votePeriod.message});
@@ -546,6 +612,9 @@ const Dao = () => {
         case "proposalDescription":
           setProposalDescription(prevState => ({...prevState, message: message}));
           break;
+        case "proposalFT":
+          setProposalFT(prevState => ({...prevState, message: message}));
+          break;
         case "proposalTokenOwner":
           setProposalTokenOwner(prevState => ({...prevState, message: message}));
           break;
@@ -563,6 +632,15 @@ const Dao = () => {
           break;
         case "proposalTokenDecimals":
           setProposalTokenDecimals(prevState => ({...prevState, message: message}));
+          break;
+        case "proposalCustomMethodName":
+          setProposalCustomMethodName(prevState => ({...prevState, message: message}));
+          break;
+        case "proposalCustomDeposit":
+          setProposalCustomDeposit(prevState => ({...prevState, message: message}));
+          break;
+        case "proposalCustomArgs":
+          setProposalCustomArgs(prevState => ({...prevState, message: message}));
           break;
         case "proposalDiscussion":
           setProposalDiscussion(prevState => ({...prevState, message: message}));
@@ -786,10 +864,15 @@ const Dao = () => {
       const nearAccountValid = await accountExists(proposalTarget.value);
       let validateTarget = validateField("proposalTarget", proposalTarget.value);
       let validateDescription = validateField("proposalDescription", proposalDescription.value);
-      const amount = new Decimal(e.target.proposalAmount.value);
-      const amountYokto = amount.mul(yoktoNear).toFixed();
 
-      if (validateTarget && nearAccountValid && validateDescription) {
+      let validatePaymentOption = true
+      if (paymentOption === "FT") {
+        validatePaymentOption = validateField("proposalFT", e.target.proposalFT.value);
+      }
+
+      if (validateTarget && nearAccountValid && validateDescription && validatePaymentOption) {
+        const amount = new Decimal(e.target.proposalAmount.value);
+        const amountYokto = amount.mul(yoktoNear).toFixed();
         try {
           setShowSpinner(true);
           await window.contract.add_proposal({
@@ -797,7 +880,7 @@ const Dao = () => {
                 description: (e.target.proposalDescription.value).trim(),
                 kind: {
                   Transfer: {
-                    token_id: "",
+                    token_id: paymentOption === "NEAR" ? "" : e.target.proposalFT.value,
                     receiver_id: e.target.proposalTarget.value,
                     amount: amountYokto,
                   }
@@ -828,12 +911,11 @@ const Dao = () => {
       let validateTokenSymbol = validateField("proposalTokenSymbol", proposalTokenSymbol.value);
 
 
-
       if (validateDescription && validateTokenDecimals && validateTokenName && validateTokenSupply && validateTokenSymbol) {
         const argsList = {
           args: {
             owner_id: e.target.proposalTokenOwner.value.trim(),
-            total_supply:  new Decimal(e.target.proposalTokenSupply.value.trim()).mul(new Decimal(10).pow(e.target.proposalTokenDecimals.value)).round(0, 0).toFixed(0),
+            total_supply: new Decimal(e.target.proposalTokenSupply.value.trim()).mul(new Decimal(10).pow(e.target.proposalTokenDecimals.value)).round(0, 0).toFixed(0),
             metadata: {
               spec: "ft-1.0.0",
               name: e.target.proposalTokenName.value.trim(),
@@ -919,8 +1001,117 @@ const Dao = () => {
       }
     }
 
+    {/* --------------------------------------------------------------------------------------------------- */
+    }
+    {/* ------------------------------------------- Custom Call-------------------------------------------- */
+    }
+    {/* --------------------------------------------------------------------------------------------------- */
+    }
+    if (e.target.name === 'newProposalCustomCall') {
+      const nearAccountValid = await accountExists(proposalTarget.value);
 
+      let validateDescription = validateField("proposalDescription", proposalDescription.value);
+      let validateCustomMethodName = validateField("proposalCustomMethodName", proposalCustomMethodName.value);
+      let validateCustomArgs = validateField("proposalCustomArgs", proposalCustomArgs.value);
+      let validateCustomDeposit = validateField("proposalCustomDeposit", proposalCustomDeposit.value);
+
+
+      if (nearAccountValid && validateDescription && validateCustomMethodName && validateCustomArgs && validateCustomDeposit) {
+        const argsList = JSON.parse(e.target.proposalCustomArgs.value.trim());
+        const args = Buffer.from(JSON.stringify(argsList).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
+        console.log(argsList);
+
+        const deposit = new Decimal(e.target.proposalCustomDeposit.value);
+        const depositYokto = deposit.mul(yoktoNear).toFixed();
+
+
+        try {
+          setShowSpinner(true);
+          await window.contract.add_proposal({
+              proposal: {
+                description: (e.target.proposalDescription.value).trim(),
+                kind: {
+                  FunctionCall: {
+                    receiver_id: e.target.proposalTarget.value,
+                    actions: [{
+                      method_name: e.target.proposalCustomMethodName.value.trim(),
+                      args: args,
+                      deposit: depositYokto,
+                      gas: "150000000000000"
+                    }],
+                  }
+                }
+              },
+            },
+            new Decimal("250000000000000").toString(), daoPolicy.proposal_bond.toString(),
+          )
+        } catch (e) {
+          console.log(e);
+          setShowError(e);
+        } finally {
+          setShowSpinner(false);
+        }
+
+
+      } else {
+
+        if (!nearAccountValid) {
+          e.target.proposalTarget.className += " is-invalid";
+          e.target.proposalTarget.classList.remove("is-valid");
+          setProposalTarget({value: proposalTarget.value, valid: false, message: 'contract does not exist!'});
+        } else {
+          setProposalTarget({value: proposalTarget.value, valid: true, message: ''});
+          e.target.proposalTarget.classList.remove("is-invalid");
+          e.target.proposalTarget.className += " is-valid";
+        }
+
+        if (!validateDescription) {
+          e.target.proposalDescription.className += " is-invalid";
+          e.target.proposalDescription.classList.remove("is-valid");
+        } else {
+          e.target.proposalDescription.classList.remove("is-invalid");
+          e.target.proposalDescription.className += " is-valid";
+        }
+
+        if (!validateCustomMethodName) {
+          e.target.proposalCustomMethodName.className += " is-invalid";
+          e.target.proposalCustomMethodName.classList.remove("is-valid");
+        } else {
+          e.target.proposalCustomMethodName.classList.remove("is-invalid");
+          e.target.proposalCustomMethodName.className += " is-valid";
+        }
+
+        if (!validateCustomArgs) {
+          e.target.proposalCustomArgs.className += " is-invalid";
+          e.target.proposalCustomArgs.classList.remove("is-valid");
+        } else {
+          e.target.proposalCustomArgs.classList.remove("is-invalid");
+          e.target.proposalCustomArgs.className += " is-valid";
+        }
+
+        if (!validateCustomDeposit) {
+          e.target.proposalCustomDeposit.className += " is-invalid";
+          e.target.proposalCustomDeposit.classList.remove("is-valid");
+        } else {
+          e.target.proposalCustomDeposit.classList.remove("is-invalid");
+          e.target.proposalCustomDeposit.className += " is-valid";
+        }
+
+
+
+      }
+    }
   }
+
+
+  const handlePayOption = (e) => {
+    e.preventDefault();
+    e.persist();
+    setPaymentOption(e.target.value);
+    console.log(e.target.value)
+  }
+
+
   let roles = daoPolicy ? daoPolicy.roles.filter((item) => item.name !== 'all') : []
   return (
     <>
@@ -939,14 +1130,14 @@ const Dao = () => {
                     <MDBCardBody>
                       <MDBRow>
                         <MDBCol>
-                          {roles.map((item, key) => 
+                          {roles.map((item, key) =>
                             <MDBCard className="p-0 m-2 stylish-color-dark white-text" key={key}>
                               <MDBCardHeader className="h4-responsive">{item.name}</MDBCardHeader>
                               <MDBCardBody className="p-4">
                                 {item.kind.Group.map((i, k) => <div
                                   key={k}>{i}</div>)}
                               </MDBCardBody>
-                          </MDBCard>)}
+                            </MDBCard>)}
                         </MDBCol>
                         <MDBCol className="col-12 col-md-6">
                           <MDBCard className="p-0 m-2 stylish-color-dark white-text">
@@ -1196,6 +1387,16 @@ const Dao = () => {
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                          <MDBCardBody className="text-center white-text">
+                            <MDBIcon icon="cogs" size="4x"/>
+                            <hr/>
+                            <a href="#" onClick={toggleCustomCall}
+                               className="stretched-link grey-text white-hover">Custom function</a>
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
                     </MDBRow>
                   </MDBModalBody>
                 </MDBModal>
@@ -1343,8 +1544,22 @@ const Dao = () => {
                         {proposalDescription.message}
                       </div>
                     </MDBInput>
+                    <MDBBox>Pay with</MDBBox>
+                    <select onChange={handlePayOption} name="paymentOption" className="browser-default custom-select">
+                      <option selected value="NEAR">NEAR</option>
+                      <option value="FT">Fungible Token</option>
+                    </select>
+                    {paymentOption === "FT" ?
+                      <MDBInput value={proposalFT.value} name="proposalFT"
+                                onChange={changeHandler} required
+                                label="Fungible token address" group>
+                        <div className="invalid-feedback">
+                          {proposalFT.message}
+                        </div>
+                      </MDBInput>
+                      : null}
                     <MDBInput value={proposalAmount.value} name="proposalAmount" onChange={changeHandler} required
-                              label="Payout in NEAR" group>
+                              label="Enter amount" group>
                       <div className="invalid-feedback">
                         {proposalAmount.message}
                       </div>
@@ -1455,6 +1670,84 @@ const Dao = () => {
                         <MDBAlert color="warning">
                           Please make sure DAO has at least <span
                           style={{fontSize: 13}}>Ⓝ</span>5 (for deposit) at the time of approval!
+                        </MDBAlert>
+                      </>
+                      : null}
+                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
+                      or
+                      expired.</MDBBox>
+                  </MDBModalBody>
+                  <MDBModalFooter className="justify-content-center">
+                    <MDBBtn color="elegant" type="submit">
+                      Submit
+                      {showSpinner ?
+                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                        : null}
+                    </MDBBtn>
+                  </MDBModalFooter>
+                </form>
+              </MDBModal>
+
+
+              {/* --------------------------------------------------------------------------------------------------- */}
+              {/* --------------------------------------- Custom Call ----------------------------------------------- */}
+              {/* --------------------------------------------------------------------------------------------------- */}
+              <MDBModal isOpen={newProposalCustomCall} toggle={toggleCustomCall} centered position="center"
+                        size="lg">
+                <MDBModalHeader className="text-center stylish-color white-text border-dark"
+                                titleClass="w-100 font-weight-bold"
+                                toggle={toggleCustomCall}>
+                  Custom function call
+                </MDBModalHeader>
+                <form className="needs-validation mx-3 grey-text"
+                      name="newProposalCustomCall"
+                      noValidate
+                      method="post"
+                      onSubmit={submitProposal}
+                >
+                  <MDBModalBody>
+                    <MDBInput name="proposalTarget" value={proposalTarget.value}
+                              onChange={changeHandler} label="Enter receiver contract id"
+                              group>
+                      <div className="invalid-feedback">
+                        {proposalTarget.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
+                              required label="Enter description" group>
+                      <div className="invalid-feedback">
+                        {proposalDescription.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalCustomMethodName" value={proposalCustomMethodName.value}
+                              onChange={changeHandler} label="Method Name"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalCustomMethodName.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput type="textarea" rows={10} name="proposalCustomArgs" value={proposalCustomArgs.value}
+                              onChange={changeHandler} label="Args in JSON format"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalCustomArgs.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalCustomDeposit" value={proposalCustomDeposit.value}
+                              onChange={changeHandler} label="Deposit in NEAR"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalCustomDeposit.message}
+                      </div>
+                    </MDBInput>
+                    {daoPolicy ?
+                      <>
+                        <MDBAlert color="warning">
+                          You will pay a deposit of <span
+                          style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
+                          add this proposal!
                         </MDBAlert>
                       </>
                       : null}
