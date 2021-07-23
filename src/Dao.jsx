@@ -327,44 +327,60 @@ const Dao = () => {
 
   const [firstRun, setFirstRun] = useState(true);
 
-  const getProposals = () => {
-    if (stateCtx.config.contract !== "") {
-      window.contract.get_last_proposal_id()
-        .then(number => {
-          setNumberProposals(number);
-          mutationCtx.updateConfig({
-            lastShownProposal: number
-          })
-          window.contract.get_proposals({from_index: 0, limit: number})
-            .then(list => {
-              const t = []
-              list.map((item, key) => {
-                const t2 = {}
-                Object.assign(t2, {key: key}, item);
-                t.push(t2);
-              })
-              setProposals(t);
-              setShowLoading(false);
-            });
-        }).catch((e) => {
-        console.log(e);
-        setShowError(e);
-        setShowLoading(false);
-      })
+    async function getProposals() {
+    let limit = 100;
+    let fromIndex = 0;
+    const numberProposals = await window.contract.get_last_proposal_id();
+    console.log(numberProposals);
+    setNumberProposals(numberProposals);
+    mutationCtx.updateConfig({
+      lastShownProposal: numberProposals
+    })
+    let proposals = [];
+    if (numberProposals > 100) {
+      let pages = new Decimal(numberProposals / limit).toFixed(0);
+      let i;
+      for (i = 0; i <= pages; i++) {
+        fromIndex = limit * i;
+        let proposals2;
+        try {
+          proposals2 = await window.contract.get_proposals({from_index: fromIndex, limit: limit})
+        } catch (e) {
+          console.log(e)
+        }
+        Array.prototype.push.apply(proposals, proposals2);
+      }
+    } else {
+      proposals = await window.contract.get_proposals({from_index: fromIndex, limit: limit})
     }
+
+    const t = []
+    proposals.map((item, key) => {
+      const t2 = {}
+      Object.assign(t2, {key: key}, item);
+      t.push(t2);
+    })
+
+    return t;
   }
 
 
-  useEffect(
-    () => {
+ useEffect(
+    async () => {
       if (!firstRun) {
-        const interval = setInterval(() => {
+        const interval = setInterval(async () => {
           console.log('loading proposals')
-          getProposals();
+          getProposals().then(r => {
+            setProposals(r);
+            setShowLoading(false);
+          });
         }, proposalsReload);
         return () => clearInterval(interval);
       } else {
-        getProposals();
+        getProposals().then(r => {
+          setProposals(r);
+          setShowLoading(false);
+        });
         setFirstRun(false);
       }
     },
@@ -1784,3 +1800,4 @@ const Dao = () => {
 }
 
 export default Dao;
+
