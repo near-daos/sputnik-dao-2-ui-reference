@@ -385,7 +385,9 @@ const Dao = () => {
       }
     },
     [stateCtx.config.contract, firstRun]
-  )
+ )
+
+
 
   useEffect(
     () => {
@@ -886,9 +888,22 @@ const Dao = () => {
         validatePaymentOption = validateField("proposalFT", e.target.proposalFT.value);
       }
 
-      if (validateTarget && nearAccountValid && validateDescription && validatePaymentOption) {
+      let r = null;
+      if (paymentOption === "FT") {
+        const token = e.target.proposalFT.value.split(".");
+        if (token.length === 3) {
+          const tokenContract = new Contract(window.walletConnection.account(), token[1] + "." + token[2], {
+            viewMethods: ['get_token'],
+            changeMethods: [],
+          })
+          r = await tokenContract.get_token({'token_id': token[0]})
+        }
+      }
+
+      if (validateTarget && nearAccountValid && validateDescription && validatePaymentOption && (paymentOption === "FT" && r) || (paymentOption === "NEAR" && !r)) {
         const amount = new Decimal(e.target.proposalAmount.value);
         const amountYokto = amount.mul(yoktoNear).toFixed();
+
         try {
           setShowSpinner(true);
           await window.contract.add_proposal({
@@ -898,7 +913,7 @@ const Dao = () => {
                   Transfer: {
                     token_id: paymentOption === "NEAR" ? "" : e.target.proposalFT.value,
                     receiver_id: e.target.proposalTarget.value,
-                    amount: amountYokto,
+                    amount: paymentOption === "NEAR" ? amountYokto : amount.mul("1e" + r.metadata.decimals).toFixed(),
                   }
                 }
               },
@@ -913,6 +928,7 @@ const Dao = () => {
         }
       }
     }
+
     {/* --------------------------------------------------------------------------------------------------- */
     }
     {/* ------------------------------------------- Token Farm -------------------------------------------- */
@@ -1114,7 +1130,6 @@ const Dao = () => {
         }
 
 
-
       }
     }
   }
@@ -1124,7 +1139,6 @@ const Dao = () => {
     e.preventDefault();
     e.persist();
     setPaymentOption(e.target.value);
-    console.log(e.target.value)
   }
 
 
@@ -1137,6 +1151,11 @@ const Dao = () => {
         <MDBContainer style={{minHeight: "100vh"}}>
           <MDBAlert color="danger" className="text-center">
             Beta software. Test in prod. <b>Not audited.</b> Use at your own risk!
+          </MDBAlert>
+
+          <MDBAlert color={stateCtx.config.network.networkId === "testnet" ? "danger" : "secondary"}
+                    className="text-center h3-responsive">
+            <b style={{textTransform: "uppercase"}}>{stateCtx.config.network.networkId}</b>
           </MDBAlert>
           {stateCtx.config.contract && !selectDao ?
             <>
@@ -1800,4 +1819,3 @@ const Dao = () => {
 }
 
 export default Dao;
-

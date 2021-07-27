@@ -32,6 +32,25 @@ export const Proposal = (props) => {
     rejected: 0,
     removed: 0,
   });
+  const [metadata, setMetadata] = useState(null);
+
+
+  useEffect(
+    () => {
+      if (props.data.kind.Transfer && props.data.kind.Transfer.token_id) {
+        const token = props.data.kind.Transfer.token_id.split(".");
+        if (token.length === 3) {
+          const tokenContract = new Contract(window.walletConnection.account(), token[1] + "." + token[2], {
+            viewMethods: ['get_token'],
+            changeMethods: [],
+          })
+          tokenContract.get_token({'token_id': token[0]}).then((r) => {
+            setMetadata(r.metadata.decimals)
+          });
+        }
+      }
+    }, [])
+
 
   //console.log(props)
 
@@ -170,7 +189,8 @@ export const Proposal = (props) => {
               {props.data.kind === 'ChangePolicy' ? "Change Policy: " : null}
               {props.data.kind.AddMemberToRole && props.data.kind.AddMemberToRole.role === 'council' ? "Add " + props.data.kind.AddMemberToRole.member_id + " to the council" : null}
               {props.data.kind.RemoveMemberFromRole && props.data.kind.RemoveMemberFromRole.role === 'council' ? "Remove " + props.data.kind.RemoveMemberFromRole.member_id + " from the council" : null}
-              {props.data.kind.Transfer ? "Request for payout " + (props.data.kind.Transfer.token_id === "" ? "Ⓝ" : " ") + (props.data.kind.Transfer.amount / yoktoNear).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " to " + props.data.kind.Transfer.receiver_id : null}
+              {props.data.kind.Transfer && props.data.kind.Transfer.token_id === "" ? "Request for payout " + "Ⓝ" + (props.data.kind.Transfer.amount / yoktoNear).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " to " + props.data.kind.Transfer.receiver_id : null}
+              {metadata && props.data.kind.Transfer && props.data.kind.Transfer.token_id !== "" ? "Request for payout " + props.data.kind.Transfer.token_id.split(".")[0].toUpperCase() + (new Decimal(props.data.kind.Transfer.amount).div("1e" + metadata)).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " to " + props.data.kind.Transfer.receiver_id : null}
               {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "Create token" : null}
               {props.data.kind === 'UpgradeSelf' ? "UpgradeSelf: " + props.data.target : null}
               {props.data.kind === 'UpgradeRemote' ? "UpgradeRemote: " + props.data.target : null}
@@ -208,11 +228,16 @@ export const Proposal = (props) => {
                 {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ?
                   <MDBIcon icon="tractor" className="white-text mr-2 d-inline-block" size="2x"/> : null}
 
-                {props.data.kind.FunctionCall && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name !== 'create_token'?
+                {props.data.kind.FunctionCall && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name !== 'create_token' ?
                   <MDBIcon icon="cogs" className="white-text mr-2 d-inline-block" size="2x"/> : null}
 
-                {props.data.kind.Transfer ?
-                  <MDBIcon icon="money-check-alt" className="white-text mr-2 d-inline-block" size="2x"/> : null}
+                {props.data.kind.Transfer && props.data.kind.Transfer.token_id === "" ?
+                  <><MDBIcon icon="money-check-alt" className="white-text mr-2 d-inline-block" size="2x"/>
+                    <span style={{fontSize: 32, marginRight: 6}}>Ⓝ</span></> : null}
+
+                {props.data.kind.Transfer && props.data.kind.Transfer.token_id !== "" ?
+                  <><MDBIcon icon="money-check-alt" className="white-text mr-2 d-inline-block" size="2x"/>
+                    <span style={{fontSize: 32, marginRight: 6}}>FT</span></> : null}
 
                 {props.data.status === 'Rejected' ?
                   <MDBBadge color="danger">Rejected</MDBBadge>
@@ -356,8 +381,13 @@ export const Proposal = (props) => {
                       amount
                     </div>
                     <MDBBox className="float-right h4-responsive white-text">
-                      {(props.data.kind.Transfer.token_id === "" ? "Ⓝ" : props.data.kind.Transfer.token_id + " ")}
-                      {(props.data.kind.Transfer.amount / yoktoNear).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                      {(props.data.kind.Transfer.token_id) === "" ?
+                        "Ⓝ" + (props.data.kind.Transfer.amount / yoktoNear).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        :
+                        <>
+                          {metadata && props.data.kind.Transfer.token_id ? props.data.kind.Transfer.token_id + " " + ((new Decimal(props.data.kind.Transfer.amount).div("1e" + metadata)).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")) : null}
+                        </>
+                      }
                     </MDBBox>
                     <br/>
                     <div className="clearfix"/>
