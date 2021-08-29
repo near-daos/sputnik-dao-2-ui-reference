@@ -60,7 +60,7 @@ export const Proposal = (props) => {
       await window.contract.act_proposal({
         id: props.id,
         action: vote,
-      }, new Decimal("250000000000000").toString())
+      }, new Decimal("300000000000000").toString())
     } catch (e) {
       console.log(e);
       props.setShowError(e);
