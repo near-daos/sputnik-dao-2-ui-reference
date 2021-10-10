@@ -193,7 +193,7 @@ export const Proposal = (props) => {
               {metadata && props.data.kind.Transfer && props.data.kind.Transfer.token_id !== "" ? "Request for payout " + props.data.kind.Transfer.token_id.split(".")[0].toUpperCase() + (new Decimal(props.data.kind.Transfer.amount).div("1e" + metadata)).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " to " + props.data.kind.Transfer.receiver_id : null}
               {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "Create token" : null}
               {props.data.kind === 'UpgradeSelf' ? "UpgradeSelf: " + props.data.target : null}
-              {props.data.kind === 'UpgradeRemote' ? "UpgradeRemote: " + props.data.target : null}
+              {props.data.kind === 'UpgradeRemote' ? "UpgradeRemote: " + props.data.kind.UpgradeRemote.receiver_id : null}
               {props.data.kind === 'Transfer' ? "Transfer: " + props.data.target : null}
               {props.data.kind === 'SetStakingContract' ? "SetStakingContract: " + props.data.target : null}
               {props.data.kind === 'AddBounty' ? "AddBounty: " + props.data.target : null}
@@ -268,16 +268,16 @@ export const Proposal = (props) => {
                 }
               </div>
               <div className="float-right h4-responsive"><a className="white-text btn-link"
-                                                            href={"#/" + props.dao + "/" + props.id}><MDBIcon
-                icon="link"/></a> #{props.id}</div>
+                href={"#/" + props.dao + "/" + props.id}><MDBIcon
+                  icon="link"/></a> #{props.id}</div>
               <div className="clearfix"/>
               <MDBCardText>
                 <MDBBox
                   className="h4-responsive white-text">{props.data.description.split('/t/')[0]}</MDBBox>
                 {props.data.description.split('/t/')[1] ?
                   <a target="_blank"
-                     href={"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}
-                     rel="nofollow">{"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}</a>
+                    href={"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}
+                    rel="nofollow">{"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}</a>
                   : null}
                 <hr/>
                 <div className="float-left text-muted h4-responsive">
@@ -286,14 +286,14 @@ export const Proposal = (props) => {
                 {!jsonError && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0] && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' && JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args ?
                   <MDBBox className="float-right h4-responsive" style={{width: '50%'}}>
                     <a className="text-right float-right white-text btn-link" target="_blank"
-                       style={{wordBreak: "break-word"}}
-                       href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id.toLowerCase()}>{props.data.kind.FunctionCall.receiver_id.toLowerCase()}</a>
+                      style={{wordBreak: "break-word"}}
+                      href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id.toLowerCase()}>{props.data.kind.FunctionCall.receiver_id.toLowerCase()}</a>
                   </MDBBox>
                   :
                   <MDBBox className="float-right h4-responsive" style={{width: '50%'}}>
                     <a className="text-right float-right white-text btn-link" target="_blank"
-                       style={{wordBreak: "break-word"}}
-                       href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.proposer.toLowerCase()}>{props.data.proposer.toLowerCase()}</a>
+                      style={{wordBreak: "break-word"}}
+                      href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.proposer.toLowerCase()}>{props.data.proposer.toLowerCase()}</a>
                   </MDBBox>
                 }
                 <br/>
@@ -307,8 +307,8 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                         style={{wordBreak: "break-word"}}
-                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id}>
+                        style={{wordBreak: "break-word"}}
+                        href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id}>
                         {props.data.kind.FunctionCall.receiver_id}</a>
                     </MDBBox>
                   </>
@@ -318,8 +318,8 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                         style={{wordBreak: "break-word"}}
-                         href={stateCtx.config.network.explorerUrl + "/accounts/" + JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.owner_id}>
+                        style={{wordBreak: "break-word"}}
+                        href={stateCtx.config.network.explorerUrl + "/accounts/" + JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.owner_id}>
                         {JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.owner_id}</a>
                     </MDBBox>
                     <MDBBox className="float-left h5-responsive white-text" style={{width: '80%'}}>
@@ -341,8 +341,8 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                         style={{wordBreak: "break-word"}}
-                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.AddMemberToRole.member_id}>
+                        style={{wordBreak: "break-word"}}
+                        href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.AddMemberToRole.member_id}>
                         {props.data.kind.AddMemberToRole.member_id}</a>
                     </MDBBox>
                   </> : null}
@@ -351,8 +351,8 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                         style={{wordBreak: "break-word"}}
-                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.RemoveMemberFromRole.member_id}>
+                        style={{wordBreak: "break-word"}}
+                        href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.RemoveMemberFromRole.member_id}>
                         {props.data.kind.RemoveMemberFromRole.member_id}</a>
                     </MDBBox>
                   </> : null}
@@ -361,11 +361,22 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                         style={{wordBreak: "break-word"}}
-                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.Transfer.receiver_id}>
+                        style={{wordBreak: "break-word"}}
+                        href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.Transfer.receiver_id}>
                         {props.data.kind.Transfer.receiver_id}</a>
                     </MDBBox>
                   </> : null}
+
+                {props.data.kind.UpgradeRemote ?
+                  <>
+                    <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
+                      <a className="text-right float-right white-text btn-link" target="_blank"
+                        style={{wordBreak: "break-word"}}
+                        href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.UpgradeRemote.receiver_id}>
+                        {props.data.kind.UpgradeRemote.receiver_id}</a>
+                    </MDBBox>
+                  </> : null
+                }
 
                 {/*
                   <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
@@ -418,8 +429,8 @@ export const Proposal = (props) => {
                     <MDBBox className="float-right h4-responsive white-text">
                       <MDBCard style={{maxWidth: 500}}>
                         <ReactJson collapsed={true} displayDataTypes={false} displayArrayKey={false} name={false}
-                                   theme="tomorrow" style={{wordBreak: 'break-all'}}
-                                   src={JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args))}/>
+                          theme="tomorrow" style={{wordBreak: 'break-all'}}
+                          src={JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args))}/>
                       </MDBCard>
                     </MDBBox>
                     <br/>
@@ -511,7 +522,7 @@ export const Proposal = (props) => {
               <ul className='list-unstyled list-inline font-small'>
                 <li className='list-inline-item pr-2 white-text h4-responsive'>
                   <MDBIcon far
-                           icon='clock'/>{" "}{convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)).toLocaleDateString()} {convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)).toLocaleTimeString()}
+                    icon='clock'/>{" "}{convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)).toLocaleDateString()} {convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)).toLocaleTimeString()}
                 </li>
 
                 <li className='list-inline-item pr-2'>
@@ -669,9 +680,9 @@ const ProposalPage = () => {
         .then(r => {
           setDaoPolicy(r);
         }).catch((e) => {
-        console.log(e);
-        setShowError(e);
-      })
+          console.log(e);
+          setShowError(e);
+        })
     },
     [dao]
   )
@@ -717,8 +728,8 @@ const ProposalPage = () => {
               {proposals !== null ?
                 proposals.map((item, key) => (
                   <Proposal data={item} key={parseInt(proposal)} id={parseInt(proposal)} setShowError={setShowError}
-                            dao={dao}
-                            daoPolicy={daoPolicy}/>
+                    dao={dao}
+                    daoPolicy={daoPolicy}/>
                 ))
                 : null
               }
