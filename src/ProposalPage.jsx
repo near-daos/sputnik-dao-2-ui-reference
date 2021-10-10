@@ -280,6 +280,8 @@ export const Proposal = (props) => {
                     rel="nofollow">{"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}</a>
                   : null}
                 <hr/>
+
+                {/* PROPOSER */}
                 <div className="float-left text-muted h4-responsive">
                   {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "token factory" : "proposer"}
                 </div>
@@ -296,13 +298,13 @@ export const Proposal = (props) => {
                       href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.proposer.toLowerCase()}>{props.data.proposer.toLowerCase()}</a>
                   </MDBBox>
                 }
+
+                {/* TARGET */}
                 <br/>
                 <div className="clearfix"/>
                 <div className="float-left text-muted h4-responsive">
                   {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "owner" : "target"}
                 </div>
-
-
                 {!jsonError && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name !== 'create_token' && props.data.kind.FunctionCall.actions[0] && atob(props.data.kind.FunctionCall.actions[0].args) ?
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
