@@ -219,8 +219,7 @@ export const Proposal = (props) => {
             <MDBCardBody className="white-text">
               <div className="float-left">
                 {jsonError ?
-                  <MDBAlert color="danger" className="font-small text-center">This proposal is created with an incorrect
-                    data, please consider removing and creating a new one</MDBAlert>
+                  <MDBAlert color="danger" className="font-small text-center">This proposal is unknown type, and can't be properly displayed</MDBAlert>
                   : null}
                 {props.data.kind.AddMemberToRole || props.data.kind.RemoveMemberFromRole ?
                   <MDBIcon icon="user-secret" className="white-text mr-2 d-inline-block" size="2x"/> : null}
@@ -275,7 +274,7 @@ export const Proposal = (props) => {
                 <MDBBox
                   className="h4-responsive white-text">{props.data.description.split('/t/')[0]}</MDBBox>
                 {props.data.description.split('/t/')[1] ?
-                  <a target="_blank"
+                  <a target="_blank" className="white-text btn-link"
                     href={"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}
                     rel="nofollow">{"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}</a>
                   : null}
@@ -443,7 +442,7 @@ export const Proposal = (props) => {
 
               </MDBCardText>
 
-              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {props.daoPolicy.roles[1].kind.Group && props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -481,7 +480,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {props.daoPolicy.roles[1].kind.Group && props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -500,7 +499,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {props.daoPolicy.roles[1].kind.Group && props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
                 <MDBTooltip
                   tag="span"
                   placement="top"

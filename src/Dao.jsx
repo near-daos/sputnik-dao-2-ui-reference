@@ -825,7 +825,7 @@ const Dao = () => {
     {/* --------------------------------------------------------------------------------------------------- */
     }
     if (e.target.name === 'removeProposalCouncilMember') {
-      const councilAccountValid = daoPolicy.roles[1].kind.Group.includes(proposalTarget.value)
+      const councilAccountValid = (daoPolicy && daoPolicy.roles[1] && daoPolicy.roles[1].kind.Group) ? daoPolicy.roles[1].kind.Group.includes(proposalTarget.value) : daoPolicy.roles[0].kind.Group.includes(proposalTarget.value)
       let validateDescription = validateField("proposalDescription", proposalDescription.value);
 
       if (councilAccountValid && validateDescription) {
@@ -1396,8 +1396,7 @@ const Dao = () => {
                             </div>
                             <MDBBtn onClick={toggleNewCouncilMember}
                                     color="blue-grey" size="sm" className="float-left">Add</MDBBtn>
-                            <MDBBtn disabled={daoPolicy.roles[1].kind.Group.length < 2}
-                                    onClick={toggleRemoveCouncilMember} color="red" size="sm"
+                            <MDBBtn onClick={toggleRemoveCouncilMember} color="red" size="sm"
                                     className="float-right">Remove</MDBBtn>
                           </MDBCardBody>
                         </MDBCard>

@@ -486,7 +486,8 @@ const DaoInfo = (props) => {
             <div>
               <hr/>
               <MDBCol>
-                {daoPolicy && daoPolicy.roles[1] ? daoPolicy.roles[1].kind.Group.map((item, key) => <div className="text-right" key={key}>{item}</div>): null}
+                {daoPolicy && daoPolicy.roles[1] && daoPolicy.roles[1].kind.Group ? daoPolicy.roles[1].kind.Group.map((item, key) => <div className="text-right" key={key}>{item}</div>): null}
+                {daoPolicy && daoPolicy.roles[0] && daoPolicy.roles[0].kind.Group ? daoPolicy.roles[0].kind.Group.map((item, key) => <div className="text-right" key={key}>{item}</div>): null}
               </MDBCol>
             </div>
             : null}
