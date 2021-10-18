@@ -168,6 +168,15 @@ export const Proposal = (props) => {
     }
   }
 
+  const canVote = (permission) => !!window.walletConnection.getAccountId() && props.daoPolicy.roles
+    .some(role => 
+      (role.kind === "Everyone" || role.kind.Group.includes(window.walletConnection.getAccountId()))
+      && role.permissions.includes(permission));
+
+  const canApprove = canVote("*:VoteApprove");
+  const canReject = canVote("*:VoteReject");
+  const canRemove = canVote("*:VoteRemove");
+
   return (
     <>
       {props.data.kind ?
@@ -442,7 +451,7 @@ export const Proposal = (props) => {
 
               </MDBCardText>
 
-              {props.daoPolicy.roles[1].kind.Group && props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {canApprove ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -480,7 +489,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {props.daoPolicy.roles[1].kind.Group && props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {canReject ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -499,7 +508,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {props.daoPolicy.roles[1].kind.Group && props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {canRemove ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -716,10 +725,16 @@ const ProposalPage = () => {
                 <MDBCard className="stylish-color-dark">
                   <MDBCardBody className="text-left p-4 m-4 white-text">
                     <MDBBox><b>Proposal DAO:</b> {dao}</MDBBox>
-                    <MDBBox><b>Council:</b>
-                      {daoPolicy && daoPolicy.roles ? daoPolicy.roles[1].kind.Group.map((item, key) => <div
-                        key={key}>{item}</div>) : null}
-                    </MDBBox>
+                    {
+                      daoPolicy && daoPolicy.roles
+                      ? daoPolicy.roles.filter(role => role.name !== "all").map(role => 
+                        <MDBBox><b>{role.name}:</b>
+                          {role.kind.Group.map((item, key) => <div
+                            key={key}>{item}</div>)}
+                        </MDBBox>
+                      )
+                      : null
+                    }
                     <hr/>
                     <MDBLink to={"/" + dao} className="elegant-color white-text text-center">BACK TO DAO</MDBLink>
                   </MDBCardBody>
