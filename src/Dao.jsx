@@ -53,6 +53,7 @@ const Dao = () => {
   const [removeProposalCouncilMember, setRemoveProposalCouncilMember] = useState(false);
   const [newProposalPayout, setNewProposalPayout] = useState(false);
   const [newProposalToken, setNewProposalToken] = useState(false);
+  const [newProposalRoketoStream, setNewProposalRoketoStream] = useState(false)
   const [newProposalCustomCall, setNewProposalCustomCall] = useState(false);
   const [selectDao, setSelectDao] = useState(false);
   const [showNewProposalNotification, setShowNewProposalNotification] = useState(false);
@@ -63,7 +64,6 @@ const Dao = () => {
   const [daoStaking, setDaoStaking] = useState(null);
   const [disableTarget, setDisableTarget] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
-
 
   const [proposalToken, setProposalToken] = useState({
     ownerId: null,
@@ -149,6 +149,11 @@ const Dao = () => {
     message: "",
   });
   const [proposalAmount, setProposalAmount] = useState({
+    value: "",
+    valid: true,
+    message: "",
+  });
+  const [proposalRoketoSpeed, setProposalRoketoSpeed] = useState({
     value: "",
     valid: true,
     message: "",
@@ -299,6 +304,10 @@ const Dao = () => {
     setAddProposalModal(false);
   }
 
+  const toggleRoketoStream = () => {
+    setNewProposalRoketoStream(!newProposalRoketoStream);
+    setAddProposalModal(false);
+  }
 
   const nearConfig = getConfig(process.env.NODE_ENV || 'development')
   const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
@@ -497,6 +506,7 @@ const Dao = () => {
       case "proposalDiscussion":
         return validateProposalDiscussion(field, value, showMessage.bind(this));
       case "proposalAmount":
+      case "proposalRoketoSpeed":
       case "votePeriod":
         return validateNumber(field, value, showMessage.bind(this));
     }
@@ -599,6 +609,9 @@ const Dao = () => {
     }
     if (event.target.name === "proposalAmount") {
       setProposalAmount({value: event.target.value, valid: !!event.target.value, message: proposalAmount.message});
+    }
+    if (event.target.name === "proposalRoketoSpeed") {
+      setProposalRoketoSpeed({value: event.target.value, valid: !!event.target.value, message: proposalAmount.message});
     }
     if (event.target.name === "proposalFT") {
       setProposalFT({value: event.target.value, valid: !!event.target.value, message: proposalFT.message});
@@ -757,11 +770,143 @@ const Dao = () => {
       return string.match(urlRegex);
     }
   }
-
   const submitProposal = async (e) => {
     e.preventDefault();
     e.persist();
 
+    
+    // Handle roketo stream creation
+    if (e.target.name === 'newProposalRoketoStream') {
+      // const argsList = {
+      //   args: {
+      //     owner_id: e.target.proposalTokenOwner.value.trim(),
+      //     total_supply: new Decimal(e.target.proposalTokenSupply.value.trim()).mul(new Decimal(10).pow(e.target.proposalTokenDecimals.value)).round(0, 0).toFixed(0),
+      //     metadata: {
+      //       spec: "ft-1.0.0",
+      //       name: e.target.proposalTokenName.value.trim(),
+      //       symbol: e.target.proposalTokenSymbol.value.trim(),
+      //       icon: e.target.proposalTokenIcon.value.trim(),
+      //       decimals: '^' + e.target.proposalTokenDecimals.value + '^',
+      //     },
+      //   },
+      // }
+      const nearAccountValid = await accountExists(proposalTarget.value);
+      let validateTarget = validateField("proposalTarget", proposalTarget.value);
+      let validateDescription = validateField("proposalDescription", proposalDescription.value);
+      let validateSpeed = validateField("proposalRoketoSpeed", proposalRoketoSpeed.value);
+
+
+      let validatePaymentOption = true
+      if (paymentOption === "FT") {
+        validatePaymentOption = validateField("proposalFT", e.target.proposalFT.value);
+      }
+
+      let ftMetadata = null;
+      if (paymentOption === "FT") {
+        try {
+          const tokenContract = new Contract(window.walletConnection.account(), e.target.proposalFT.value, {
+            viewMethods: ['ft_metadata'],
+            changeMethods: [],
+          })
+          ftMetadata = await tokenContract.ft_metadata({})
+        } catch (error) {
+          // nu vse
+          console.log(error);
+        }
+      }
+
+      console.log("FTR", {
+        ftMetadata,
+        validateSpeed,
+        willpass:validateTarget && nearAccountValid && validateDescription && validateSpeed && validatePaymentOption && (paymentOption === "FT" && ftMetadata) || (paymentOption === "NEAR" && !ftMetadata)
+      })
+      if (validateTarget && nearAccountValid && validateDescription && validateSpeed && validatePaymentOption && (paymentOption === "FT" && ftMetadata) || (paymentOption === "NEAR" && !ftMetadata)) {
+        const amount = new Decimal(e.target.proposalAmount.value);
+        const isFt = paymentOption === "FT";
+
+        // Its a roketo testnet address, better move it to environments 
+        const roketoContractAddress = 'dev-1635510732093-17387698050424';
+        
+        const bufferizeArgs = (args) => Buffer.from(JSON.stringify(args).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
+
+        try {
+          setShowSpinner(true);
+          if (isFt) {
+            // Handle fungible-tokens streams
+            const tokenContractAddress = e.target.proposalFT.value;
+            const amountTokens = amount.mul("1e" + ftMetadata.decimals).toFixed()
+
+            await window.contract.add_proposal({
+              proposal: {
+                description: (e.target.proposalDescription.value).trim(),
+                kind: {
+                  FunctionCall: {
+                    receiver_id: tokenContractAddress,
+                    actions: [{
+                      method_name: 'ft_transfer_call',
+                      args: bufferizeArgs({
+                        receiver_id: roketoContractAddress,
+                        amount: amountTokens,
+                        memo: 'Sputnik-Roketo transfer',
+                        msg: JSON.stringify({
+                          Create: {
+                            description: (e.target.proposalDescription.value).trim(),
+                            owner_id: stateCtx.config.contract,
+                            receiver_id: e.target.proposalTarget.value,
+                            token_name: 'DACHA',
+                            tokens_per_tick: e.target.proposalRoketoSpeed.value,
+                            balance: amountTokens,
+                            is_auto_start_enabled: true,
+                            is_auto_deposit_enabled: false,
+                          },
+                        }),
+                      }),
+                      deposit: '1',
+                      gas: "150000000000000"
+                    }],
+                  }
+                }
+              },
+            },
+            new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
+            )
+          } else {
+            const amountYokto = amount.mul(yoktoNear).toFixed();
+            // Handle case of NEAR streams
+            await window.contract.add_proposal({
+              proposal: {
+                description: (e.target.proposalDescription.value).trim(),
+                kind: {
+                  FunctionCall: {
+                    receiver_id: roketoContractAddress,
+                    actions: [{
+                      method_name: 'create_stream',
+                      args: bufferizeArgs({
+                        description: e.target.proposalDescription.value.trim(),
+                        receiver_id: e.target.proposalTarget.value,
+                        tokens_per_tick: e.target.proposalRoketoSpeed.value,
+                        is_auto_start_enabled: true,
+                        is_auto_deposit_enabled: false,
+                      }),
+                      deposit: amountYokto,
+                      gas: "150000000000000"
+                    }],
+                  }
+                }
+              },
+            },
+            new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
+            )
+          }
+          
+        } catch (e) {
+          console.log(e);
+          setShowError(e);
+        } finally {
+          setShowSpinner(false);
+        }
+      }
+    }
 
     {/* --------------------------------------------------------------------------------------------------- */
     }
@@ -1431,6 +1576,16 @@ const Dao = () => {
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                          <MDBCardBody className="text-center white-text">
+                            <MDBIcon icon="cogs" size="4x"/>
+                            <hr/>
+                            <a href="#" onClick={toggleRoketoStream}
+                               className="stretched-link grey-text white-hover">Roketo stream</a>
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
                     </MDBRow>
                   </MDBModalBody>
                 </MDBModal>
@@ -1547,7 +1702,85 @@ const Dao = () => {
                 </form>
               </MDBModal>
 
-
+              {/* --------------------------------------------------------------------------------------------------- */}
+              {/* --------------------------------------- Roketo Stream ------------------------------------------------ */}
+              {/* --------------------------------------------------------------------------------------------------- */}
+              <MDBModal isOpen={newProposalRoketoStream} toggle={toggleRoketoStream} centered position="center"
+                        size="lg">
+                <MDBModalHeader className="text-center stylish-color white-text border-dark"
+                                titleClass="w-100 font-weight-bold"
+                                toggle={toggleRoketoStream}>
+                  Add Payout
+                </MDBModalHeader>
+                <form className="needs-validation mx-3 grey-text"
+                      name="newProposalRoketoStream"
+                      noValidate
+                      method="post"
+                      onSubmit={submitProposal}
+                >
+                  <MDBModalBody>
+                    <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
+                              onChange={changeHandler} label="Enter receiver account"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTarget.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
+                              required label="Enter description" group>
+                      <div className="invalid-feedback">
+                        {proposalDescription.message}
+                      </div>
+                    </MDBInput>
+                    <MDBBox>Pay with</MDBBox>
+                    <select onChange={handlePayOption} name="paymentOption" className="browser-default custom-select">
+                      <option selected value="NEAR">NEAR</option>
+                      <option value="FT">Fungible Token</option>
+                    </select>
+                    {paymentOption === "FT" ?
+                      <MDBInput value={proposalFT.value} name="proposalFT"
+                                onChange={changeHandler} required
+                                label="Fungible token address" group>
+                        <div className="invalid-feedback">
+                          {proposalFT.message}
+                        </div>
+                      </MDBInput>
+                      : null}
+                    <MDBInput value={proposalAmount.value} name="proposalAmount" onChange={changeHandler} required
+                              label="Enter amount" group>
+                      <div className="invalid-feedback">
+                        {proposalAmount.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput value={proposalRoketoSpeed.value} name="proposalRoketoSpeed" onChange={changeHandler} required
+                              label="Enter stream speed per tick" group>
+                      <div className="invalid-feedback">
+                        {proposalRoketoSpeed.message}
+                      </div>
+                    </MDBInput>
+                    {daoPolicy ?
+                      <MDBAlert color="warning">
+                        You will pay a deposit of <span
+                        style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
+                        add this proposal!
+                      </MDBAlert>
+                      : null}
+                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
+                      or
+                      expired.</MDBBox>
+                  </MDBModalBody>
+                  <MDBModalFooter className="justify-content-center">
+                    <MDBBtn color="elegant" type="submit">
+                      Submit
+                      {showSpinner ?
+                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                        : null}
+                    </MDBBtn>
+                  </MDBModalFooter>
+                </form>
+              </MDBModal>
               {/* --------------------------------------------------------------------------------------------------- */}
               {/* --------------------------------------- Add payout ------------------------------------------------ */}
               {/* --------------------------------------------------------------------------------------------------- */}
