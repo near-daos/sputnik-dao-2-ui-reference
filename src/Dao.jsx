@@ -65,6 +65,10 @@ const Dao = () => {
   const [disableTarget, setDisableTarget] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
 
+  const nearConfig = getConfig(process.env.NODE_ENV || 'development')
+  const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
+  const connection = new nearApi.Connection(nearConfig.nodeUrl, provider, {});
+
   const [proposalToken, setProposalToken] = useState({
     ownerId: null,
     totalSupply: null,
@@ -309,10 +313,6 @@ const Dao = () => {
     setAddProposalModal(false);
   }
 
-  const nearConfig = getConfig(process.env.NODE_ENV || 'development')
-  const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
-  const connection = new nearApi.Connection(nearConfig.nodeUrl, provider, {});
-
   async function accountExists(accountId) {
     try {
       await new nearApi.Account(connection, accountId).state();
@@ -336,7 +336,7 @@ const Dao = () => {
 
   const [firstRun, setFirstRun] = useState(true);
 
-    async function getProposals() {
+  async function getProposals() {
     let limit = 100;
     let fromIndex = 0;
     const numberProposals = await window.contract.get_last_proposal_id();
@@ -374,7 +374,7 @@ const Dao = () => {
   }
 
 
- useEffect(
+  useEffect(
     async () => {
       if (!firstRun) {
         const interval = setInterval(async () => {
@@ -394,8 +394,7 @@ const Dao = () => {
       }
     },
     [stateCtx.config.contract, firstRun]
- )
-
+  )
 
 
   useEffect(
@@ -774,7 +773,7 @@ const Dao = () => {
     e.preventDefault();
     e.persist();
 
-    
+
     // Handle roketo stream creation
     if (e.target.name === 'newProposalRoketoStream') {
       // const argsList = {
@@ -818,9 +817,9 @@ const Dao = () => {
       if (validateTarget && nearAccountValid && validateDescription && validateSpeed && validatePaymentOption && (paymentOption === "FT" && ftMetadata) || (paymentOption === "NEAR" && !ftMetadata)) {
         const amount = new Decimal(e.target.proposalAmount.value);
         const isFt = paymentOption === "FT";
-        
+
         const roketoContractAddress = nearConfig.roketoContractAddress;
-        
+
         const bufferizeArgs = (args) => Buffer.from(JSON.stringify(args).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
 
         try {
@@ -831,68 +830,68 @@ const Dao = () => {
             const amountTokens = amount.mul("1e" + ftMetadata.decimals).toFixed()
 
             await window.contract.add_proposal({
-              proposal: {
-                description: (e.target.proposalDescription.value).trim(),
-                kind: {
-                  FunctionCall: {
-                    receiver_id: tokenContractAddress,
-                    actions: [{
-                      method_name: 'ft_transfer_call',
-                      args: bufferizeArgs({
-                        receiver_id: roketoContractAddress,
-                        amount: amountTokens,
-                        memo: 'Sputnik-Roketo transfer',
-                        msg: JSON.stringify({
-                          Create: {
-                            description: (e.target.proposalDescription.value).trim(),
-                            owner_id: stateCtx.config.contract,
-                            receiver_id: e.target.proposalTarget.value,
-                            token_name: 'DACHA',
-                            tokens_per_tick: e.target.proposalRoketoSpeed.value,
-                            balance: amountTokens,
-                            is_auto_start_enabled: true,
-                            is_auto_deposit_enabled: false,
-                          },
+                proposal: {
+                  description: (e.target.proposalDescription.value).trim(),
+                  kind: {
+                    FunctionCall: {
+                      receiver_id: tokenContractAddress,
+                      actions: [{
+                        method_name: 'ft_transfer_call',
+                        args: bufferizeArgs({
+                          receiver_id: roketoContractAddress,
+                          amount: amountTokens,
+                          memo: 'Sputnik-Roketo transfer',
+                          msg: JSON.stringify({
+                            Create: {
+                              description: (e.target.proposalDescription.value).trim(),
+                              owner_id: stateCtx.config.contract,
+                              receiver_id: e.target.proposalTarget.value,
+                              token_name: 'DACHA',
+                              tokens_per_tick: e.target.proposalRoketoSpeed.value,
+                              balance: amountTokens,
+                              is_auto_start_enabled: true,
+                              is_auto_deposit_enabled: false,
+                            },
+                          }),
                         }),
-                      }),
-                      deposit: '1',
-                      gas: "150000000000000"
-                    }],
+                        deposit: '1',
+                        gas: "150000000000000"
+                      }],
+                    }
                   }
-                }
+                },
               },
-            },
-            new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
+              new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
             )
           } else {
             const amountYokto = amount.mul(yoktoNear).toFixed();
             // Handle case of NEAR streams
             await window.contract.add_proposal({
-              proposal: {
-                description: (e.target.proposalDescription.value).trim(),
-                kind: {
-                  FunctionCall: {
-                    receiver_id: roketoContractAddress,
-                    actions: [{
-                      method_name: 'create_stream',
-                      args: bufferizeArgs({
-                        description: e.target.proposalDescription.value.trim(),
-                        receiver_id: e.target.proposalTarget.value,
-                        tokens_per_tick: e.target.proposalRoketoSpeed.value,
-                        is_auto_start_enabled: true,
-                        is_auto_deposit_enabled: false,
-                      }),
-                      deposit: amountYokto,
-                      gas: "150000000000000"
-                    }],
+                proposal: {
+                  description: (e.target.proposalDescription.value).trim(),
+                  kind: {
+                    FunctionCall: {
+                      receiver_id: roketoContractAddress,
+                      actions: [{
+                        method_name: 'create_stream',
+                        args: bufferizeArgs({
+                          description: e.target.proposalDescription.value.trim(),
+                          receiver_id: e.target.proposalTarget.value,
+                          tokens_per_tick: e.target.proposalRoketoSpeed.value,
+                          is_auto_start_enabled: true,
+                          is_auto_deposit_enabled: false,
+                        }),
+                        deposit: amountYokto,
+                        gas: "150000000000000"
+                      }],
+                    }
                   }
-                }
+                },
               },
-            },
-            new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
+              new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
             )
           }
-          
+
         } catch (e) {
           console.log(e);
           setShowError(e);
@@ -1746,7 +1745,8 @@ const Dao = () => {
                         {proposalAmount.message}
                       </div>
                     </MDBInput>
-                    <MDBInput value={proposalRoketoSpeed.value} name="proposalRoketoSpeed" onChange={changeHandler} required
+                    <MDBInput value={proposalRoketoSpeed.value} name="proposalRoketoSpeed" onChange={changeHandler}
+                              required
                               label="Enter stream speed per tick" group>
                       <div className="invalid-feedback">
                         {proposalRoketoSpeed.message}
