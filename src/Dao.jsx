@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import useRouter from './utils/use-router'
 import {useParams} from "react-router-dom";
-
+import roketoLogoSvg from './assets/roketo-logo.svg'
 import {
   MDBBox,
   MDBBtn,
@@ -1587,7 +1587,7 @@ const Dao = () => {
                       <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
                         <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                           <MDBCardBody className="text-center white-text">
-                            <img src="https://app.roke.to/static/media/logo_stream_with_text.831f0892.svg" style={{ height: 64 , marginLeft: -20}}>
+                            <img src={roketoLogoSvg} style={{ height: 64 , marginLeft: -20}}>
                             </img>
                            
                             <hr/>
