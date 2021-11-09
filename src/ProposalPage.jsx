@@ -168,6 +168,15 @@ export const Proposal = (props) => {
     }
   }
 
+  const canVote = (permission) => !!window.walletConnection.getAccountId() && props.daoPolicy.roles
+    .some(role =>
+      (role.kind === "Everyone" || role.kind.Group.includes(window.walletConnection.getAccountId()))
+      && role.permissions.includes(permission));
+
+  const canApprove = canVote("*:VoteApprove");
+  const canReject = canVote("*:VoteReject");
+  const canRemove = canVote("*:VoteRemove");
+
   return (
     <>
       {props.data.kind ?
@@ -219,7 +228,10 @@ export const Proposal = (props) => {
             <MDBCardBody className="white-text">
               <div className="float-left">
                 {jsonError ?
-                  <MDBAlert color="danger" className="font-small text-center">This proposal is unknown type, and can't be properly displayed</MDBAlert>
+                  <MDBCol className="flex-center">
+                  <MDBAlert color="danger" className="font-small text-center">This proposal is unknown type, and can't
+                    be properly displayed</MDBAlert>
+                  </MDBCol>
                   : null}
                 {props.data.kind.AddMemberToRole || props.data.kind.RemoveMemberFromRole ?
                   <MDBIcon icon="user-secret" className="white-text mr-2 d-inline-block" size="2x"/> : null}
@@ -267,16 +279,16 @@ export const Proposal = (props) => {
                 }
               </div>
               <div className="float-right h4-responsive"><a className="white-text btn-link"
-                href={"#/" + props.dao + "/" + props.id}><MDBIcon
-                  icon="link"/></a> #{props.id}</div>
+                                                            href={"#/" + props.dao + "/" + props.id}><MDBIcon
+                icon="link"/></a> #{props.id}</div>
               <div className="clearfix"/>
               <MDBCardText>
                 <MDBBox
                   className="h4-responsive white-text">{props.data.description.split('/t/')[0]}</MDBBox>
                 {props.data.description.split('/t/')[1] ?
                   <a target="_blank" className="white-text btn-link"
-                    href={"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}
-                    rel="nofollow">{"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}</a>
+                     href={"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}
+                     rel="nofollow">{"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}</a>
                   : null}
                 <hr/>
 
@@ -287,14 +299,14 @@ export const Proposal = (props) => {
                 {!jsonError && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0] && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' && JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args ?
                   <MDBBox className="float-right h4-responsive" style={{width: '50%'}}>
                     <a className="text-right float-right white-text btn-link" target="_blank"
-                      style={{wordBreak: "break-word"}}
-                      href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id.toLowerCase()}>{props.data.kind.FunctionCall.receiver_id.toLowerCase()}</a>
+                       style={{wordBreak: "break-word"}}
+                       href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id.toLowerCase()}>{props.data.kind.FunctionCall.receiver_id.toLowerCase()}</a>
                   </MDBBox>
                   :
                   <MDBBox className="float-right h4-responsive" style={{width: '50%'}}>
                     <a className="text-right float-right white-text btn-link" target="_blank"
-                      style={{wordBreak: "break-word"}}
-                      href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.proposer.toLowerCase()}>{props.data.proposer.toLowerCase()}</a>
+                       style={{wordBreak: "break-word"}}
+                       href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.proposer.toLowerCase()}>{props.data.proposer.toLowerCase()}</a>
                   </MDBBox>
                 }
 
@@ -308,8 +320,8 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                        style={{wordBreak: "break-word"}}
-                        href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id}>
+                         style={{wordBreak: "break-word"}}
+                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id}>
                         {props.data.kind.FunctionCall.receiver_id}</a>
                     </MDBBox>
                   </>
@@ -319,8 +331,8 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                        style={{wordBreak: "break-word"}}
-                        href={stateCtx.config.network.explorerUrl + "/accounts/" + JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.owner_id}>
+                         style={{wordBreak: "break-word"}}
+                         href={stateCtx.config.network.explorerUrl + "/accounts/" + JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.owner_id}>
                         {JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.owner_id}</a>
                     </MDBBox>
                     <MDBBox className="float-left h5-responsive white-text" style={{width: '80%'}}>
@@ -342,8 +354,8 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                        style={{wordBreak: "break-word"}}
-                        href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.AddMemberToRole.member_id}>
+                         style={{wordBreak: "break-word"}}
+                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.AddMemberToRole.member_id}>
                         {props.data.kind.AddMemberToRole.member_id}</a>
                     </MDBBox>
                   </> : null}
@@ -352,8 +364,8 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                        style={{wordBreak: "break-word"}}
-                        href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.RemoveMemberFromRole.member_id}>
+                         style={{wordBreak: "break-word"}}
+                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.RemoveMemberFromRole.member_id}>
                         {props.data.kind.RemoveMemberFromRole.member_id}</a>
                     </MDBBox>
                   </> : null}
@@ -362,8 +374,8 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                        style={{wordBreak: "break-word"}}
-                        href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.Transfer.receiver_id}>
+                         style={{wordBreak: "break-word"}}
+                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.Transfer.receiver_id}>
                         {props.data.kind.Transfer.receiver_id}</a>
                     </MDBBox>
                   </> : null}
@@ -372,8 +384,8 @@ export const Proposal = (props) => {
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
-                        style={{wordBreak: "break-word"}}
-                        href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.UpgradeRemote.receiver_id}>
+                         style={{wordBreak: "break-word"}}
+                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.UpgradeRemote.receiver_id}>
                         {props.data.kind.UpgradeRemote.receiver_id}</a>
                     </MDBBox>
                   </> : null
@@ -430,19 +442,17 @@ export const Proposal = (props) => {
                     <MDBBox className="float-right h4-responsive white-text">
                       <MDBCard style={{maxWidth: 500}}>
                         <ReactJson collapsed={true} displayDataTypes={false} displayArrayKey={false} name={false}
-                          theme="tomorrow" style={{wordBreak: 'break-all'}}
-                          src={JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args))}/>
+                                   theme="tomorrow" style={{wordBreak: 'break-all'}}
+                                   src={JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args))}/>
                       </MDBCard>
                     </MDBBox>
                     <br/>
                     <div className="clearfix"/>
                   </>
                   : null}
-
-
               </MDBCardText>
 
-              {props.daoPolicy.roles[1].kind.Group && props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {canApprove ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -480,7 +490,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {props.daoPolicy.roles[1].kind.Group && props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {canReject ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -499,7 +509,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {props.daoPolicy.roles[1].kind.Group && props.daoPolicy.roles[1].kind.Group.includes(window.walletConnection.getAccountId()) ?
+              {canRemove ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -523,7 +533,7 @@ export const Proposal = (props) => {
               <ul className='list-unstyled list-inline font-small'>
                 <li className='list-inline-item pr-2 white-text h4-responsive'>
                   <MDBIcon far
-                    icon='clock'/>{" "}{convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)).toLocaleDateString()} {convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)).toLocaleTimeString()}
+                           icon='clock'/>{" "}{convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)).toLocaleDateString()} {convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)).toLocaleTimeString()}
                 </li>
 
                 <li className='list-inline-item pr-2'>
@@ -681,9 +691,9 @@ const ProposalPage = () => {
         .then(r => {
           setDaoPolicy(r);
         }).catch((e) => {
-          console.log(e);
-          setShowError(e);
-        })
+        console.log(e);
+        setShowError(e);
+      })
     },
     [dao]
   )
@@ -716,10 +726,16 @@ const ProposalPage = () => {
                 <MDBCard className="stylish-color-dark">
                   <MDBCardBody className="text-left p-4 m-4 white-text">
                     <MDBBox><b>Proposal DAO:</b> {dao}</MDBBox>
-                    <MDBBox><b>Council:</b>
-                      {daoPolicy && daoPolicy.roles ? daoPolicy.roles[1].kind.Group.map((item, key) => <div
-                        key={key}>{item}</div>) : null}
-                    </MDBBox>
+                    {
+                      daoPolicy && daoPolicy.roles
+                        ? daoPolicy.roles.filter(role => role.name !== "all").map(role =>
+                          <MDBBox><b>{role.name}:</b>
+                            {role.kind.Group.map((item, key) => <div
+                              key={key}>{item}</div>)}
+                          </MDBBox>
+                        )
+                        : null
+                    }
                     <hr/>
                     <MDBLink to={"/" + dao} className="elegant-color white-text text-center">BACK TO DAO</MDBLink>
                   </MDBCardBody>
@@ -729,8 +745,8 @@ const ProposalPage = () => {
               {proposals !== null ?
                 proposals.map((item, key) => (
                   <Proposal data={item} key={parseInt(proposal)} id={parseInt(proposal)} setShowError={setShowError}
-                    dao={dao}
-                    daoPolicy={daoPolicy}/>
+                            dao={dao}
+                            daoPolicy={daoPolicy}/>
                 ))
                 : null
               }

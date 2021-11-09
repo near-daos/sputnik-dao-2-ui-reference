@@ -509,7 +509,9 @@ const Selector = (props) => {
   const [showLoading, setShowLoading] = useState(true);
 
   useEffect(() => {
-      window.factoryContract.get_dao_list()
+      window.factoryContract.get_dao_list({
+        gas: new Decimal("200000000000000")
+      })
         .then(r => {
           setDaoList(r);
           setShowLoading(false);
