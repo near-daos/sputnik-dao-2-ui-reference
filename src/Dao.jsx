@@ -815,11 +815,17 @@ const Dao = () => {
         }
       }
 
+      console.log("FTR", {
+        ftMetadata,
+        validateSpeed,
+        willpass:validateTarget && nearAccountValid && validateDescription && validateSpeed && validatePaymentOption && (paymentOption === "FT" && ftMetadata) || (paymentOption === "NEAR" && !ftMetadata)
+      })
       if (validateTarget && nearAccountValid && validateDescription && validateSpeed && validatePaymentOption && (paymentOption === "FT" && ftMetadata) || (paymentOption === "NEAR" && !ftMetadata)) {
         const amount = new Decimal(e.target.proposalAmount.value);
         const isFt = paymentOption === "FT";
-        
-        const roketoContractAddress = nearConfig.roketoContractAddress;
+
+        // Its a roketo testnet address, better move it to environments 
+        const roketoContractAddress = 'dev-1635510732093-17387698050424';
         
         const bufferizeArgs = (args) => Buffer.from(JSON.stringify(args).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
 
