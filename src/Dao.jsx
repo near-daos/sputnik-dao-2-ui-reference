@@ -819,12 +819,9 @@ const Dao = () => {
         const isFt = paymentOption === "FT";
         const tokenDecimals = isFt ? ftMetadata.decimals : 24;
 
+        // tokens per second => tokens per tick
         const tpsToTpt = (speed) => {
           const nanosecPower = 9;
-          console.log("TPS", {
-            speed,
-            totalPower: tokenDecimals - nanosecPower
-          })
           return new Decimal(speed).mul(Math.pow(10, tokenDecimals - nanosecPower)).divToInt(1)
         }
 
