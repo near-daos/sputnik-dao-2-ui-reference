@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import useRouter from './utils/use-router'
 import {useParams} from "react-router-dom";
-
+import roketoLogoSvg from './assets/roketo-logo.svg'
 import {
   MDBBox,
   MDBBtn,
@@ -39,7 +39,6 @@ import * as nearApi from "near-api-js";
 import {Contract} from "near-api-js";
 import {Proposal} from './ProposalPage';
 import Loading from "./utils/Loading";
-
 
 const Dao = () => {
   const routerCtx = useRouter()
@@ -816,8 +815,21 @@ const Dao = () => {
 
       if (validateTarget && nearAccountValid && validateDescription && validateSpeed && validatePaymentOption && (paymentOption === "FT" && ftMetadata) || (paymentOption === "NEAR" && !ftMetadata)) {
         const amount = new Decimal(e.target.proposalAmount.value);
-        const isFt = paymentOption === "FT";
 
+        const isFt = paymentOption === "FT";
+        const tokenDecimals = isFt ? ftMetadata.decimals : 24;
+
+        // tokens per second => tokens per tick
+        const tpsToTpt = (speed) => {
+          const nanosecPower = 9;
+          return new Decimal(speed).mul(Math.pow(10, tokenDecimals - nanosecPower)).divToInt(1)
+        }
+
+        const speedPerTick = tpsToTpt(e.target.proposalRoketoSpeed.value);
+        if (speedPerTick.toFixed() === '0') {
+          throw new Error("This token is not supported")
+        }
+        
         const roketoContractAddress = nearConfig.roketoContractAddress;
 
         const bufferizeArgs = (args) => Buffer.from(JSON.stringify(args).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
@@ -847,7 +859,7 @@ const Dao = () => {
                               owner_id: stateCtx.config.contract,
                               receiver_id: e.target.proposalTarget.value,
                               token_name: 'DACHA',
-                              tokens_per_tick: e.target.proposalRoketoSpeed.value,
+                              tokens_per_tick: speedPerTick.toFixed(),
                               balance: amountTokens,
                               is_auto_start_enabled: true,
                               is_auto_deposit_enabled: false,
@@ -877,7 +889,7 @@ const Dao = () => {
                         args: bufferizeArgs({
                           description: e.target.proposalDescription.value.trim(),
                           receiver_id: e.target.proposalTarget.value,
-                          tokens_per_tick: e.target.proposalRoketoSpeed.value,
+                          tokens_per_tick: speedPerTick.toFixed(),
                           is_auto_start_enabled: true,
                           is_auto_deposit_enabled: false,
                         }),
@@ -1572,7 +1584,9 @@ const Dao = () => {
                       <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
                         <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                           <MDBCardBody className="text-center white-text">
-                            <MDBIcon icon="cogs" size="4x"/>
+                            <img src={roketoLogoSvg} style={{ height: 64 , marginLeft: -20}}>
+                            </img>
+                           
                             <hr/>
                             <a href="#" onClick={toggleRoketoStream}
                                className="stretched-link grey-text white-hover">Roketo stream</a>
@@ -1747,7 +1761,7 @@ const Dao = () => {
                     </MDBInput>
                     <MDBInput value={proposalRoketoSpeed.value} name="proposalRoketoSpeed" onChange={changeHandler}
                               required
-                              label="Enter stream speed per tick" group>
+                              label="Enter stream speed per second" group>
                       <div className="invalid-feedback">
                         {proposalRoketoSpeed.message}
                       </div>
