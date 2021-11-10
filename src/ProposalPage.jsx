@@ -24,6 +24,7 @@ import Decimal from "decimal.js";
 import ReactJson from 'react-json-view'
 
 export const Proposal = (props) => {
+  const proposalId = props.id;
   const [showSpinner, setShowSpinner] = useState(false);
   const stateCtx = useGlobalState();
   const [votedWarning, setVotedWarning] = useState(false);
@@ -85,7 +86,7 @@ export const Proposal = (props) => {
   }
 
   const handleVoteYes = () => {
-
+    //props.setBatchVotes(prevState => ([...prevState, proposalId]))
     if (props.data.votes[window.walletConnection.getAccountId()] === undefined) {
       vote('VoteApprove').then().catch((e) => {
         console.log(e);

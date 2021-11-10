@@ -1,27 +1,27 @@
 import React, {useEffect, useState} from 'react'
+import * as nearApi from "near-api-js";
 import {Contract} from "near-api-js";
 
 import {
-  MDBBadge,
   MDBBox,
-  MDBBtn,
+  MDBBtn, MDBBtnGroup,
   MDBCard,
   MDBCardBody,
   MDBCardHeader,
+  MDBCol,
   MDBIcon,
   MDBInput,
   MDBModal,
   MDBModalBody,
   MDBModalFooter,
   MDBModalHeader,
-  MDBCol, MDBContainer, MDBRow, MDBAlert,
+  MDBRow,
 } from "mdbreact";
 import {useGlobalMutation, useGlobalState} from './utils/container'
 import useRouter from "./utils/use-router";
 import {Decimal} from "decimal.js";
 import {timestampToReadable, yoktoNear} from './utils/funcs'
 import Loading from "./utils/Loading";
-import * as nearApi from "near-api-js";
 import getConfig from "./config";
 
 /* MOVE TO UTILS */
@@ -396,7 +396,7 @@ const DaoInfo = (props) => {
 
   return (
     <>
-      <MDBCard className="m-3" key={props.key} color="grey darken-1"
+      <MDBCard className="m-3" key={props.i} color="grey darken-1"
                style={{
                  borderTopLeftRadius: 25,
                  borderTopRightRadius: 25,
@@ -407,7 +407,8 @@ const DaoInfo = (props) => {
           <MDBCardHeader color="white-text stylish-color" className="h5-responsive"
                          style={{borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
             <div>
-              <div className="float-left mt-2">{props.item.replace("." + nearConfig.contractName, "")}</div>
+              <div
+                className="float-left mt-2">{props.item.replace("." + nearConfig.contractName, "")}</div>
               <div className="float-right h4-responsive">Ⓝ {daoState}</div>
             </div>
           </MDBCardHeader>
@@ -415,7 +416,7 @@ const DaoInfo = (props) => {
           <MDBCardHeader color="white-text stylish-color" className="h5-responsive"
                          style={{borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
             <div>
-              <div className="float-left mt-2">DAO removed</div>
+              <div className="float-left mt-2">#{props.i}{" "} DAO removed</div>
             </div>
           </MDBCardHeader>
         }
@@ -486,8 +487,10 @@ const DaoInfo = (props) => {
             <div>
               <hr/>
               <MDBCol>
-                {daoPolicy && daoPolicy.roles[1] && daoPolicy.roles[1].kind.Group ? daoPolicy.roles[1].kind.Group.map((item, key) => <div className="text-right" key={key}>{item}</div>): null}
-                {daoPolicy && daoPolicy.roles[0] && daoPolicy.roles[0].kind.Group ? daoPolicy.roles[0].kind.Group.map((item, key) => <div className="text-right" key={key}>{item}</div>): null}
+                {daoPolicy && daoPolicy.roles[1] && daoPolicy.roles[1].kind.Group ? daoPolicy.roles[1].kind.Group.map((item, key) =>
+                  <div className="text-right" key={key}>{item}</div>) : null}
+                {daoPolicy && daoPolicy.roles[0] && daoPolicy.roles[0].kind.Group ? daoPolicy.roles[0].kind.Group.map((item, key) =>
+                  <div className="text-right" key={key}>{item}</div>) : null}
               </MDBCol>
             </div>
             : null}
@@ -499,19 +502,41 @@ const DaoInfo = (props) => {
   );
 }
 
+
+async function getDaos(fromIndex, limit) {
+  return await window.factoryContract.get_daos({from_index: fromIndex, limit: limit});
+}
+
 const Selector = (props) => {
   const routerCtx = useRouter()
   const stateCtx = useGlobalState()
   const mutationCtx = useGlobalMutation()
   const [daoList, setDaoList] = useState([]);
+  const [daoCount, setDaoCount] = useState(0);
   const [daoListFixed, setDaoListFixed] = useState([]);
   const [showNewDaoModal, setShowNewDaoModal] = useState(false);
+  const [fromIndex, setFromIndex] = useState(0);
   const [showLoading, setShowLoading] = useState(true);
+  const daoLimit = 50;
 
   useEffect(() => {
-      window.factoryContract.get_dao_list()
+      getDaos(fromIndex, daoLimit)
         .then(r => {
           setDaoList(r);
+          setShowLoading(false);
+        }).catch((e) => {
+        setShowLoading(false);
+        console.log(e);
+        mutationCtx.toastError(e);
+      })
+    },
+    [fromIndex]
+  )
+
+  useEffect(() => {
+      window.factoryContract.get_number_daos()
+        .then(r => {
+          setDaoCount(r);
           setShowLoading(false);
         }).catch((e) => {
         setShowLoading(false);
@@ -542,6 +567,10 @@ const Selector = (props) => {
     setShowNewDaoModal(!showNewDaoModal);
   }
 
+  const togglePage = (i) => {
+    setFromIndex(i);
+  }
+
   /*
   useEffect(() => {
       daoList.map(async (item, key) => {
@@ -569,6 +598,26 @@ const Selector = (props) => {
         </MDBCardHeader>
         {showLoading ? <Loading/> : null}
         <MDBCardBody className="text-center">
+          <MDBRow>
+            <MDBCol>
+              <MDBBtnGroup>
+                {daoCount && daoCount > 0 ?
+                  <>
+                    {Object.keys(Array.from(Array(Math.floor(daoCount / daoLimit) + 1).keys())).map((item, key) =>
+                      <MDBBtn onClick={() => {
+                        togglePage(Math.floor(item * daoLimit))
+                      }}
+                              size="sm"
+                              color="elegant"
+                              className="mr-2">
+                        {"" + new Decimal(item).plus(1)}
+                      </MDBBtn>)
+                    }
+                  </>
+                  : null}
+              </MDBBtnGroup>
+            </MDBCol>
+          </MDBRow>
           <MDBRow>
             {!showLoading && daoList ? daoList.map((item, key) => (
               <MDBCol lg="6" md="12">

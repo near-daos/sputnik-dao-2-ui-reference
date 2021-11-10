@@ -340,7 +340,6 @@ const Dao = () => {
     let limit = 100;
     let fromIndex = 0;
     const numberProposals = await window.contract.get_last_proposal_id();
-    console.log(numberProposals);
     setNumberProposals(numberProposals);
     mutationCtx.updateConfig({
       lastShownProposal: numberProposals
@@ -1280,6 +1279,9 @@ const Dao = () => {
   }
 
 
+  const [batchVotes, setBatchVotes] = useState( []);
+  console.log(batchVotes);
+
   let roles = daoPolicy ? daoPolicy.roles.filter((item) => item.name !== 'all') : []
   return (
     <>
@@ -1375,6 +1377,21 @@ const Dao = () => {
                   <MDBCard className="stylish-color-dark white-text">
                     <MDBCardBody>
                       <MDBRow center>
+                        <MDBCard className="p-2 mr-2 mb-2 elegant-color white-text">
+                          <div className='custom-control custom-switch mr-2'>
+                            <input
+                              type='checkbox'
+                              className='custom-control-input'
+                              id='batchVote'
+                              checked={false}
+                              onChange={handleSwitchChange('batchVote')}
+                              readOnly
+                            />
+                            <label className='custom-control-label' htmlFor='batchVote'>
+                              Multi Vote
+                            </label>
+                          </div>
+                        </MDBCard>
                         <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
                           <div className='custom-control custom-switch mr-2'>
                             <input
@@ -1460,6 +1477,8 @@ const Dao = () => {
                           <Proposal dao={stateCtx.config.contract} data={item} key={item.id} id={item.id}
                                     daoPolicy={daoPolicy}
                                     setShowError={setShowError}
+                                    isBatchVote={true}
+                                    setBatchVotes={setBatchVotes}
                                     roles={roles}/>
                           : null
                       }

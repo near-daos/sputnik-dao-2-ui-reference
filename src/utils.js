@@ -10,7 +10,7 @@ export async function initContract() {
   window.walletConnection = new WalletConnection(near)
   window.accountId = window.walletConnection.getAccountId()
   window.factoryContract = await new Contract(window.walletConnection.account(), nearConfig.contractName, {
-    viewMethods: ['get_dao_list'],
+    viewMethods: ['get_dao_list','get_number_daos','get_daos'],
     changeMethods: ['create'],
   })
 }
