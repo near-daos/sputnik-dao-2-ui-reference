@@ -318,9 +318,6 @@ const NewDao = (props) => {
 
 
 async function getDaoState(dao) {
-  const nearConfig = getConfig(process.env.NODE_ENV || 'development')
-  const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
-  const connection = new nearApi.Connection(nearConfig.nodeUrl, provider, {});
   try {
     const state = await new nearApi.Account(connection, dao).state();
     const amountYokto = new Decimal(state.amount);
@@ -337,7 +334,7 @@ const DaoInfo = (props) => {
   const [daoConfig, setDaoConfig] = useState(null);
   const [daoPolicy, setDaoPolicy] = useState(null);
   const [collapseState, setCollapseState] = useState(false);
-  const [daoState, setDaoState] = useState(0);
+  const [daoState, setDaoState] = useState(null);
   const [daoExists, setDaoExists] = useState(true);
 
   const contract = new Contract(window.walletConnection.account(), contractId, {
@@ -356,40 +353,40 @@ const DaoInfo = (props) => {
         })
       }
     },
-    []
+    [props.item]
   )
 
+  /*
+      useEffect(
+        () => {
+          if (contractId !== "") {
+            getDaoState(contractId).then(r => {
+              setDaoState(r);
+            }).catch((e) => {
+              console.log(e);
+            })
+          }
+        },
+        []
 
-  useEffect(
-    () => {
-      if (contractId !== "") {
-        getDaoState(contractId).then(r => {
-          setDaoState(r);
-        }).catch((e) => {
-          console.log(e);
-        })
-      }
-    },
-    []
-  )
 
-  useEffect(
-    () => {
-      contract.get_config().then((data) => {
-        setDaoConfig(data);
-      });
-    }, [])
+      useEffect(
+        () => {
+          contract.get_config().then((data) => {
+            setDaoConfig(data);
+          });
+        }, [props])
 
-  useEffect(
-    () => {
-      contract.get_policy().then((data) => {
-        setDaoPolicy(data);
-      });
-    }, [])
+      useEffect(
+        () => {
+          contract.get_policy().then((data) => {
+            setDaoPolicy(data);
+          });
+        }, [props])
+      */
 
-  //console.log(daoConfig, daoPolicy)
 
-  const toggleCollapse = () => {
+  const toggleLoadData = () => {
     setCollapseState(!collapseState);
   }
 
@@ -409,7 +406,20 @@ const DaoInfo = (props) => {
             <div>
               <div
                 className="float-left mt-2">{props.item.replace("." + nearConfig.contractName, "")}</div>
-              <div className="float-right h4-responsive">Ⓝ {daoState}</div>
+              <div className="float-right">
+                <MDBBtn
+                  disabled
+                  color="grey"
+                  size="sm"
+                  onClick={toggleLoadData}
+                >
+                  View{" "}
+                  <MDBIcon icon={!collapseState ? "arrow-down" : "arrow-up"}/>
+                </MDBBtn>
+                <MDBBtn name={props.item} onClick={props.handleSelect} color="elegant" size="sm"
+                        className="float-right">SELECT</MDBBtn>
+              </div>
+              <div className="clearfix"/>
             </div>
           </MDBCardHeader>
           :
@@ -420,70 +430,52 @@ const DaoInfo = (props) => {
             </div>
           </MDBCardHeader>
         }
-        <MDBCardBody className="grey darken-1 white-text"
-                     style={{borderBottomLeftRadius: 25, borderBottomRightRadius: 25}}>
-          <div className="text-left">
-            <MDBCard color="special-color-dark" className="mx-auto mb-2">
-              <MDBCardBody className="text-left">
-                <h6 className="grey-text" color="light">{daoConfig ? daoConfig.purpose : null}</h6>
-              </MDBCardBody>
-            </MDBCard>
-            <div>
-              <MDBCard color="special-color-dark" className="mx-auto">
+        {collapseState && daoExists ?
+          <MDBCardBody className="grey darken-1 white-text"
+                       style={{borderBottomLeftRadius: 25, borderBottomRightRadius: 25}}>
+            <div className="text-left">
+              <MDBCard color="special-color-dark" className="mx-auto mb-2">
                 <MDBCardBody className="text-left">
-                  <div className="float-left grey-text">
-                    proposal bond <span style={{fontSize: 12}}>{" "}Ⓝ</span>
-                  </div>
-                  <div className="float-right">
-                    {daoPolicy && daoPolicy.proposal_bond !== null ? (new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear)).toString() : ''}
-                  </div>
-                  <div className="clearfix"/>
-                  <div className="float-left grey-text">
-                    proposal period
-                  </div>
-                  <div className="float-right">
-                    {daoPolicy && daoPolicy.proposal_period !== null ? timestampToReadable(daoPolicy.proposal_period) : ''}
-                  </div>
-                  <div className="clearfix"/>
-                  <div className="float-left grey-text">
-                    bounty bond <span style={{fontSize: 12}}>{" "}Ⓝ</span>
-                  </div>
-                  <div className="float-right">
-                    {daoPolicy && daoPolicy.bounty_bond !== null ? (new Decimal(daoPolicy.bounty_bond.toString()).div(yoktoNear)).toString() : ''}
-                  </div>
-                  <div className="clearfix"/>
-                  <div className="float-left grey-text">
-                    bounty forgiveness
-                  </div>
-                  <div className="float-right">
-                    {daoPolicy && daoPolicy.bounty_forgiveness_period !== null ? timestampToReadable(daoPolicy.bounty_forgiveness_period) : ''}
-                  </div>
-                  <div className="clearfix"/>
+                  <h6 className="grey-text" color="light">{daoConfig ? daoConfig.purpose : null}</h6>
+                  <div className="float-right h4-responsive">Ⓝ {daoState}</div>
                 </MDBCardBody>
               </MDBCard>
+              <div>
+                <MDBCard color="special-color-dark" className="mx-auto">
+                  <MDBCardBody className="text-left">
+                    <div className="float-left grey-text">
+                      proposal bond <span style={{fontSize: 12}}>{" "}Ⓝ</span>
+                    </div>
+                    <div className="float-right">
+                      {daoPolicy && daoPolicy.proposal_bond !== null ? (new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear)).toString() : ''}
+                    </div>
+                    <div className="clearfix"/>
+                    <div className="float-left grey-text">
+                      proposal period
+                    </div>
+                    <div className="float-right">
+                      {daoPolicy && daoPolicy.proposal_period !== null ? timestampToReadable(daoPolicy.proposal_period) : ''}
+                    </div>
+                    <div className="clearfix"/>
+                    <div className="float-left grey-text">
+                      bounty bond <span style={{fontSize: 12}}>{" "}Ⓝ</span>
+                    </div>
+                    <div className="float-right">
+                      {daoPolicy && daoPolicy.bounty_bond !== null ? (new Decimal(daoPolicy.bounty_bond.toString()).div(yoktoNear)).toString() : ''}
+                    </div>
+                    <div className="clearfix"/>
+                    <div className="float-left grey-text">
+                      bounty forgiveness
+                    </div>
+                    <div className="float-right">
+                      {daoPolicy && daoPolicy.bounty_forgiveness_period !== null ? timestampToReadable(daoPolicy.bounty_forgiveness_period) : ''}
+                    </div>
+                    <div className="clearfix"/>
+                  </MDBCardBody>
+                </MDBCard>
+              </div>
+              <hr/>
             </div>
-            <hr/>
-            {daoExists ?
-              <>
-                <div className="float-left">
-                  <MDBBtn
-                    color="elegant"
-                    size="sm"
-                    onClick={toggleCollapse}
-                  >
-                    council{" "}
-                    <MDBIcon icon={!collapseState ? "arrow-down" : "arrow-up"}/>
-                  </MDBBtn>
-                </div>
-                <div className="float-right">
-                  <MDBBtn name={props.item} onClick={props.handleSelect} color="elegant" size="sm"
-                          className="float-right">SELECT</MDBBtn>
-                </div>
-                <div className="clearfix"/>
-              </>
-              : null}
-          </div>
-          {collapseState ?
             <div>
               <hr/>
               <MDBCol>
@@ -493,8 +485,8 @@ const DaoInfo = (props) => {
                   <div className="text-right" key={key}>{item}</div>) : null}
               </MDBCol>
             </div>
-            : null}
-        </MDBCardBody>
+          </MDBCardBody>
+          : null}
       </MDBCard>
     </>
 
@@ -600,22 +592,20 @@ const Selector = (props) => {
         <MDBCardBody className="text-center">
           <MDBRow>
             <MDBCol>
-              <MDBBtnGroup>
-                {daoCount && daoCount > 0 ?
-                  <>
-                    {Object.keys(Array.from(Array(Math.floor(daoCount / daoLimit) + 1).keys())).map((item, key) =>
-                      <MDBBtn onClick={() => {
-                        togglePage(Math.floor(item * daoLimit))
-                      }}
-                              size="sm"
-                              color="elegant"
-                              className="mr-2">
-                        {"" + new Decimal(item).plus(1)}
-                      </MDBBtn>)
-                    }
-                  </>
-                  : null}
-              </MDBBtnGroup>
+              {daoCount && daoCount > 0 ?
+                <>
+                  {Object.keys(Array.from(Array(Math.floor(daoCount / daoLimit) + 1).keys())).map((item, key) =>
+                    <MDBBtn onClick={() => {
+                      togglePage(Math.floor(item * daoLimit))
+                    }}
+                            size="sm"
+                            color="elegant"
+                            className="">
+                      {"" + new Decimal(item).plus(1)}
+                    </MDBBtn>)
+                  }
+                </>
+                : null}
             </MDBCol>
           </MDBRow>
           <MDBRow>
