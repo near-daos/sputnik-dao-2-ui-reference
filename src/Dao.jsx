@@ -1926,7 +1926,7 @@ const Dao = () => {
                 >
                   <MDBModalHeader
                     className="text-center stylish-color white-text border-dark"
-                    titleClass="w-100 font-weight-bold"
+                    titleClassName="w-100 font-weight-bold"
                     toggle={toggleProposalModal}
                   >
                     Select Proposal Type
@@ -2036,7 +2036,7 @@ const Dao = () => {
               >
                 <MDBModalHeader
                   className="text-center stylish-color white-text border-dark"
-                  titleClass="w-100 font-weight-bold"
+                  titleClassName="w-100 font-weight-bold"
                   toggle={toggleNewCouncilMember}
                 >
                   Add Council Member
@@ -2108,7 +2108,7 @@ const Dao = () => {
               >
                 <MDBModalHeader
                   className="text-center stylish-color white-text border-dark"
-                  titleClass="w-100 font-weight-bold"
+                  titleClassName="w-100 font-weight-bold"
                   toggle={toggleRemoveCouncilMember}
                 >
                   Remove Council Member
@@ -2180,7 +2180,7 @@ const Dao = () => {
               >
                 <MDBModalHeader
                   className="text-center stylish-color white-text border-dark"
-                  titleClass="w-100 font-weight-bold"
+                  titleClassName="w-100 font-weight-bold"
                   toggle={toggleRoketoStream}
                 >
                   Add Payout
@@ -2294,7 +2294,7 @@ const Dao = () => {
               >
                 <MDBModalHeader
                   className="text-center stylish-color white-text border-dark"
-                  titleClass="w-100 font-weight-bold"
+                  titleClassName="w-100 font-weight-bold"
                   toggle={toggleNewPayout}
                 >
                   Add Payout
@@ -2399,7 +2399,7 @@ const Dao = () => {
               >
                 <MDBModalHeader
                   className="text-center stylish-color white-text border-dark"
-                  titleClass="w-100 font-weight-bold"
+                  titleClassName="w-100 font-weight-bold"
                   toggle={toggleNewToken}
                 >
                   Create a new Token
@@ -2538,7 +2538,7 @@ const Dao = () => {
               >
                 <MDBModalHeader
                   className="text-center stylish-color white-text border-dark"
-                  titleClass="w-100 font-weight-bold"
+                  titleClassName="w-100 font-weight-bold"
                   toggle={toggleCustomCall}
                 >
                   Custom function call

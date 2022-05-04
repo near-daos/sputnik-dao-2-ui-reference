@@ -245,7 +245,7 @@ const NewDao = (props) => {
     <MDBModal isOpen={showNewDao} toggle={() => {}} centered position="center" size="lg">
       <MDBModalHeader
         className="text-center stylish-color white-text"
-        titleClass="w-100 font-weight-bold"
+        titleClassName="w-100 font-weight-bold"
         toggle={toggleNewDaoModal}
       >
         Create DAO
@@ -608,7 +608,7 @@ const Selector = (props) => {
   return (
     <div>
       <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-        <MDBCardHeader className="text-center white-text" titleClass="w-100" tag="p">
+        <MDBCardHeader className="text-center white-text">
           Please select or create DAO
           <hr color="white" />
           <MDBBtn
