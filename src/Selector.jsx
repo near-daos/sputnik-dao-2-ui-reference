@@ -5,7 +5,6 @@ import { Contract } from 'near-api-js';
 import {
   MDBBox,
   MDBBtn,
-  MDBBtnGroup,
   MDBCard,
   MDBCardBody,
   MDBCardHeader,
@@ -639,6 +638,7 @@ const Selector = (props) => {
                         size="sm"
                         color="elegant"
                         className=""
+                        key={key}
                       >
                         {'' + new Decimal(item).plus(1)}
                       </MDBBtn>
@@ -651,8 +651,8 @@ const Selector = (props) => {
           <MDBRow>
             {!showLoading && daoList
               ? daoList.map((item, key) => (
-                  <MDBCol lg="6" md="12">
-                    <DaoInfo item={item} key={key} handleSelect={handleSelect} />
+                  <MDBCol lg="6" md="12" key={key}>
+                    <DaoInfo item={item} handleSelect={handleSelect} />
                   </MDBCol>
                 ))
               : null}
