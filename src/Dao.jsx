@@ -353,7 +353,7 @@ const Dao = () => {
   async function getProposals() {
     let limit = 100;
     let fromIndex = 0;
-    const numberProposals = await window.contract.get_last_proposal_id();
+    const numberProposals = window.contract ? await window.contract.get_last_proposal_id() : 0;
     setNumberProposals(numberProposals);
     mutationCtx.updateConfig({
       lastShownProposal: numberProposals
@@ -366,20 +366,24 @@ const Dao = () => {
         fromIndex = limit * i;
         let proposals2;
         try {
-          proposals2 = await window.contract.get_proposals({
-            from_index: fromIndex,
-            limit: limit
-          });
+          if (window.contract) {
+            proposals2 = await window.contract.get_proposals({
+              from_index: fromIndex,
+              limit: limit
+            });
+          }
         } catch (e) {
           console.log(e);
         }
         Array.prototype.push.apply(proposals, proposals2);
       }
     } else {
-      proposals = await window.contract.get_proposals({
-        from_index: fromIndex,
-        limit: limit
-      });
+      if (window.contract) {
+        proposals = await window.contract.get_proposals({
+          from_index: fromIndex,
+          limit: limit
+        });
+      }
     }
 
     const t = [];
