@@ -75,6 +75,7 @@ export const ContainerProvider = ({children}) => {
           switchDone: state.config.filter.switchDone,
           switchNew: state.config.filter.switchNew,
           switchExpired: state.config.filter.switchExpired,
+          switchBatchVote: state.config.filter.switchBatchVote,
         },
         lastShownProposal: state.config.lastShownProposal,
         lastJsonData: state.config.lastJsonData,

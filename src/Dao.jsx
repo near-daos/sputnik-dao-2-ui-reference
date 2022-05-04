@@ -21,6 +21,7 @@ import {
   MDBNotification,
   MDBRow,
   MDBView,
+  MDBTooltip,
   MDBIcon, MDBLink, MDBAlert
 } from "mdbreact";
 import {useGlobalMutation, useGlobalState} from './utils/container'
@@ -67,6 +68,20 @@ const Dao = () => {
   const nearConfig = getConfig(process.env.NODE_ENV || 'development')
   const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
   const connection = new nearApi.Connection(nearConfig.nodeUrl, provider, {});
+
+  const [MultiVoteOpen, setMultiVoteOpen] = useState(false);
+  const toggleMultiVoteOpenOff = () => {
+    setMultiVoteOpen(false);
+  }
+
+  const [isCheckAll, setIsCheckAll] = useState(false);
+  const handleSelectAll = e => {
+    setIsCheckAll(!isCheckAll);
+    setBatchVotes(proposals.map(item => item.id));
+    if (isCheckAll) {
+      setBatchVotes([]);
+    }
+  };
 
   const [proposalToken, setProposalToken] = useState({
     ownerId: null,
@@ -509,6 +524,20 @@ const Dao = () => {
     }
   };
 
+  const MultiVote = (action) => {
+    let trns = [];
+    const checkedBoxes = document.querySelectorAll('input[name="multi-vote-checkbox\[\]"]:checked');
+    checkedBoxes.forEach(function(element){
+        const args = new TextEncoder().encode(JSON.stringify({ "id":Number(element.value),"action":action }));
+        trns.push(nearApi.transactions.functionCall('act_proposal', args, new Decimal("6000000000000").toString()))}
+      );
+
+      if (trns.length > 0){
+        contract.account.signAndSendTransaction(stateCtx.config.contract, trns).catch((e) => {console.log(e)})
+      }
+
+  };
+
   const changeHandler = (event) => {
     if (event.target.name === "proposalTarget") {
       setProposalTarget({
@@ -687,6 +716,7 @@ const Dao = () => {
     switchDone: stateCtx.config.filter.switchDone,
     switchNew: stateCtx.config.filter.switchNew,
     switchExpired: stateCtx.config.filter.switchExpired,
+    switchBatchVote: stateCtx.config.filter.switchBatchVote,
   });
 
   const handleSwitchChange = switchName => () => {
@@ -699,6 +729,7 @@ const Dao = () => {
           switchDone: false,
           switchNew: false,
           switchExpired: false,
+          switchBatchVote: false,
         }
         break;
 
@@ -709,6 +740,7 @@ const Dao = () => {
           switchDone: switchState.switchDone,
           switchNew: false,
           switchExpired: false,
+          switchBatchVote: false,
         }
         break;
 
@@ -719,6 +751,7 @@ const Dao = () => {
           switchDone: !switchState.switchDone,
           switchNew: false,
           switchExpired: false,
+          switchBatchVote: false,
         }
         break;
 
@@ -729,6 +762,7 @@ const Dao = () => {
           switchDone: false,
           switchNew: !switchState.switchNew,
           switchExpired: false,
+          switchBatchVote: false,
         }
         break;
 
@@ -739,8 +773,20 @@ const Dao = () => {
           switchDone: false,
           switchNew: false,
           switchExpired: !switchState.switchExpired,
+          switchBatchVote: false,
         }
         break;
+
+        case 'switchBatchVote':
+          switched = {
+            switchAll: false,
+            switchInProgress: false,
+            switchDone: false,
+            switchNew: false,
+            switchExpired: false,
+            switchBatchVote: !switchState.switchBatchVote,
+          }
+          break;
 
       default:
         switched = {
@@ -748,6 +794,7 @@ const Dao = () => {
           switchInProgress: false,
           switchDone: false,
           switchNew: false,
+          switchBatchVote: false,
         }
         break;
 
@@ -1292,8 +1339,7 @@ const Dao = () => {
 
 
   const [batchVotes, setBatchVotes] = useState( []);
-  console.log(batchVotes);
-
+  
   let roles = daoPolicy ? daoPolicy.roles.filter((item) => item.name !== 'all') : []
   return (
     <>
@@ -1379,24 +1425,106 @@ const Dao = () => {
                           </MDBCol>
                         </MDBRow>
                         : null}
+
+
+                   {switchState.switchBatchVote ?
+                    <MDBRow className="mx-auto p-2">
+                    <MDBCol className="text-center">
+
+                        <MDBBtn style={{borderRadius: 10}} size="sm" color="info" onClick={() => setMultiVoteOpen(true)}>Multi Vote</MDBBtn>
+
+                        <div className="p-2 mr-2 mb-2 white-text">
+                          <div className='custom-control custom-switch mr-2'>
+                            <input
+                              type='checkbox'
+                              name="selectAll"
+                              className='custom-control-input'
+                              id='selectAll'
+                              onChange={handleSelectAll}
+                            />
+                            <label className='custom-control-label' htmlFor='selectAll'>
+                            Select All
+                            </label>
+                          </div>
+                          </div>
+
+                        </MDBCol>
+                        </MDBRow>
+                        : null}
+
+                        <MDBModal modalStyle="warning" centered size="sm" isOpen={MultiVoteOpen} toggle={toggleMultiVoteOpenOff}>
+                        <MDBModalHeader>{document.querySelectorAll('input[name="multi-vote-checkbox\[\]"]:checked').length} proposals selected</MDBModalHeader>
+                        <MDBModalBody className="text-center">
+
+                          <MDBTooltip>
+                            <MDBBtn
+                              disabled={document.querySelectorAll('input[name="multi-vote-checkbox\[\]"]:checked').length < 1}
+                              style={{borderRadius: 50}}
+                              onClick={() => MultiVote("VoteApprove")}
+                              color="green darken-1"
+                              floating
+                              className='h5-responsive'
+                              size="sm">
+                              <MDBIcon icon='thumbs-up' size="2x" className='white-text m-2 p-2'/>
+                            </MDBBtn>
+                            <span>Vote YES</span>
+                          </MDBTooltip>
+
+                          <MDBTooltip>
+                            <MDBBtn
+                              disabled={document.querySelectorAll('input[name="multi-vote-checkbox\[\]"]:checked').length < 1}
+                              style={{borderRadius: 50}}
+                              onClick={() => MultiVote("VoteReject")}
+                              color="red"
+                              floating
+                              className='h5-responsive'
+                              size="sm">
+                              <MDBIcon icon='thumbs-down' size="2x" className='white-text m-2 p-2'/>
+                            </MDBBtn>
+                            <span>Vote NO</span>
+                          </MDBTooltip>
+
+                          <MDBTooltip
+                            tag="span"
+                            placement="top"
+                          >
+                            <MDBBtn
+                              style={{borderRadius: 50}}
+                              disabled={document.querySelectorAll('input[name="multi-vote-checkbox\[\]"]:checked').length < 1}
+                              onClick={() => MultiVote("VoteRemove")}
+                              color="amber"
+                              floating
+                              className='h5-responsive float-right'
+                              size="sm">
+                              <MDBIcon icon='trash-alt' size="2x" className='white-text m-2 p-2'/>
+                            </MDBBtn>
+                            <span>Remove Proposal</span>
+                          </MDBTooltip>
+
+
+                        </MDBModalBody>
+                        <MDBModalFooter>
+                          <MDBBtn className="w-100" color="info" onClick={toggleMultiVoteOpenOff}>Close</MDBBtn>
+                        </MDBModalFooter>
+                      </MDBModal>
+
                     </MDBCardBody>
                   </MDBCard>
                 </MDBCol>
               </MDBRow>
-
               <MDBRow>
                 <MDBCol className="col-12 p-3 mx-auto">
                   <MDBCard className="stylish-color-dark white-text">
                     <MDBCardBody>
                       <MDBRow center>
-                        <MDBCard className="p-2 mr-2 mb-2 elegant-color white-text">
+                      <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
                           <div className='custom-control custom-switch mr-2'>
                             <input
                               type='checkbox'
                               className='custom-control-input'
                               id='batchVote'
-                              checked={false}
-                              onChange={handleSwitchChange('batchVote')}
+                              checked={switchState.switchBatchVote}
+                              onChange={handleSwitchChange('switchBatchVote')}
                               readOnly
                             />
                             <label className='custom-control-label' htmlFor='batchVote'>
@@ -1484,13 +1612,15 @@ const Dao = () => {
                         || (item.status === 'Approved' && switchState.switchDone)
                         || (item.status === 'Removed' && switchState.switchDone)
                         || (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) > new Date() && item.status === 'InProgress' && item.key >= stateCtx.config.lastShownProposal && switchState.switchNew)
+                        || (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) > new Date() && item.status === 'InProgress' && !item.votes[window.walletConnection.getAccountId()] && switchState.switchBatchVote)
 
                           ?
                           <Proposal dao={stateCtx.config.contract} data={item} key={item.id} id={item.id}
                                     daoPolicy={daoPolicy}
                                     setShowError={setShowError}
-                                    isBatchVote={true}
+                                    isBatchVote={switchState.switchBatchVote}
                                     setBatchVotes={setBatchVotes}
+                                    batchVotes={batchVotes}
                                     roles={roles}/>
                           : null
                       }
@@ -1499,6 +1629,7 @@ const Dao = () => {
                   : null
                 }
               </MDBRow>
+
               {showError !== null ?
                 <MDBNotification
                   autohide={36000}
@@ -2062,7 +2193,7 @@ const Dao = () => {
                 </form>
               </MDBModal>
 
-
+             
             </>
             : null}
           {selectDao ?

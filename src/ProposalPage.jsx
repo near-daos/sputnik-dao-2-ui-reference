@@ -24,7 +24,6 @@ import Decimal from "decimal.js";
 import ReactJson from 'react-json-view'
 
 export const Proposal = (props) => {
-  const proposalId = props.id;
   const [showSpinner, setShowSpinner] = useState(false);
   const stateCtx = useGlobalState();
   const [votedWarning, setVotedWarning] = useState(false);
@@ -86,7 +85,7 @@ export const Proposal = (props) => {
   }
 
   const handleVoteYes = () => {
-    //props.setBatchVotes(prevState => ([...prevState, proposalId]))
+
     if (props.data.votes[window.walletConnection.getAccountId()] === undefined) {
       vote('VoteApprove').then().catch((e) => {
         console.log(e);
@@ -168,6 +167,15 @@ export const Proposal = (props) => {
       console.log(e);
     }
   }
+
+  const handleChange = e => {
+    const { id, checked } = e.target;
+    console.log('Proposal_votable called', id);
+    props.setBatchVotes([...props.batchVotes, parseInt(id)]);
+    if (!checked) {
+      props.setBatchVotes(props.batchVotes.filter(item => item !== parseInt(id)));
+    }
+  };
 
   const canVote = (permission) => !!window.walletConnection.getAccountId() && props.daoPolicy.roles
     .some(role =>
@@ -528,6 +536,16 @@ export const Proposal = (props) => {
                   <span>Remove Proposal</span>
                 </MDBTooltip>
                 : null}
+
+              {props.isBatchVote && !props.data.votes[window.walletConnection.getAccountId()] && canApprove && canReject && canRemove && !(convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)) < new Date() || props.data.status !== 'InProgress') ?
+                <>
+                <hr/>
+                <div className="custom-control custom-switch">
+                  <input type="checkbox" className="custom-control-input" key={parseInt(props.id)} id={parseInt(props.id)} name="multi-vote-checkbox[]" value={props.id} onChange={handleChange} checked={props.batchVotes.includes(props.id)}/>
+                    <label className="custom-control-label white-text h5-responsive" htmlFor={props.id}>select to vote</label>
+                </div>
+                </>
+                  :null}
 
             </MDBCardBody>
             <div className='rounded-bottom mdb-color text-center pt-3 pl-5 pr-5'>
