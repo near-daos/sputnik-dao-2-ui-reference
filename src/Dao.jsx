@@ -23,7 +23,6 @@ import {
   MDBView,
   MDBTooltip,
   MDBIcon,
-  MDBLink,
   MDBAlert
 } from 'mdbreact';
 import { useGlobalMutation, useGlobalState } from './utils/container';
@@ -33,7 +32,6 @@ import {
   convertDuration,
   proposalsReload,
   timestampToReadable,
-  updatesJsonUrl,
   yoktoNear,
   parseForumUrl
 } from './utils/funcs';
@@ -1584,11 +1582,12 @@ const Dao = () => {
                                             target="_blank"
                                             href={item}
                                             rel="noreferrer"
+                                            key={key}
                                           >
                                             {item}{' '}
                                           </a>
                                         ) : (
-                                          <>{item} </>
+                                          <span key={key}>{item} </span>
                                         )
                                       )
                                     : null}
@@ -1826,7 +1825,7 @@ const Dao = () => {
                   ? proposals
                       .sort((a, b) => (b.key >= a.key ? 1 : -1))
                       .map((item, key) => (
-                        <>
+                        <span key={key}>
                           {(convertDuration(
                             new Decimal(item.submission_time).plus(daoPolicy.proposal_period)
                           ) > new Date() &&
@@ -1867,7 +1866,7 @@ const Dao = () => {
                               roles={roles}
                             />
                           ) : null}
-                        </>
+                        </span>
                       ))
                   : null}
               </MDBRow>
