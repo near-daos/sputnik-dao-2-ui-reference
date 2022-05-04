@@ -1,11 +1,11 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 
 const useChangeDao = ({ mutationCtx, routerCtx }) => {
   const handleDaoChange = () => {
     mutationCtx.updateConfig({
-      contract: "",
+      contract: ''
     });
-    routerCtx.history.push("/");
+    routerCtx.history.push('/');
   };
 
   return handleDaoChange;

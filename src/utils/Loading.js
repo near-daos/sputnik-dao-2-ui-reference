@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { MDBCol, MDBContainer, MDBModal, MDBModalBody, MDBRow } from "mdbreact";
+import React, { useEffect, useState } from 'react';
+import { MDBCol, MDBContainer, MDBModal, MDBModalBody, MDBRow } from 'mdbreact';
 
 const Loading = () => {
   const [show, setShow] = useState(false);
@@ -18,7 +18,9 @@ const Loading = () => {
           <MDBRow>
             <MDBCol size="10" sm="8" lg="6">
               <MDBModal isOpen={true} toggle={() => {}} position="top">
-                <MDBModalBody className="text-center">Loading from the chain, please wait...</MDBModalBody>
+                <MDBModalBody className="text-center">
+                  Loading from the chain, please wait...
+                </MDBModalBody>
               </MDBModal>
             </MDBCol>
           </MDBRow>

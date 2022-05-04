@@ -1,37 +1,31 @@
-import React, {
-  createContext,
-  useContext,
-  useReducer,
-  useState,
-  useEffect
-} from 'react'
-import {reducer, defaultState} from './store'
-import CustomizedSnackbar from './snackbar-wrapper'
-import Loading from './Loading'
+import React, { createContext, useContext, useReducer, useState, useEffect } from 'react';
+import { reducer, defaultState } from './store';
+import CustomizedSnackbar from './snackbar-wrapper';
+import Loading from './Loading';
 
-const StateContext = createContext({})
-const MutationContext = createContext({})
+const StateContext = createContext({});
+const MutationContext = createContext({});
 
-export const ContainerProvider = ({children}) => {
-  const [state, dispatch] = useReducer(reducer, defaultState)
+export const ContainerProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(reducer, defaultState);
 
-  window.rootState = state
+  window.rootState = state;
 
-  const [toasts, updateToasts] = useState([])
+  const [toasts, updateToasts] = useState([]);
 
   const methods = {
     startLoading() {
-      dispatch({type: 'loading', payload: true})
+      dispatch({ type: 'loading', payload: true });
     },
     stopLoading() {
-      dispatch({type: 'loading', payload: false})
+      dispatch({ type: 'loading', payload: false });
     },
     updateConfig(params) {
-      dispatch({type: 'config', payload: {...state.config, ...params}})
+      dispatch({ type: 'config', payload: { ...state.config, ...params } });
     },
     removeTop() {
-      const items = toasts.filter((e, idx) => idx > 0)
-      updateToasts([...items])
+      const items = toasts.filter((e, idx) => idx > 0);
+      updateToasts([...items]);
     },
     toastSuccess(message) {
       updateToasts([
@@ -40,7 +34,7 @@ export const ContainerProvider = ({children}) => {
           variant: 'success',
           message
         }
-      ])
+      ]);
     },
     toastInfo(message) {
       updateToasts([
@@ -49,7 +43,7 @@ export const ContainerProvider = ({children}) => {
           variant: 'info',
           message
         }
-      ])
+      ]);
     },
     toastError(message) {
       updateToasts([
@@ -58,9 +52,9 @@ export const ContainerProvider = ({children}) => {
           variant: 'error',
           message
         }
-      ])
-    },
-  }
+      ]);
+    }
+  };
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -75,29 +69,29 @@ export const ContainerProvider = ({children}) => {
           switchDone: state.config.filter.switchDone,
           switchNew: state.config.filter.switchNew,
           switchExpired: state.config.filter.switchExpired,
-          switchBatchVote: state.config.filter.switchBatchVote,
+          switchBatchVote: state.config.filter.switchBatchVote
         },
         lastShownProposal: state.config.lastShownProposal,
-        lastJsonData: state.config.lastJsonData,
+        lastJsonData: state.config.lastJsonData
       })
-    )
-  }, [state])
+    );
+  }, [state]);
 
   return (
     <StateContext.Provider value={state}>
       <MutationContext.Provider value={methods}>
-        <CustomizedSnackbar toasts={toasts}/>
-        {state.loading ? <Loading/> : null}
+        <CustomizedSnackbar toasts={toasts} />
+        {state.loading ? <Loading /> : null}
         {children}
       </MutationContext.Provider>
     </StateContext.Provider>
-  )
-}
+  );
+};
 
 export function useGlobalState() {
-  return useContext(StateContext)
+  return useContext(StateContext);
 }
 
 export function useGlobalMutation() {
-  return useContext(MutationContext)
+  return useContext(MutationContext);
 }

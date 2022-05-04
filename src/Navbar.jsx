@@ -1,4 +1,4 @@
-import React, { Component, useState } from "react";
+import React, { Component, useState } from 'react';
 import {
   MDBNavbar,
   MDBNavbarBrand,
@@ -6,13 +6,13 @@ import {
   MDBNavItem,
   MDBNavLink,
   MDBNavbarToggler,
-  MDBCollapse,
-} from "mdbreact";
-import { BrowserRouter as Router } from "react-router-dom";
-import { login, logout } from "./utils";
-import { useGlobalState, useGlobalMutation } from "./utils/container";
-import useRouter from "./utils/use-router";
-import useChangeDao from "./hooks/useChangeDao";
+  MDBCollapse
+} from 'mdbreact';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { login, logout } from './utils';
+import { useGlobalState, useGlobalMutation } from './utils/container';
+import useRouter from './utils/use-router';
+import useChangeDao from './hooks/useChangeDao';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,14 +30,10 @@ const Navbar = () => {
     <Router>
       <MDBNavbar color="stylish-color-dark" dark expand="md" className="mb-2">
         <MDBNavbarBrand>
-          <MDBNavLink
-            className="white-text mr-2"
-            to="/"
-            onClick={handleDaoChange}
-          >
+          <MDBNavLink className="white-text mr-2" to="/" onClick={handleDaoChange}>
             <img
               className="d-inline-block"
-              style={{ filter: "brightness(0) invert(1)" }}
+              style={{ filter: 'brightness(0) invert(1)' }}
               height="30"
               src="https://gov.near.org/uploads/default/original/1X/7aa6fc28cbccdc2242717e8fe4c756829d90aaec.png"
             />
