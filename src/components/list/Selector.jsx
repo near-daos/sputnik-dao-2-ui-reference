@@ -24,6 +24,7 @@ import { Decimal } from 'decimal.js';
 import { timestampToReadable, yoktoNear } from '../../utils/funcs';
 import Loading from '../../utils/Loading';
 import getConfig from '../../config';
+import { login } from '../../utils/utils';
 
 /* MOVE TO UTILS */
 const nearConfig = getConfig(process.env.NODE_ENV || 'development');
@@ -584,7 +585,25 @@ const Selector = (props) => {
     return false;
   };
 
+  useEffect(() => {
+    if (
+      window.localStorage.getItem('showNewDaoModal') &&
+      JSON.parse(window.localStorage.getItem('showNewDaoModal')) === true
+    ) {
+      if (window.walletConnection.getAccountId()) {
+        setShowNewDaoModal(!showNewDaoModal);
+      }
+      window.localStorage.setItem('showNewDaoModal', false);
+    }
+  }, [window]);
+
   const toggleNewDao = () => {
+    if (!window.walletConnection.getAccountId()) {
+      window.localStorage.setItem('showNewDaoModal', true);
+      login();
+      return;
+    }
+
     setShowNewDaoModal(!showNewDaoModal);
   };
 
@@ -612,12 +631,7 @@ const Selector = (props) => {
         <MDBCardHeader className="text-center white-text">
           Please select or create DAO
           <hr color="white" />
-          <MDBBtn
-            color="grey"
-            disabled={!window.walletConnection.getAccountId()}
-            onClick={toggleNewDao}
-            className=""
-          >
+          <MDBBtn color="grey" onClick={toggleNewDao} className="">
             CREATE NEW DAO
           </MDBBtn>
           <MDBBox className="white-text text-center">
