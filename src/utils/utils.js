@@ -3,6 +3,8 @@ import { connect, Contract, keyStores, WalletConnection } from 'near-api-js';
 import { useGlobalState, useGlobalMutation } from './container';
 import getConfig from '../config';
 import * as nearApi from 'near-api-js';
+import Decimal from 'decimal.js';
+import { yoktoNear } from './funcs';
 
 export const nearConfig = getConfig(process.env.NODE_ENV || 'development');
 
