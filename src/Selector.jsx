@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as nearApi from 'near-api-js';
 import { Contract } from 'near-api-js';
+import Pagination from './Pagination';
 
 import {
   MDBBox,
@@ -626,29 +627,6 @@ const Selector = (props) => {
         {showLoading ? <Loading /> : null}
         <MDBCardBody className="text-center">
           <MDBRow>
-            <MDBCol>
-              {daoCount && daoCount > 0 ? (
-                <>
-                  {Object.keys(Array.from(Array(Math.floor(daoCount / daoLimit) + 1).keys())).map(
-                    (item, key) => (
-                      <MDBBtn
-                        onClick={() => {
-                          togglePage(Math.floor(item * daoLimit));
-                        }}
-                        size="sm"
-                        color="elegant"
-                        className=""
-                        key={key}
-                      >
-                        {'' + new Decimal(item).plus(1)}
-                      </MDBBtn>
-                    )
-                  )}
-                </>
-              ) : null}
-            </MDBCol>
-          </MDBRow>
-          <MDBRow>
             {!showLoading && daoList
               ? daoList.map((item, key) => (
                   <MDBCol lg="6" md="12" key={key}>
@@ -656,6 +634,12 @@ const Selector = (props) => {
                   </MDBCol>
                 ))
               : null}
+          </MDBRow>
+          <MDBRow>
+            <MDBCol>
+              <hr color="white" />
+              <Pagination daoCount={daoCount} daoLimit={daoLimit} togglePage={togglePage} />
+            </MDBCol>
           </MDBRow>
         </MDBCardBody>
       </MDBCard>
