@@ -45,7 +45,7 @@
   "dependencies": {
     "decimal.js": "^10.2.1",
     "mdbreact": "5.0.0",
-    "near-api-js": "^0.36.2",
+    "near-api-js": "^0.44.2",
     "node-fetch": "^2.6.1",
     "node-libs-browser": "^2.2.1",
     "react": "^17.0.2",

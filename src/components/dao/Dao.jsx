@@ -225,12 +225,12 @@ const Dao = () => {
         changeMethods: ['add_proposal', 'act_proposal']
       });
     }
-  }, [stateCtx.config.contract]);
+  }, [stateCtx.config.contract, dao]);
 
   useEffect(() => {
     if (stateCtx.config.contract !== '' && dao !== stateCtx.config.contract && dao !== undefined) {
       mutationCtx.updateConfig({
-        contract: ''
+        contract: dao
       });
       location.reload();
     }
@@ -331,7 +331,8 @@ const Dao = () => {
     const numberProposals = window.contract ? await window.contract.get_last_proposal_id() : 0;
     setNumberProposals(numberProposals);
     mutationCtx.updateConfig({
-      lastShownProposal: numberProposals
+      lastShownProposal: numberProposals,
+      contract: dao
     });
     let proposals = [];
     if (numberProposals > 100) {
