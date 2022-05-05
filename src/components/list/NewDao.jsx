@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
-import useRouter from '../../utils/use-router';
 import { accountExists, nearConfig } from '../../utils/utils';
 import { MDBBtn, MDBInput, MDBModal, MDBModalBody, MDBModalFooter, MDBModalHeader } from 'mdbreact';
 import { Decimal } from 'decimal.js';
 import { yoktoNear } from '../../utils/funcs';
 
 const NewDao = (props) => {
-  const routerCtx = useRouter();
-
   const [showSpinner, setShowSpinner] = useState(false);
   const [showNewDao, setShowNewDao] = useState(true);
 
@@ -108,9 +105,6 @@ const NewDao = (props) => {
           new Decimal('150000000000000').toString(),
           amountYokto.toString()
         );
-
-        // routerCtx.history.push('/' + e.target.name);
-        console.log(daoName.value);
       } catch (e) {
         console.log(e);
         props.setShowError(e);
