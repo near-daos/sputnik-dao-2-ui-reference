@@ -35,12 +35,12 @@ import {
   yoktoNear,
   parseForumUrl
 } from '../../utils/funcs';
-import getConfig from '../../config';
 import * as nearApi from 'near-api-js';
 import { Contract } from 'near-api-js';
 import { Proposal } from './ProposalPage';
 import Loading from '../../utils/Loading';
 import useChangeDao from '../../hooks/useChangeDao';
+import { nearConfig, getDaoState, accountExists } from '../../utils/utils';
 
 const Dao = () => {
   const routerCtx = useRouter();
@@ -67,10 +67,6 @@ const Dao = () => {
   const [showSpinner, setShowSpinner] = useState(false);
 
   const handleDaoChange = useChangeDao({ routerCtx, mutationCtx });
-
-  const nearConfig = getConfig(process.env.NODE_ENV || 'development');
-  const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
-  const connection = new nearApi.Connection(nearConfig.nodeUrl, provider, {});
 
   const [MultiVoteOpen, setMultiVoteOpen] = useState(false);
   const toggleMultiVoteOpenOff = () => {
@@ -326,27 +322,6 @@ const Dao = () => {
     setNewProposalRoketoStream(!newProposalRoketoStream);
     setAddProposalModal(false);
   };
-
-  async function accountExists(accountId) {
-    try {
-      await new nearApi.Account(connection, accountId).state();
-      return true;
-    } catch (error) {
-      console.log(error);
-      return false;
-    }
-  }
-
-  async function getDaoState(dao) {
-    try {
-      const state = await new nearApi.Account(connection, dao).state();
-      const amountYokto = new Decimal(state.amount);
-      return amountYokto.div(yoktoNear).toFixed(2);
-    } catch (error) {
-      console.log(error);
-      return 0;
-    }
-  }
 
   const [firstRun, setFirstRun] = useState(true);
 

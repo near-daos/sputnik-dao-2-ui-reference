@@ -1,9 +1,10 @@
+import 'regenerator-runtime/runtime';
 import { connect, Contract, keyStores, WalletConnection } from 'near-api-js';
 import { useGlobalState, useGlobalMutation } from './container';
-import 'regenerator-runtime/runtime';
-
 import getConfig from '../config';
-const nearConfig = getConfig(process.env.NODE_ENV || 'development');
+import * as nearApi from 'near-api-js';
+
+export const nearConfig = getConfig(process.env.NODE_ENV || 'development');
 
 export async function initContract() {
   const near = await connect(
@@ -28,4 +29,28 @@ export function logout() {
 
 export function login() {
   window.walletConnection.requestSignIn(nearConfig.contractName);
+}
+
+export const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
+export const connection = new nearApi.Connection(nearConfig.nodeUrl, provider, {});
+
+export async function accountExists(accountId) {
+  try {
+    await new nearApi.Account(connection, accountId).state();
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
+export async function getDaoState(dao) {
+  try {
+    const state = await new nearApi.Account(connection, dao).state();
+    const amountYokto = new Decimal(state.amount);
+    return amountYokto.div(yoktoNear).toFixed(2);
+  } catch (error) {
+    console.log(error);
+    return 0;
+  }
 }

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import * as nearApi from 'near-api-js';
 import { Contract } from 'near-api-js';
 import Pagination from './Pagination';
 
@@ -18,35 +17,8 @@ import useRouter from '../../utils/use-router';
 import { Decimal } from 'decimal.js';
 import { timestampToReadable, yoktoNear } from '../../utils/funcs';
 import Loading from '../../utils/Loading';
-import getConfig from '../../config';
-import { login } from '../../utils/utils';
+import { login, accountExists, nearConfig } from '../../utils/utils';
 import NewDao from './NewDao';
-
-/* MOVE TO UTILS */
-const nearConfig = getConfig(process.env.NODE_ENV || 'development');
-const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
-const connection = new nearApi.Connection(nearConfig.nodeUrl, provider, {});
-
-async function accountExists(accountId) {
-  try {
-    await new nearApi.Account(connection, accountId).state();
-    return true;
-  } catch (error) {
-    console.log(error);
-    return false;
-  }
-}
-
-async function getDaoState(dao) {
-  try {
-    const state = await new nearApi.Account(connection, dao).state();
-    const amountYokto = new Decimal(state.amount);
-    return amountYokto.div(yoktoNear).toFixed(2);
-  } catch (error) {
-    console.log(error);
-    return 0;
-  }
-}
 
 const DaoInfo = (props) => {
   const contractId = props.item;
