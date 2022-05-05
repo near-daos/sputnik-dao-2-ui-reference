@@ -18,12 +18,12 @@ import {
   MDBModalHeader,
   MDBRow
 } from 'mdbreact';
-import { useGlobalMutation, useGlobalState } from './utils/container';
-import useRouter from './utils/use-router';
+import { useGlobalMutation, useGlobalState } from '../../utils/container';
+import useRouter from '../../utils/use-router';
 import { Decimal } from 'decimal.js';
-import { timestampToReadable, yoktoNear } from './utils/funcs';
-import Loading from './utils/Loading';
-import getConfig from './config';
+import { timestampToReadable, yoktoNear } from '../../utils/funcs';
+import Loading from '../../utils/Loading';
+import getConfig from '../../config';
 
 /* MOVE TO UTILS */
 const nearConfig = getConfig(process.env.NODE_ENV || 'development');

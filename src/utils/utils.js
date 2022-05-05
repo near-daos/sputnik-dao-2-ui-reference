@@ -1,8 +1,8 @@
 import { connect, Contract, keyStores, WalletConnection } from 'near-api-js';
-import { useGlobalState, useGlobalMutation } from './utils/container';
+import { useGlobalState, useGlobalMutation } from './container';
 import 'regenerator-runtime/runtime';
 
-import getConfig from './config';
+import getConfig from '../config';
 const nearConfig = getConfig(process.env.NODE_ENV || 'development');
 
 export async function initContract() {

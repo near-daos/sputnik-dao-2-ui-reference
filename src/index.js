@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import { initContract } from './utils';
+import { initContract } from './utils/utils';
 import { ContainerProvider } from './utils/container';
 
 import 'bootstrap-css-only/css/bootstrap.min.css';

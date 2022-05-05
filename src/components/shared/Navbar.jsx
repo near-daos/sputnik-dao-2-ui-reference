@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 import {
   MDBNavbar,
   MDBNavbarBrand,
@@ -9,10 +9,10 @@ import {
   MDBCollapse
 } from 'mdbreact';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { login, logout } from './utils';
-import { useGlobalState, useGlobalMutation } from './utils/container';
-import useRouter from './utils/use-router';
-import useChangeDao from './hooks/useChangeDao';
+import { login, logout } from '../../utils/utils';
+import { useGlobalState, useGlobalMutation } from '../../utils/container';
+import useRouter from '../../utils/use-router';
+import useChangeDao from '../../hooks/useChangeDao';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);

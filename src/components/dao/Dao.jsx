@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import Navbar from './Navbar';
-import Footer from './Footer';
-import useRouter from './utils/use-router';
+import Navbar from '../shared/Navbar';
+import Footer from '../shared/Footer';
+import useRouter from '../../utils/use-router';
 import { useParams } from 'react-router-dom';
-import roketoLogoSvg from './assets/roketo-logo.svg';
+import roketoLogoSvg from '../../assets/roketo-logo.svg';
 import {
   MDBBox,
   MDBBtn,
@@ -25,22 +25,22 @@ import {
   MDBIcon,
   MDBAlert
 } from 'mdbreact';
-import { useGlobalMutation, useGlobalState } from './utils/container';
+import { useGlobalMutation, useGlobalState } from '../../utils/container';
 import { Decimal } from 'decimal.js';
-import Selector from './Selector';
+import Selector from '../list/Selector';
 import {
   convertDuration,
   proposalsReload,
   timestampToReadable,
   yoktoNear,
   parseForumUrl
-} from './utils/funcs';
-import getConfig from './config';
+} from '../../utils/funcs';
+import getConfig from '../../config';
 import * as nearApi from 'near-api-js';
 import { Contract } from 'near-api-js';
 import { Proposal } from './ProposalPage';
-import Loading from './utils/Loading';
-import useChangeDao from './hooks/useChangeDao';
+import Loading from '../../utils/Loading';
+import useChangeDao from '../../hooks/useChangeDao';
 
 const Dao = () => {
   const routerCtx = useRouter();

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import Dao from './Dao';
 import { BrowserRouterHook } from './utils/use-router';
-import NotFound from './NotFound';
-import ProposalPage from './ProposalPage';
+import Dao from './components/dao/Dao';
+import NotFound from './components/shared/NotFound';
+import ProposalPage from './components/dao/ProposalPage';
 
 function App() {
   return (

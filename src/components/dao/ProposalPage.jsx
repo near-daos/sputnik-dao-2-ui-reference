@@ -21,14 +21,13 @@ import {
   MDBModalHeader,
   MDBPopover,
   MDBPopoverBody,
-  MDBRow,
   MDBTooltip,
   MDBView
 } from 'mdbreact';
-import { useGlobalState } from './utils/container';
-import { convertDuration, timestampToReadable, yoktoNear } from './utils/funcs';
-import Navbar from './Navbar';
-import Footer from './Footer';
+import { useGlobalState } from '../../utils/container';
+import { convertDuration, yoktoNear } from '../../utils/funcs';
+import Navbar from '../shared/Navbar';
+import Footer from '../shared/Footer';
 import { useParams } from 'react-router-dom';
 import Decimal from 'decimal.js';
 import ReactJson from 'react-json-view';
