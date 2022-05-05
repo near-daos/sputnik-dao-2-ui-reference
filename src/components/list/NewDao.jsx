@@ -95,17 +95,6 @@ const NewDao = (props) => {
         const amountYokto = a.mul(yoktoNear).toFixed();
         const args = Buffer.from(JSON.stringify(argsList)).toString('base64');
 
-        /* Add Public Key until contract is fully tested */
-        // await window.factoryContract.create(
-        //   {
-        //     name: daoName.value,
-        //     public_key: nearConfig.pk,
-        //     args: args,
-        //   },
-        //   new Decimal('150000000000000').toString(),
-        //   amountYokto.toString()
-        // );
-
         await window.factoryContract.create({
           args: {
             name: daoName.value,
@@ -116,21 +105,6 @@ const NewDao = (props) => {
           amount: amountYokto.toString(),
           gas: new Decimal('150000000000000').toString()
         });
-
-        // await window.wallet.account().functionCall(
-        //   window.factoryContract,
-        //   'create',
-        //   {
-        //     name: daoName.value,
-        //     public_key: nearConfig.pk,
-        //     args: args
-        //   },
-        //   new Decimal('150000000000000').toString(),
-        //   amountYokto.toString(),
-
-        // );
-
-        // await wallet.account().functionCall(contract, method, args, gas, amount);
       } catch (e) {
         console.log(e);
         props.setShowError(e);
