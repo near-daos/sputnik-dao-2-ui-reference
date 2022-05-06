@@ -196,6 +196,7 @@ const Dao = () => {
 
   useEffect(() => {
     if (stateCtx.config.contract === '') {
+      console.log('hey');
       if (dao !== undefined) {
         mutationCtx.updateConfig({
           contract: dao
@@ -224,6 +225,10 @@ const Dao = () => {
         ],
         changeMethods: ['add_proposal', 'act_proposal']
       });
+
+      if (!dao) {
+        setSelectDao(true);
+      }
     }
   }, [stateCtx.config.contract, dao]);
 
