@@ -21,7 +21,6 @@ export const ContainerProvider = ({ children }) => {
       dispatch({ type: 'loading', payload: false });
     },
     updateConfig(params) {
-      console.log(state);
       dispatch({ type: 'config', payload: { ...state.config, ...params } });
     },
     removeTop() {

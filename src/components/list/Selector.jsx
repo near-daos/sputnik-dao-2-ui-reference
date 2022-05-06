@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Contract } from 'near-api-js';
 import Pagination from './Pagination';
+import useQuery from '../../hooks/useQuery';
 
 import {
   MDBBox,
@@ -232,6 +233,7 @@ const Selector = (props) => {
   const [fromIndex, setFromIndex] = useState(0);
   const [showLoading, setShowLoading] = useState(true);
   const daoLimit = 50;
+  const query = useQuery();
 
   useEffect(() => {
     getDaos(fromIndex, daoLimit)
@@ -260,6 +262,13 @@ const Selector = (props) => {
       });
   }, []);
 
+  useEffect(() => {
+    console.log(query.get('createdao'));
+    if (query.get('createdao')) {
+      setShowNewDaoModal(!showNewDaoModal);
+    }
+  }, [query]);
+
   const handleSelect = async (e) => {
     e.preventDefault();
     mutationCtx.updateConfig({
@@ -276,22 +285,9 @@ const Selector = (props) => {
     return false;
   };
 
-  useEffect(() => {
-    if (
-      window.localStorage.getItem('showNewDaoModal') &&
-      JSON.parse(window.localStorage.getItem('showNewDaoModal')) === true
-    ) {
-      if (window.walletConnection.getAccountId()) {
-        setShowNewDaoModal(!showNewDaoModal);
-      }
-      window.localStorage.setItem('showNewDaoModal', false);
-    }
-  }, [window]);
-
   const toggleNewDao = () => {
     if (!window.walletConnection.getAccountId()) {
-      window.localStorage.setItem('showNewDaoModal', true);
-      login();
+      login({ redirectToCreateDao: true });
       return;
     }
 

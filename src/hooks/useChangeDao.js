@@ -1,5 +1,3 @@
-import { useCallback } from 'react';
-
 const useChangeDao = ({ mutationCtx, routerCtx }) => {
   const handleDaoChange = () => {
     mutationCtx.updateConfig({

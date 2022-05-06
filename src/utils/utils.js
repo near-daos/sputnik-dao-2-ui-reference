@@ -29,8 +29,17 @@ export function logout() {
   window.location.replace(window.location.origin + window.location.pathname);
 }
 
-export function login() {
-  window.walletConnection.requestSignIn(nearConfig.contractName);
+export function login({ redirectToCreateDao } = { redirectToCreateDao: false }) {
+  const successUrl = redirectToCreateDao
+    ? window.location.origin + '/?createdao=true'
+    : window.location.origin + window.location.pathname;
+
+  const signInConfig = {
+    contractId: nearConfig.contractName,
+    successUrl
+  };
+
+  window.walletConnection.requestSignIn(signInConfig);
 }
 
 export const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
