@@ -200,6 +200,7 @@ const Dao = () => {
         mutationCtx.updateConfig({
           contract: dao
         });
+        setSelectDao(false);
       } else {
         setSelectDao(true);
       }
@@ -225,7 +226,12 @@ const Dao = () => {
         changeMethods: ['add_proposal', 'act_proposal']
       });
 
-      if (!dao) {
+      if (dao !== undefined) {
+        mutationCtx.updateConfig({
+          contract: dao
+        });
+        setSelectDao(false);
+      } else {
         setSelectDao(true);
       }
     }
