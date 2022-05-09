@@ -37,9 +37,11 @@ const daosReducer = (state, action) => {
     case DAOS_LIST_FILTER: {
       return {
         ...state,
-        daosFiltered: state.dao.filter((dao) => {
-          return dao.name.toLowerCase().includes(action.filter.toLowerCase());
-        }),
+        daosFiltered: state.daos
+          ? state.daos.filter((dao) => {
+              return dao.toLowerCase().includes(action.filter.toLowerCase());
+            })
+          : [],
         status: DAOS_LIST_STATUS_RESOLVED
       };
     }
