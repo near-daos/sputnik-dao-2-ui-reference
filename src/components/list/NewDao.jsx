@@ -177,7 +177,7 @@ const NewDao = (props) => {
     }
   };
 
-  const changeHandler = (event) => {
+  const changeHandler = async (event) => {
     if (event.target.name === 'daoName') {
       setDaoName({ value: event.target.value.toLocaleLowerCase(), valid: !!event.target.value });
     }
@@ -198,10 +198,13 @@ const NewDao = (props) => {
         event.target.className = 'form-control is-valid';
       }
     } else {
-      if (!validateField(event.target.name, event.target.value)) {
+      const nearAccountValid = await accountExists(event.target.value.toLowerCase());
+      setCouncil({ value: event.target.value.toLowerCase(), valid: nearAccountValid });
+
+      if (!nearAccountValid) {
         event.target.className = 'form-control is-invalid';
       } else {
-        event.target.className = 'form-control';
+        event.target.className = 'form-control is-valid';
       }
     }
   };
