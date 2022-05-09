@@ -13,6 +13,7 @@ import { login, logout } from '../../utils/utils';
 import { useGlobalState, useGlobalMutation } from '../../utils/container';
 import useRouter from '../../utils/use-router';
 import useChangeDao from '../../hooks/useChangeDao';
+import DaoSearch from './DaoSearch';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,6 +49,9 @@ const Navbar = () => {
             </MDBNavItem>
           </MDBNavbarNav>
           <MDBNavbarNav right>
+            <MDBNavItem>
+              <DaoSearch />
+            </MDBNavItem>
             {!window.walletConnection.isSignedIn() ? (
               <MDBNavItem active>
                 <MDBNavLink to="#" onClick={login}>
