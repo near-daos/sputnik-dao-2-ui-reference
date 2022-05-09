@@ -41,6 +41,7 @@ import { Proposal } from './ProposalPage';
 import Loading from '../../utils/Loading';
 import useChangeDao from '../../hooks/useChangeDao';
 import { nearConfig, getDaoState, accountExists } from '../../utils/utils';
+import useDaoSearchFilters from '../../hooks/useDaoSearchFilters';
 
 const Dao = () => {
   const routerCtx = useRouter();
@@ -334,6 +335,10 @@ const Dao = () => {
   };
 
   const [firstRun, setFirstRun] = useState(true);
+
+  const { daosFiltered, daos } = useDaoSearchFilters();
+
+  console.log(daosFiltered);
 
   async function getProposals() {
     let limit = 100;

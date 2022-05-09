@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import { initContract } from './utils/utils';
 import { ContainerProvider } from './utils/container';
+import DaosContextProvider from './components/shared/DaosContextProvider';
 
 import 'bootstrap-css-only/css/bootstrap.min.css';
 import 'mdbreact/dist/css/mdb.css';
@@ -13,7 +14,9 @@ window.nearInitPromise = initContract()
   .then(() => {
     ReactDOM.render(
       <ContainerProvider>
-        <App />
+        <DaosContextProvider>
+          <App />
+        </DaosContextProvider>
       </ContainerProvider>,
       document.querySelector('#root')
     );

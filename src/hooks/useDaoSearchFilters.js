@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import DaosContext from '../contexts/DaosContext';
 import {
   DAOS_LIST_START,
@@ -9,10 +9,7 @@ import {
 } from '../constants/index';
 
 const loadAllDaos = async () => {
-  const daos = await window.contract.get_daos();
-
-  console.log(daos);
-
+  const daos = await window.factoryContract.get_dao_list();
   return daos;
 };
 
@@ -25,14 +22,16 @@ const useDaoSearchFilters = () => {
 
   const [{ status, error, daosFiltered }, dispatch] = context;
 
-  dispatch({ type: DAOS_LIST_START });
-  loadAllDaos()
-    .then((daos) => {
-      dispatch({ type: DAOS_LIST_SUCCESS, payload: daos });
-    })
-    .catch((error) => {
-      dispatch({ type: DAOS_LIST_FAILURE, payload: error });
-    });
+  useEffect(() => {
+    dispatch({ type: DAOS_LIST_START });
+    loadAllDaos()
+      .then((daos) => {
+        dispatch({ type: DAOS_LIST_SUCCESS, daos: daos });
+      })
+      .catch((error) => {
+        dispatch({ type: DAOS_LIST_FAILURE, error: error });
+      });
+  }, [dispatch]);
 
   const filterDaosByName = (name) => {
     if (name === '') {
