@@ -13,6 +13,14 @@ const DaoSearch = () => {
     setSearchTerm(searchTerm);
   };
 
+  const handleUnfocus = (e) => {
+    if (e.currentTarget === e.target) {
+      setTimeout(() => {
+        setSearchTerm('');
+      }, 100);
+    }
+  };
+
   const resultItems = daosFiltered.slice(0, 5).map((dao) => {
     return (
       <li key={dao} className="dao-search-results-item">
@@ -25,14 +33,26 @@ const DaoSearch = () => {
 
   return (
     <div className="dao-search">
-      <MDBInput name="searchFilter" value={searchTerm} onChange={search} label="Search"></MDBInput>
-      {searchTerm.length > 0 && (
-        <div className="dao-search-results">
-          {daosFiltered.length > 0 && <ul className="dao-search-results-list">{resultItems}</ul>}
-          {isLoading && <div>Loading...</div>}
-          {error && <div>Error while loading data</div>}
-        </div>
-      )}
+      <MDBInput
+        name="searchFilter"
+        value={searchTerm}
+        onChange={search}
+        label="Search"
+        onBlur={handleUnfocus}
+      ></MDBInput>
+
+      <div className="dao-search-results">
+        {searchTerm.length > 0 && (
+          <>
+            {daosFiltered.length > 0 && <ul className="dao-search-results-list">{resultItems}</ul>}
+            {daosFiltered.length === 0 && !isLoading && !error && (
+              <div className="dao-search-message">No results</div>
+            )}
+            {isLoading && <div className="dao-search-message">Loading...</div>}
+            {error && <div className="dao-search-message">Error while loading data</div>}
+          </>
+        )}
+      </div>
     </div>
   );
 };

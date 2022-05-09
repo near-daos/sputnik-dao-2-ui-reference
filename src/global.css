@@ -23,7 +23,7 @@
 .dao-search-results {
   position: absolute;
   background-color: #5b6577;
-  padding: 8px 16px;
+  padding: 0;
   z-index: 5;
   border-radius: 4px;
   width: 100%;
@@ -37,12 +37,17 @@
 
 .dao-search-results-list a {
   color: #fff;
+  padding: 8px 16px;
+  display: block;
 }
 
 .dao-search-results-list a:hover {
   color: #f8e6ae;
+  background-color: #656f81;
 }
 
-.dao-search-results-item {
-  padding: 8px 0;
+.dao-search-message {
+  color: #fff;
+  padding: 8px 16px;
+  display: block;
 }
