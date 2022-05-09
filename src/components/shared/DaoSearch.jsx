@@ -3,12 +3,6 @@ import useDaoSearchFilters from '../../hooks/useDaoSearchFilters';
 import { DAOS_LIST_STATUS_PENDING } from '../../constants';
 import { MDBInput } from 'mdbreact';
 
-const styles = {
-  container: {
-    marginRight: '16px'
-  }
-};
-
 const DaoSearch = () => {
   const { daosFiltered, filterDaosByName, error, status } = useDaoSearchFilters();
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,7 +15,7 @@ const DaoSearch = () => {
 
   const resultItems = daosFiltered.slice(0, 5).map((dao) => {
     return (
-      <li key={dao}>
+      <li key={dao} className="dao-search-results-item">
         <a href={`/${dao}`}>{dao.split('.')[0]}</a>
       </li>
     );
@@ -32,11 +26,13 @@ const DaoSearch = () => {
   return (
     <div className="dao-search">
       <MDBInput name="searchFilter" value={searchTerm} onChange={search} label="Search"></MDBInput>
-      <div>
-        {searchTerm.length > 0 && <ul>{resultItems}</ul>}
-        {searchTerm.length > 0 && isLoading && <div>Loading...</div>}
-        {searchTerm.length > 0 && error && <div>Error while loading data</div>}
-      </div>
+      {searchTerm.length > 0 && (
+        <div className="dao-search-results">
+          {daosFiltered.length > 0 && <ul className="dao-search-results-list">{resultItems}</ul>}
+          {isLoading && <div>Loading...</div>}
+          {error && <div>Error while loading data</div>}
+        </div>
+      )}
     </div>
   );
 };
