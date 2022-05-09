@@ -3,5 +3,10 @@
 }
 
 .modal-header .close {
-    color: white;
+  color: white;
+}
+
+.dao-search .md-form {
+  margin-top: 0;
+  margin-bottom: 0;
 }

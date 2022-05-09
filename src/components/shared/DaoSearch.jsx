@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import useDaoSearchFilters from '../../hooks/useDaoSearchFilters';
 import { DAOS_LIST_STATUS_PENDING } from '../../constants';
+import { MDBInput } from 'mdbreact';
+
+const styles = {
+  container: {
+    marginRight: '16px'
+  }
+};
 
 const DaoSearch = () => {
   const { daosFiltered, filterDaosByName, error, status } = useDaoSearchFilters();
@@ -23,8 +30,8 @@ const DaoSearch = () => {
   const isLoading = status === DAOS_LIST_STATUS_PENDING;
 
   return (
-    <div>
-      <input type="text" placeholder="Search" onChange={search} />
+    <div className="dao-search">
+      <MDBInput name="searchFilter" value={searchTerm} onChange={search} label="Search"></MDBInput>
       <div>
         {searchTerm.length > 0 && <ul>{resultItems}</ul>}
         {searchTerm.length > 0 && isLoading && <div>Loading...</div>}
