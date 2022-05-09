@@ -336,7 +336,7 @@ const Dao = () => {
 
   const [firstRun, setFirstRun] = useState(true);
 
-  const { daosFiltered, daos } = useDaoSearchFilters();
+  const { daosFiltered } = useDaoSearchFilters();
 
   console.log(daosFiltered);
 

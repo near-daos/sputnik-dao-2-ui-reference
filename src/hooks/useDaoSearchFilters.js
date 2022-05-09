@@ -20,18 +20,20 @@ const useDaoSearchFilters = () => {
     throw new Error(`useDaoSearchFilters must be used within a DaosContextProvider`);
   }
 
-  const [{ status, error, daosFiltered }, dispatch] = context;
+  const [{ status, error, daosFiltered, daos }, dispatch] = context;
 
   useEffect(() => {
-    dispatch({ type: DAOS_LIST_START });
-    loadAllDaos()
-      .then((daos) => {
-        dispatch({ type: DAOS_LIST_SUCCESS, daos: daos });
-      })
-      .catch((error) => {
-        dispatch({ type: DAOS_LIST_FAILURE, error: error });
-      });
-  }, [dispatch]);
+    if (daos.length === 0) {
+      dispatch({ type: DAOS_LIST_START });
+      loadAllDaos()
+        .then((daos) => {
+          dispatch({ type: DAOS_LIST_SUCCESS, daos: daos });
+        })
+        .catch((error) => {
+          dispatch({ type: DAOS_LIST_FAILURE, error: error });
+        });
+    }
+  }, [dispatch, daos]);
 
   const filterDaosByName = (name) => {
     if (name === '') {
