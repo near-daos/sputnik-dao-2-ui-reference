@@ -9,11 +9,11 @@ import {
 } from '../constants/index';
 
 const loadAllDaos = async () => {
-  const daos = await window.contract.get_daos()
+  const daos = await window.contract.get_daos();
 
-  console.log(daos)
+  console.log(daos);
 
-  return daos
+  return daos;
 };
 
 const useDaoSearchFilters = () => {
@@ -34,14 +34,15 @@ const useDaoSearchFilters = () => {
       dispatch({ type: DAOS_LIST_FAILURE, payload: error });
     });
 
-  const filterByName = (name) => {
+  const filterDaosByName = (name) => {
     if (name === '') {
       return dispatch({ type: DAOS_LIST_RESET });
+    }
 
     dispatch({ type: DAOS_LIST_FILTER, filter: name });
   };
 
-  return { daosFiltered, status, error, filterByName };
+  return { daosFiltered, status, error, filterDaosByName };
 };
 
 export default useDaoSearchFilters;
