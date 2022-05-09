@@ -249,7 +249,7 @@ const NewDao = (props) => {
             name="council"
             value={council.value}
             onChange={changeHandler}
-            label="Enter Council Member"
+            label="Enter One Council Member Account ID"
             required
             group
           >
