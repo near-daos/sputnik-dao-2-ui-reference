@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import useDaoSearchFilters from '../../hooks/useDaoSearchFilters';
+import { DAOS_LIST_STATUS_PENDING } from '../../constants';
 
 const DaoSearch = () => {
-  const { daosFiltered, filterDaosByName } = useDaoSearchFilters();
+  const { daosFiltered, filterDaosByName, error, status } = useDaoSearchFilters();
   const [searchTerm, setSearchTerm] = useState('');
 
   const search = (e) => {
@@ -19,10 +20,16 @@ const DaoSearch = () => {
     );
   });
 
+  const isLoading = status === DAOS_LIST_STATUS_PENDING;
+
   return (
     <div>
       <input type="text" placeholder="Search" onChange={search} />
-      {searchTerm.length > 0 && <ul>{resultItems}</ul>}
+      <div>
+        {searchTerm.length > 0 && <ul>{resultItems}</ul>}
+        {searchTerm.length > 0 && isLoading && <div>Loading...</div>}
+        {searchTerm.length > 0 && error && <div>Error while loading data</div>}
+      </div>
     </div>
   );
 };
