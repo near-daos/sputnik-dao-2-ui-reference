@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import useDaoSearchFilters from '../../hooks/useDaoSearchFilters';
+import useOuterClick from '../../hooks/useOuterClick';
 import { DAOS_LIST_STATUS_PENDING } from '../../constants';
 import { MDBInput } from 'mdbreact';
 
@@ -13,13 +14,9 @@ const DaoSearch = () => {
     setSearchTerm(searchTerm);
   };
 
-  const handleUnfocus = (e) => {
-    if (e.currentTarget === e.target) {
-      setTimeout(() => {
-        setSearchTerm('');
-      }, 100);
-    }
-  };
+  const innerRef = useOuterClick((e) => {
+    setSearchTerm('');
+  });
 
   const resultItems = daosFiltered.slice(0, 5).map((dao) => {
     return (
@@ -32,14 +29,8 @@ const DaoSearch = () => {
   const isLoading = status === DAOS_LIST_STATUS_PENDING;
 
   return (
-    <div className="dao-search">
-      <MDBInput
-        name="searchFilter"
-        value={searchTerm}
-        onChange={search}
-        label="Search"
-        onBlur={handleUnfocus}
-      ></MDBInput>
+    <div className="dao-search" ref={innerRef}>
+      <MDBInput name="searchFilter" value={searchTerm} onChange={search} label="Search"></MDBInput>
 
       <div className="dao-search-results">
         {searchTerm.length > 0 && (

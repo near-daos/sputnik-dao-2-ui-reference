@@ -35,10 +35,16 @@
   padding-left: 0;
 }
 
+.dao-search-results-list li {
+  list-style: none;
+  padding-left: 0;
+}
+
 .dao-search-results-list a {
   color: #fff;
   padding: 8px 16px;
   display: block;
+  border-radius: 4px;
 }
 
 .dao-search-results-list a:hover {
