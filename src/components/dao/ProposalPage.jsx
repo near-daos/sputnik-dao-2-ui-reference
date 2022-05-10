@@ -373,7 +373,7 @@ export const Proposal = (props) => {
               </div>
               <div className="clearfix" />
               <MDBCardText className="proposal-item__text">
-                <MDBBox className="h4-responsive white-text">
+                <MDBBox className="h4-responsive white-text proposal-item__text-description">
                   {props.data.description.split('/t/')[0]}
                 </MDBBox>
                 {props.data.description.split('/t/')[1] ? (

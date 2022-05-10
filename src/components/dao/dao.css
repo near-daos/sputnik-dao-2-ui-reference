@@ -28,12 +28,12 @@
   flex-direction: column !important;
 }
 
-.proposal-item__header {
-}
 .proposal-item__text {
   flex-grow: 1;
 }
-.proposal-item__buttons {
+
+.proposal-item__text-description {
+  word-break: break-all;
 }
 
 @media only screen and (max-width: 992px) {
