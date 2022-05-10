@@ -518,7 +518,7 @@ const Dao = () => {
         nearApi.transactions.functionCall(
           'act_proposal',
           args,
-          new Decimal('6000000000000').toString()
+          new Decimal('10000000000000').toString()
         )
       );
     });
