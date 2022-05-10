@@ -1816,7 +1816,7 @@ const Dao = () => {
                 </MDBCol>
               </MDBRow>
 
-              <MDBRow className="">
+              <div className="proposal-list">
                 {daoPolicy && numberProposals > 0 && proposals !== null
                   ? proposals
                       .sort((a, b) => (b.key >= a.key ? 1 : -1))
@@ -1865,7 +1865,7 @@ const Dao = () => {
                         </span>
                       ))
                   : null}
-              </MDBRow>
+              </div>
 
               {showError !== null ? (
                 <MDBNotification

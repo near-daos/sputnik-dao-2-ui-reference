@@ -205,9 +205,9 @@ export const Proposal = (props) => {
   const canRemove = canVote('*:VoteRemove');
 
   return (
-    <>
+    <div className="proposal-item">
       {props.data.kind ? (
-        <MDBCol className="col-12 col-sm-8 col-lg-6 mx-auto">
+        <div className="proposal-item__container">
           <MDBModal
             modalStyle="danger"
             centered
@@ -224,7 +224,7 @@ export const Proposal = (props) => {
             </MDBModalFooter>
           </MDBModal>
 
-          <MDBCard className="mb-5 stylish-color white-text">
+          <MDBCard className="mb-5 stylish-color white-text proposal-item__card">
             <MDBCardHeader className="text-center h4-responsive">
               {props.data.kind === 'ChangeConfig' ? 'Change Config: ' : null}
               {props.data.kind === 'ChangePolicy' ? 'Change Policy: ' : null}
@@ -933,9 +933,9 @@ export const Proposal = (props) => {
             </div>
           </MDBCard>
           {/*<QuestionModal show={showModal} text={modalText} handleVoteYes={handleVoteYes}/>*/}
-        </MDBCol>
+        </div>
       ) : null}
-    </>
+    </div>
   );
 };
 
