@@ -3,6 +3,7 @@ import useDaoSearchFilters from '../../hooks/useDaoSearchFilters';
 import useOuterClick from '../../hooks/useOuterClick';
 import { DAOS_LIST_STATUS_PENDING } from '../../constants';
 import { MDBInput } from 'mdbreact';
+import './dao-search.css';
 
 const DaoSearch = () => {
   const { daosFiltered, filterDaosByName, error, status } = useDaoSearchFilters();
