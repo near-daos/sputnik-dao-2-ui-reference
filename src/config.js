@@ -1,8 +1,7 @@
-const CONTRACT_NAME = 'sputnikv2.testnet'
+const CONTRACT_NAME = 'sputnikv2.testnet';
 
 function getConfig(env) {
   switch (env) {
-
     case 'production':
     case 'mainnet':
       return {
@@ -14,8 +13,8 @@ function getConfig(env) {
         explorerUrl: 'https://explorer.mainnet.near.org',
         pk: '2gtDEwdLuUBawzFLAnCS9gUso3Ph76bRzMpVrtb66f3J',
         tokenFactory: 'tkn.near',
-        roketoContractAddress: 'roketodapp.near',
-      }
+        roketoContractAddress: 'roketodapp.near'
+      };
     case 'development':
     case 'testnet':
       return {
@@ -27,8 +26,8 @@ function getConfig(env) {
         explorerUrl: 'https://explorer.testnet.near.org',
         pk: 'G8JpvUhKqfr89puEKgbBqUxQzCMfJfPSRvKw4EJoiZpZ',
         tokenFactory: 'tokenfactory.testnet',
-        roketoContractAddress: 'dev-1635510732093-17387698050424',
-      }
+        roketoContractAddress: 'dev-1635510732093-17387698050424'
+      };
     case 'betanet':
       return {
         networkId: 'betanet',
@@ -39,8 +38,8 @@ function getConfig(env) {
         explorerUrl: 'https://explorer.betanet.near.org',
         pk: 'G8JpvUhKqfr89puEKgbBqUxQzCMfJfPSRvKw4EJoiZpZ',
         tokenFactory: 'tokenfactory.testnet',
-        roketoContractAddress: 'dev-1635510732093-17387698050424',
-      }
+        roketoContractAddress: 'dev-1635510732093-17387698050424'
+      };
     case 'local':
       return {
         networkId: 'local',
@@ -48,26 +47,26 @@ function getConfig(env) {
         keyPath: `${process.env.HOME}/.near/validator_key.json`,
         walletUrl: 'http://localhost:4000/wallet',
         contractName: CONTRACT_NAME,
-        pk: null,
-      }
+        pk: null
+      };
     case 'test':
     case 'ci':
       return {
         networkId: 'shared-test',
         nodeUrl: 'https://rpc.ci-testnet.near.org',
         contractName: CONTRACT_NAME,
-        masterAccount: 'test.near',
-      }
+        masterAccount: 'test.near'
+      };
     case 'ci-betanet':
       return {
         networkId: 'shared-test-staging',
         nodeUrl: 'https://rpc.ci-betanet.near.org',
         contractName: CONTRACT_NAME,
-        masterAccount: 'test.near',
-      }
+        masterAccount: 'test.near'
+      };
     default:
-      throw Error(`Unconfigured environment '${env}'. Can be configured in src/config.js.`)
+      throw Error(`Unconfigured environment '${env}'. Can be configured in src/config.js.`);
   }
 }
 
-module.exports = getConfig
+module.exports = getConfig;

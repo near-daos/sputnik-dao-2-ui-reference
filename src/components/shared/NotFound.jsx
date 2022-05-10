@@ -1,17 +1,9 @@
-import React from "react";
+import React from 'react';
 
-import {
-  MDBRow,
-  MDBCol,
-  MDBContainer,
-  MDBCard,
-  MDBCardBody,
-  MDBView,
-  MDBMask,
-} from "mdbreact";
+import { MDBRow, MDBCol, MDBContainer, MDBCard, MDBCardBody, MDBView, MDBMask } from 'mdbreact';
 
 const NotFound = () => {
-  const navStyle = { height: "100%", width: "100%", paddingTop: "2rem" };
+  const navStyle = { height: '100%', width: '100%', paddingTop: '2rem' };
 
   return (
     <MDBView className="home-view">

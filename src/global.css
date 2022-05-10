@@ -3,5 +3,9 @@
 }
 
 .modal-header .close {
-    color: white;
+  color: white;
+}
+
+.capitalize {
+  text-transform: capitalize;
 }
