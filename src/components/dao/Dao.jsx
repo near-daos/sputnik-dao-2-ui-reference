@@ -41,6 +41,7 @@ import { Proposal } from './ProposalPage';
 import Loading from '../../utils/Loading';
 import useChangeDao from '../../hooks/useChangeDao';
 import { nearConfig, getDaoState, accountExists } from '../../utils/utils';
+import './dao.css';
 
 const Dao = () => {
   const routerCtx = useRouter();
@@ -1516,8 +1517,13 @@ const Dao = () => {
                       <MDBRow>
                         <MDBCol>
                           {roles.map((item, key) => (
-                            <MDBCard className="p-0 m-2 stylish-color-dark white-text" key={key}>
-                              <MDBCardHeader className="h4-responsive">{item.name}</MDBCardHeader>
+                            <MDBCard
+                              className="p-0 m-2 stylish-color-dark white-text dao-card"
+                              key={key}
+                            >
+                              <MDBCardHeader className="h4-responsive capitalize">
+                                {item.name}
+                              </MDBCardHeader>
                               <MDBCardBody className="p-4">
                                 {item.kind.Group.map((i, k) => (
                                   <div key={k}>{i}</div>
@@ -1527,10 +1533,10 @@ const Dao = () => {
                           ))}
                         </MDBCol>
                         <MDBCol className="col-12 col-md-6">
-                          <MDBCard className="p-0 m-2 stylish-color-dark white-text">
+                          <MDBCard className="p-0 m-2 stylish-color-dark white-text dao-card">
                             <MDBCardHeader className="h5-responsive">
-                              <MDBRow>
-                                <MDBCol>Properties:</MDBCol>
+                              <MDBRow className="dao-card__header">
+                                <MDBCol>Properties</MDBCol>
                                 <MDBCol className="">
                                   <MDBBox className="text-right">
                                     <MDBBtn size="sm" onClick={handleDaoChange} color="elegant">
