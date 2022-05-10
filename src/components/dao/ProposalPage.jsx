@@ -287,90 +287,92 @@ export const Proposal = (props) => {
           <div className="clearfix"/>
           */}
             </MDBCardHeader>
-            <MDBCardBody className="white-text">
-              <div className="float-left">
-                {jsonError ? (
-                  <MDBCol className="flex-center">
-                    <MDBAlert color="danger" className="font-small text-center">
-                      This proposal is unknown type, and can't be properly displayed
-                    </MDBAlert>
-                  </MDBCol>
-                ) : null}
-                {props.data.kind.AddMemberToRole || props.data.kind.RemoveMemberFromRole ? (
-                  <MDBIcon
-                    icon="user-secret"
-                    className="white-text mr-2 d-inline-block"
-                    size="2x"
-                  />
-                ) : null}
-
-                {props.data.kind.FunctionCall &&
-                props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? (
-                  <MDBIcon icon="tractor" className="white-text mr-2 d-inline-block" size="2x" />
-                ) : null}
-
-                {props.data.kind.FunctionCall &&
-                props.data.kind.FunctionCall &&
-                props.data.kind.FunctionCall.actions[0].method_name !== 'create_token' ? (
-                  <MDBIcon icon="cogs" className="white-text mr-2 d-inline-block" size="2x" />
-                ) : null}
-
-                {props.data.kind.Transfer && props.data.kind.Transfer.token_id === '' ? (
-                  <>
+            <MDBCardBody className="white-text proposal-item__body">
+              <div className="proposal-item__header">
+                <div className="float-left">
+                  {jsonError ? (
+                    <MDBCol className="flex-center">
+                      <MDBAlert color="danger" className="font-small text-center">
+                        This proposal is unknown type, and can't be properly displayed
+                      </MDBAlert>
+                    </MDBCol>
+                  ) : null}
+                  {props.data.kind.AddMemberToRole || props.data.kind.RemoveMemberFromRole ? (
                     <MDBIcon
-                      icon="money-check-alt"
+                      icon="user-secret"
                       className="white-text mr-2 d-inline-block"
                       size="2x"
                     />
-                    <span style={{ fontSize: 32, marginRight: 6 }}>Ⓝ</span>
-                  </>
-                ) : null}
+                  ) : null}
 
-                {props.data.kind.Transfer && props.data.kind.Transfer.token_id !== '' ? (
-                  <>
-                    <MDBIcon
-                      icon="money-check-alt"
-                      className="white-text mr-2 d-inline-block"
-                      size="2x"
-                    />
-                    <span style={{ fontSize: 32, marginRight: 6 }}>FT</span>
-                  </>
-                ) : null}
+                  {props.data.kind.FunctionCall &&
+                  props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? (
+                    <MDBIcon icon="tractor" className="white-text mr-2 d-inline-block" size="2x" />
+                  ) : null}
 
-                {props.data.status === 'Rejected' ? (
-                  <MDBBadge color="danger">Rejected</MDBBadge>
-                ) : null}
-                {props.data.status === 'Approved' ? (
-                  <>
-                    <MDBBadge color="green">Approved</MDBBadge>{' '}
-                    <MDBIcon className="amber-text" size="2x" icon="crown" />
-                  </>
-                ) : null}
-                {props.data.status === 'InProgress' &&
-                convertDuration(
-                  new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)
-                ) >= new Date() ? (
-                  <MDBBadge color="green">In Progress</MDBBadge>
-                ) : null}
-                {props.data.status === 'Expired' ||
-                (props.data.status === 'InProgress' &&
+                  {props.data.kind.FunctionCall &&
+                  props.data.kind.FunctionCall &&
+                  props.data.kind.FunctionCall.actions[0].method_name !== 'create_token' ? (
+                    <MDBIcon icon="cogs" className="white-text mr-2 d-inline-block" size="2x" />
+                  ) : null}
+
+                  {props.data.kind.Transfer && props.data.kind.Transfer.token_id === '' ? (
+                    <>
+                      <MDBIcon
+                        icon="money-check-alt"
+                        className="white-text mr-2 d-inline-block"
+                        size="2x"
+                      />
+                      <span style={{ fontSize: 32, marginRight: 6 }}>Ⓝ</span>
+                    </>
+                  ) : null}
+
+                  {props.data.kind.Transfer && props.data.kind.Transfer.token_id !== '' ? (
+                    <>
+                      <MDBIcon
+                        icon="money-check-alt"
+                        className="white-text mr-2 d-inline-block"
+                        size="2x"
+                      />
+                      <span style={{ fontSize: 32, marginRight: 6 }}>FT</span>
+                    </>
+                  ) : null}
+
+                  {props.data.status === 'Rejected' ? (
+                    <MDBBadge color="danger">Rejected</MDBBadge>
+                  ) : null}
+                  {props.data.status === 'Approved' ? (
+                    <>
+                      <MDBBadge color="green">Approved</MDBBadge>{' '}
+                      <MDBIcon className="amber-text" size="2x" icon="crown" />
+                    </>
+                  ) : null}
+                  {props.data.status === 'InProgress' &&
                   convertDuration(
                     new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)
-                  ) < new Date()) ? (
-                  <MDBBadge color="amber">Expired</MDBBadge>
-                ) : null}
-                {props.data.status === 'Removed' ? (
-                  <MDBBadge color="yellow">Removed</MDBBadge>
-                ) : null}
-              </div>
-              <div className="float-right h4-responsive">
-                <a className="white-text btn-link" href={'#/' + props.dao + '/' + props.id}>
-                  <MDBIcon icon="link" />
-                </a>{' '}
-                #{props.id}
+                  ) >= new Date() ? (
+                    <MDBBadge color="green">In Progress</MDBBadge>
+                  ) : null}
+                  {props.data.status === 'Expired' ||
+                  (props.data.status === 'InProgress' &&
+                    convertDuration(
+                      new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)
+                    ) < new Date()) ? (
+                    <MDBBadge color="amber">Expired</MDBBadge>
+                  ) : null}
+                  {props.data.status === 'Removed' ? (
+                    <MDBBadge color="yellow">Removed</MDBBadge>
+                  ) : null}
+                </div>
+                <div className="float-right h4-responsive">
+                  <a className="white-text btn-link" href={'#/' + props.dao + '/' + props.id}>
+                    <MDBIcon icon="link" />
+                  </a>{' '}
+                  #{props.id}
+                </div>
               </div>
               <div className="clearfix" />
-              <MDBCardText>
+              <MDBCardText className="proposal-item__text">
                 <MDBBox className="h4-responsive white-text">
                   {props.data.description.split('/t/')[0]}
                 </MDBBox>
@@ -699,134 +701,136 @@ export const Proposal = (props) => {
                 ) : null}
               </MDBCardText>
 
-              {canApprove ? (
-                <MDBTooltip tag="span" placement="top">
-                  <MDBBtn
-                    style={{ borderRadius: 50 }}
-                    disabled={
-                      showSpinner ||
-                      convertDuration(
-                        new Decimal(props.data.submission_time).plus(
-                          props.daoPolicy.proposal_period
-                        )
-                      ) < new Date() ||
-                      props.data.status !== 'InProgress'
-                    }
-                    onClick={handleVoteYes}
-                    floating
-                    color="green darken-1"
-                    className="h5-responsive"
-                    size="sm"
-                  >
-                    <MDBIcon icon="thumbs-up" size="2x" className="white-text m-2 p-2" />
-                  </MDBBtn>
-                  <span>Vote YES</span>
-                </MDBTooltip>
-              ) : null}
+              <div className="proposal-item__buttons">
+                {canApprove ? (
+                  <MDBTooltip tag="span" placement="top">
+                    <MDBBtn
+                      style={{ borderRadius: 50 }}
+                      disabled={
+                        showSpinner ||
+                        convertDuration(
+                          new Decimal(props.data.submission_time).plus(
+                            props.daoPolicy.proposal_period
+                          )
+                        ) < new Date() ||
+                        props.data.status !== 'InProgress'
+                      }
+                      onClick={handleVoteYes}
+                      floating
+                      color="green darken-1"
+                      className="h5-responsive"
+                      size="sm"
+                    >
+                      <MDBIcon icon="thumbs-up" size="2x" className="white-text m-2 p-2" />
+                    </MDBBtn>
+                    <span>Vote YES</span>
+                  </MDBTooltip>
+                ) : null}
 
-              {window.walletConnection.getAccountId() &&
-              convertDuration(
-                new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)
-              ) < new Date() &&
-              props.data.status === 'InProgress' ? (
-                <MDBTooltip tag="span" placement="top">
-                  <MDBBtn
-                    style={{ borderRadius: 50 }}
-                    disabled={showSpinner}
-                    onClick={handleFinalize}
-                    color="info"
-                    floating
-                    className="h5-responsive float-right"
-                    size="sm"
-                  >
-                    <MDBIcon icon="check-circle" size="2x" className="white-text m-2 p-2" />
-                  </MDBBtn>
-                  <span>Finalise</span>
-                </MDBTooltip>
-              ) : null}
-
-              {canReject ? (
-                <MDBTooltip tag="span" placement="top">
-                  <MDBBtn
-                    style={{ borderRadius: 50 }}
-                    disabled={
-                      showSpinner ||
-                      convertDuration(
-                        new Decimal(props.data.submission_time).plus(
-                          props.daoPolicy.proposal_period
-                        )
-                      ) < new Date() ||
-                      props.data.status !== 'InProgress'
-                    }
-                    onClick={handleVoteNo}
-                    color="red"
-                    floating
-                    className="h5-responsive float-right"
-                    size="sm"
-                  >
-                    <MDBIcon icon="thumbs-down" size="2x" className="white-text m-2 p-2" />
-                  </MDBBtn>
-                  <span>Vote NO</span>
-                </MDBTooltip>
-              ) : null}
-
-              {canRemove ? (
-                <MDBTooltip tag="span" placement="top">
-                  <MDBBtn
-                    style={{ borderRadius: 50 }}
-                    disabled={
-                      showSpinner ||
-                      convertDuration(
-                        new Decimal(props.data.submission_time).plus(
-                          props.daoPolicy.proposal_period
-                        )
-                      ) < new Date() ||
-                      props.data.status !== 'InProgress'
-                    }
-                    onClick={handleVoteRemove}
-                    color="amber"
-                    floating
-                    className="h5-responsive float-right"
-                    size="sm"
-                  >
-                    <MDBIcon icon="trash-alt" size="2x" className="white-text m-2 p-2" />
-                  </MDBBtn>
-                  <span>Remove Proposal</span>
-                </MDBTooltip>
-              ) : null}
-
-              {props.isBatchVote &&
-              !props.data.votes[window.walletConnection.getAccountId()] &&
-              canApprove &&
-              canReject &&
-              canRemove &&
-              !(
+                {window.walletConnection.getAccountId() &&
                 convertDuration(
                   new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)
-                ) < new Date() || props.data.status !== 'InProgress'
-              ) ? (
-                <>
-                  <hr />
-                  <div className="custom-control custom-switch">
-                    <input
-                      type="checkbox"
-                      className="custom-control-input"
-                      key={parseInt(props.id)}
-                      id={parseInt(props.id)}
-                      name="multi-vote-checkbox[]"
-                      value={props.id}
-                      onChange={handleChange}
-                      checked={props.batchVotes.includes(props.id)}
-                    />
-                    <label
-                      className="custom-control-label white-text h5-responsive"
-                      htmlFor={props.id}
+                ) < new Date() &&
+                props.data.status === 'InProgress' ? (
+                  <MDBTooltip tag="span" placement="top">
+                    <MDBBtn
+                      style={{ borderRadius: 50 }}
+                      disabled={showSpinner}
+                      onClick={handleFinalize}
+                      color="info"
+                      floating
+                      className="h5-responsive float-right"
+                      size="sm"
                     >
-                      select to vote
-                    </label>
-                  </div>
-                </>
-              ) : null}
+                      <MDBIcon icon="check-circle" size="2x" className="white-text m-2 p-2" />
+                    </MDBBtn>
+                    <span>Finalise</span>
+                  </MDBTooltip>
+                ) : null}
+
+                {canReject ? (
+                  <MDBTooltip tag="span" placement="top">
+                    <MDBBtn
+                      style={{ borderRadius: 50 }}
+                      disabled={
+                        showSpinner ||
+                        convertDuration(
+                          new Decimal(props.data.submission_time).plus(
+                            props.daoPolicy.proposal_period
+                          )
+                        ) < new Date() ||
+                        props.data.status !== 'InProgress'
+                      }
+                      onClick={handleVoteNo}
+                      color="red"
+                      floating
+                      className="h5-responsive float-right"
+                      size="sm"
+                    >
+                      <MDBIcon icon="thumbs-down" size="2x" className="white-text m-2 p-2" />
+                    </MDBBtn>
+                    <span>Vote NO</span>
+                  </MDBTooltip>
+                ) : null}
+
+                {canRemove ? (
+                  <MDBTooltip tag="span" placement="top">
+                    <MDBBtn
+                      style={{ borderRadius: 50 }}
+                      disabled={
+                        showSpinner ||
+                        convertDuration(
+                          new Decimal(props.data.submission_time).plus(
+                            props.daoPolicy.proposal_period
+                          )
+                        ) < new Date() ||
+                        props.data.status !== 'InProgress'
+                      }
+                      onClick={handleVoteRemove}
+                      color="amber"
+                      floating
+                      className="h5-responsive float-right"
+                      size="sm"
+                    >
+                      <MDBIcon icon="trash-alt" size="2x" className="white-text m-2 p-2" />
+                    </MDBBtn>
+                    <span>Remove Proposal</span>
+                  </MDBTooltip>
+                ) : null}
+
+                {props.isBatchVote &&
+                !props.data.votes[window.walletConnection.getAccountId()] &&
+                canApprove &&
+                canReject &&
+                canRemove &&
+                !(
+                  convertDuration(
+                    new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)
+                  ) < new Date() || props.data.status !== 'InProgress'
+                ) ? (
+                  <>
+                    <hr />
+                    <div className="custom-control custom-switch">
+                      <input
+                        type="checkbox"
+                        className="custom-control-input"
+                        key={parseInt(props.id)}
+                        id={parseInt(props.id)}
+                        name="multi-vote-checkbox[]"
+                        value={props.id}
+                        onChange={handleChange}
+                        checked={props.batchVotes.includes(props.id)}
+                      />
+                      <label
+                        className="custom-control-label white-text h5-responsive"
+                        htmlFor={props.id}
+                      >
+                        select to vote
+                      </label>
+                    </div>
+                  </>
+                ) : null}
+              </div>
             </MDBCardBody>
             <div className="rounded-bottom mdb-color text-center pt-3 pl-5 pr-5">
               <ul className="list-unstyled list-inline font-small">

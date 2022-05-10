@@ -23,6 +23,19 @@
   height: 100%;
 }
 
+.proposal-item__body {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.proposal-item__header {
+}
+.proposal-item__text {
+  flex-grow: 1;
+}
+.proposal-item__buttons {
+}
+
 @media only screen and (max-width: 992px) {
   .proposal-card {
     height: 100%;
