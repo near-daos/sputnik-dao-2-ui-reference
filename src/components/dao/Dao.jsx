@@ -1929,8 +1929,8 @@ const Dao = () => {
                   </MDBModalHeader>
                   <MDBModalBody style={{ background: 'rgb(213, 211, 211)' }}>
                     <MDBRow>
-                      <MDBCol className="col-12 col-md-6 col-lg-5 mb-1">
-                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                      <MDBCol className="col-12 col-md-6 col-lg-6 mb-2">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark proposal-card">
                           <MDBCardBody className="text-center white-text">
                             <MDBIcon icon="user-secret" size="4x" />
                             <hr />
@@ -1954,8 +1954,8 @@ const Dao = () => {
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
-                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
-                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                      <MDBCol className="col-12 col-md-6 col-lg-6 mb-2">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark proposal-card">
                           <MDBCardBody className="text-center white-text">
                             <MDBIcon icon="hand-holding-usd" size="4x" />
                             <hr />
@@ -1969,8 +1969,8 @@ const Dao = () => {
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
-                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
-                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-2">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark proposal-card">
                           <MDBCardBody className="text-center white-text">
                             <MDBIcon icon="tractor" size="4x" />
                             <hr />
@@ -1984,8 +1984,8 @@ const Dao = () => {
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
-                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
-                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-2">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark proposal-card">
                           <MDBCardBody className="text-center white-text">
                             <MDBIcon icon="cogs" size="4x" />
                             <hr />
@@ -1999,8 +1999,8 @@ const Dao = () => {
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
-                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
-                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-2">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark proposal-card">
                           <MDBCardBody className="text-center white-text">
                             <img src={roketoLogoSvg} style={{ height: 64, marginLeft: -20 }}></img>
 
