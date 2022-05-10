@@ -530,7 +530,7 @@ const Dao = () => {
     }
   };
 
-  const changeHandler = (event) => {
+  const changeHandler = async (event) => {
     if (event.target.name === 'proposalTarget') {
       setProposalTarget({
         value: event.target.value.toLowerCase(),
@@ -661,10 +661,20 @@ const Dao = () => {
       });
     }
 
-    if (!validateField(event.target.name, event.target.value)) {
-      event.target.className = 'form-control is-invalid';
+    if (event.target.name === 'proposalTarget' || event.target.name === 'proposalTokenOwner') {
+      const nearAccountValid = await accountExists(event.target.value);
+
+      if (!nearAccountValid) {
+        event.target.className = 'form-control is-invalid';
+      } else {
+        event.target.className = 'form-control is-valid';
+      }
     } else {
-      event.target.className = 'form-control is-valid';
+      if (!validateField(event.target.name, event.target.value)) {
+        event.target.className = 'form-control is-invalid';
+      } else {
+        event.target.className = 'form-control is-valid';
+      }
     }
   };
 
