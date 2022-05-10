@@ -1525,7 +1525,7 @@ const Dao = () => {
                   <MDBCard className="stylish-color">
                     <MDBCardBody>
                       <MDBRow>
-                        <MDBCol>
+                        <MDBCol className="dao-details__col">
                           {roles.map((item, key) => (
                             <MDBCard
                               className="p-0 m-2 stylish-color-dark white-text dao-card"
@@ -1542,7 +1542,7 @@ const Dao = () => {
                             </MDBCard>
                           ))}
                         </MDBCol>
-                        <MDBCol className="col-12 col-md-6">
+                        <MDBCol className="col-12 col-md-6 dao-details__col">
                           <MDBCard className="p-0 m-2 stylish-color-dark white-text dao-card">
                             <MDBCardHeader className="h5-responsive">
                               <MDBRow className="dao-card__header">

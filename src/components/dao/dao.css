@@ -1,9 +1,9 @@
-.dao-card {
-  height: calc(100% - 20px);
-}
-
 .dao-card__header {
   align-items: center;
+}
+
+.dao-details__col {
+  height: 100%;
 }
 
 .proposal-card {
