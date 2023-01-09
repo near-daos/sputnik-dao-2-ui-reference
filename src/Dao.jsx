@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from 'react'
+import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import useRouter from './utils/use-router'
-import {useParams} from "react-router-dom";
-import roketoLogoSvg from './assets/roketo-logo.svg'
+import useRouter from "./utils/use-router";
+import { useParams } from "react-router-dom";
+import roketoLogoSvg from "./assets/roketo-logo.svg";
+import nearSocialLogoSvg from "./assets/near-social.svg";
 import {
   MDBBox,
   MDBBtn,
@@ -21,10 +22,12 @@ import {
   MDBNotification,
   MDBRow,
   MDBView,
-  MDBIcon, MDBLink, MDBAlert
+  MDBIcon,
+  MDBLink,
+  MDBAlert,
 } from "mdbreact";
-import {useGlobalMutation, useGlobalState} from './utils/container'
-import {Decimal} from 'decimal.js';
+import { useGlobalMutation, useGlobalState } from "./utils/container";
+import { Decimal } from "decimal.js";
 import Selector from "./Selector";
 import {
   convertDuration,
@@ -32,30 +35,45 @@ import {
   timestampToReadable,
   updatesJsonUrl,
   yoktoNear,
-  parseForumUrl
-} from './utils/funcs'
+  parseForumUrl,
+} from "./utils/funcs";
 import getConfig from "./config";
 import * as nearApi from "near-api-js";
-import {Contract} from "near-api-js";
-import {Proposal} from './ProposalPage';
+import { Contract } from "near-api-js";
+import { Proposal } from "./ProposalPage";
 import Loading from "./utils/Loading";
+import MarkdownIt from "markdown-it";
+import MdEditor from "react-markdown-editor-lite";
+// import style manually
+import "react-markdown-editor-lite/lib/index.css";
 
 const Dao = () => {
-  const routerCtx = useRouter()
-  const stateCtx = useGlobalState()
-  const mutationCtx = useGlobalMutation()
+  const routerCtx = useRouter();
+  const stateCtx = useGlobalState();
+  const mutationCtx = useGlobalMutation();
   const [numberProposals, setNumberProposals] = useState(0);
   const [proposals, setProposals] = useState(null);
   const [showError, setShowError] = useState(null);
   const [addProposalModal, setAddProposalModal] = useState(false);
-  const [newProposalCouncilMember, setNewProposalCouncilMember] = useState(false);
-  const [removeProposalCouncilMember, setRemoveProposalCouncilMember] = useState(false);
+  const [newProposalCouncilMember, setNewProposalCouncilMember] =
+    useState(false);
+  const [removeProposalCouncilMember, setRemoveProposalCouncilMember] =
+    useState(false);
   const [newProposalPayout, setNewProposalPayout] = useState(false);
   const [newProposalToken, setNewProposalToken] = useState(false);
-  const [newProposalRoketoStream, setNewProposalRoketoStream] = useState(false)
+  const [newProposalRoketoStream, setNewProposalRoketoStream] = useState(false);
   const [newProposalCustomCall, setNewProposalCustomCall] = useState(false);
+  const [newProposalNearSocialPost, setNewProposalNearSocialPost] =
+    useState(false);
+  const mdParser = new MarkdownIt({
+    html: true,
+    typographer: false,
+    breaks: true,
+    linkify: true,
+  });
   const [selectDao, setSelectDao] = useState(false);
-  const [showNewProposalNotification, setShowNewProposalNotification] = useState(false);
+  const [showNewProposalNotification, setShowNewProposalNotification] =
+    useState(false);
   const [showLoading, setShowLoading] = useState(true);
   const [daoState, setDaoState] = useState(0);
   const [daoConfig, setDaoConfig] = useState(null);
@@ -64,7 +82,7 @@ const Dao = () => {
   const [disableTarget, setDisableTarget] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
 
-  const nearConfig = getConfig(process.env.NODE_ENV || 'development')
+  const nearConfig = getConfig(process.env.NODE_ENV || "development");
   const provider = new nearApi.providers.JsonRpcProvider(nearConfig.nodeUrl);
   const connection = new nearApi.Connection(nearConfig.nodeUrl, provider, {});
 
@@ -178,139 +196,149 @@ const Dao = () => {
   });
   const [paymentOption, setPaymentOption] = useState("NEAR");
 
+  let { dao } = useParams();
 
-  let {dao} = useParams();
-
-  useEffect(
-    () => {
-      if (stateCtx.config.contract === "") {
-        if (dao !== undefined) {
-          mutationCtx.updateConfig({
-            contract: dao,
-          })
-        } else {
-          setSelectDao(true);
-        }
-      } else {
-        window.contract = new Contract(window.walletConnection.account(), stateCtx.config.contract, {
-          viewMethods: [
-            'get_config', 'get_policy', 'get_staking_contract', 'get_available_amount', 'delegation_total_supply',
-            'get_proposals', 'get_last_proposal_id', 'get_proposal', 'get_bounty', 'get_bounties', 'get_last_bounty_id',
-            'get_bounty_claims', 'get_bounty_number_of_claims', 'delegation_balance_of', 'has_blob'
-          ],
-          changeMethods: ['add_proposal', 'act_proposal'],
-        })
-      }
-    },
-    [stateCtx.config.contract]
-  )
-
-
-  useEffect(
-    () => {
-      if (stateCtx.config.contract !== "" && dao !== stateCtx.config.contract && dao !== undefined) {
+  useEffect(() => {
+    if (stateCtx.config.contract === "") {
+      if (dao !== undefined) {
         mutationCtx.updateConfig({
-          contract: "",
+          contract: dao,
         });
-        location.reload();
+      } else {
+        setSelectDao(true);
       }
-    },
-    [stateCtx.config.contract]
-  )
+    } else {
+      window.contract = new Contract(
+        window.walletConnection.account(),
+        stateCtx.config.contract,
+        {
+          viewMethods: [
+            "get_config",
+            "get_policy",
+            "get_staking_contract",
+            "get_available_amount",
+            "delegation_total_supply",
+            "get_proposals",
+            "get_last_proposal_id",
+            "get_proposal",
+            "get_bounty",
+            "get_bounties",
+            "get_last_bounty_id",
+            "get_bounty_claims",
+            "get_bounty_number_of_claims",
+            "delegation_balance_of",
+            "has_blob",
+          ],
+          changeMethods: ["add_proposal", "act_proposal"],
+        }
+      );
+    }
+  }, [stateCtx.config.contract]);
 
+  useEffect(() => {
+    if (
+      stateCtx.config.contract !== "" &&
+      dao !== stateCtx.config.contract &&
+      dao !== undefined
+    ) {
+      mutationCtx.updateConfig({
+        contract: "",
+      });
+      location.reload();
+    }
+  }, [stateCtx.config.contract]);
 
-  useEffect(
-    () => {
-      if (stateCtx.config.contract !== "") {
-        window.contract.get_policy()
-          .then(r => {
-            setDaoPolicy(r);
-          }).catch((e) => {
+  useEffect(() => {
+    if (stateCtx.config.contract !== "") {
+      window.contract
+        .get_policy()
+        .then((r) => {
+          setDaoPolicy(r);
+        })
+        .catch((e) => {
           console.log(e);
           setShowError(e);
-        })
-      }
-    },
-    [stateCtx.config.contract]
-  )
+        });
+    }
+  }, [stateCtx.config.contract]);
 
-  useEffect(
-    () => {
-      if (stateCtx.config.contract !== "") {
-        window.contract.get_config()
-          .then(r => {
-            setDaoConfig(r);
-          }).catch((e) => {
+  useEffect(() => {
+    if (stateCtx.config.contract !== "") {
+      window.contract
+        .get_config()
+        .then((r) => {
+          setDaoConfig(r);
+        })
+        .catch((e) => {
           console.log(e);
           setShowError(e);
-        })
-      }
-    },
-    [stateCtx.config.contract]
-  )
+        });
+    }
+  }, [stateCtx.config.contract]);
 
-  useEffect(
-    () => {
-      if (stateCtx.config.contract !== "") {
-        window.contract.get_staking_contract()
-          .then(r => {
-            setDaoStaking(r);
-          }).catch((e) => {
+  useEffect(() => {
+    if (stateCtx.config.contract !== "") {
+      window.contract
+        .get_staking_contract()
+        .then((r) => {
+          setDaoStaking(r);
+        })
+        .catch((e) => {
           console.log(e);
           setShowError(e);
-        })
-      }
-    },
-    [stateCtx.config.contract]
-  )
+        });
+    }
+  }, [stateCtx.config.contract]);
 
   const toggleProposalModal = () => {
     setAddProposalModal(!addProposalModal);
-  }
+  };
 
   const toggleNewCouncilMember = () => {
     setNewProposalCouncilMember(!newProposalCouncilMember);
     setAddProposalModal(false);
-  }
+  };
 
   const toggleRemoveCouncilMember = () => {
     setRemoveProposalCouncilMember(!removeProposalCouncilMember);
     setAddProposalModal(false);
-  }
+  };
 
   const toggleNewPayout = () => {
     setNewProposalPayout(!newProposalPayout);
     setAddProposalModal(false);
-  }
+  };
 
   const toggleNewToken = () => {
     setProposalTarget({
-        value: nearConfig.tokenFactory,
-        valid: true,
-        message: "",
-      }
-    )
+      value: nearConfig.tokenFactory,
+      valid: true,
+      message: "",
+    });
     setProposalTokenOwner({
-        value: stateCtx.config.contract,
-        valid: true,
-        message: "",
-      }
-    )
+      value: stateCtx.config.contract,
+      valid: true,
+      message: "",
+    });
 
     setNewProposalToken(!newProposalToken);
     setAddProposalModal(false);
-  }
-
+  };
 
   const toggleCustomCall = () => {
     setNewProposalCustomCall(!newProposalCustomCall);
     setAddProposalModal(false);
-  }
+  };
+
+  const toggleNearSocialPost = () => {
+    setNewProposalNearSocialPost(!newProposalNearSocialPost);
+    setAddProposalModal(false);
+  };
 
   const toggleRoketoStream = () => {
     setNewProposalRoketoStream(!newProposalRoketoStream);
     setAddProposalModal(false);
-  }
+  };
 
   async function accountExists(accountId) {
     try {
@@ -341,8 +369,8 @@ const Dao = () => {
     const numberProposals = await window.contract.get_last_proposal_id();
     setNumberProposals(numberProposals);
     mutationCtx.updateConfig({
-      lastShownProposal: numberProposals
-    })
+      lastShownProposal: numberProposals,
+    });
     let proposals = [];
     if (numberProposals > 100) {
       let pages = new Decimal(numberProposals / limit).toFixed(0);
@@ -351,131 +379,142 @@ const Dao = () => {
         fromIndex = limit * i;
         let proposals2;
         try {
-          proposals2 = await window.contract.get_proposals({from_index: fromIndex, limit: limit})
+          proposals2 = await window.contract.get_proposals({
+            from_index: fromIndex,
+            limit: limit,
+          });
         } catch (e) {
-          console.log(e)
+          console.log(e);
         }
         Array.prototype.push.apply(proposals, proposals2);
       }
     } else {
-      proposals = await window.contract.get_proposals({from_index: fromIndex, limit: limit})
+      proposals = await window.contract.get_proposals({
+        from_index: fromIndex,
+        limit: limit,
+      });
     }
 
-    const t = []
+    const t = [];
     proposals.map((item, key) => {
-      const t2 = {}
-      Object.assign(t2, {key: key}, item);
+      const t2 = {};
+      Object.assign(t2, { key: key }, item);
       t.push(t2);
-    })
+    });
 
     return t;
   }
 
-
-  useEffect(
-    async () => {
-      if (!firstRun) {
-        const interval = setInterval(async () => {
-          console.log('loading proposals')
-          getProposals().then(r => {
-            setProposals(r);
-            setShowLoading(false);
-          });
-        }, proposalsReload);
-        return () => clearInterval(interval);
-      } else {
-        getProposals().then(r => {
+  useEffect(async () => {
+    if (!firstRun) {
+      const interval = setInterval(async () => {
+        console.log("loading proposals");
+        getProposals().then((r) => {
           setProposals(r);
           setShowLoading(false);
         });
-        setFirstRun(false);
-      }
-    },
-    [stateCtx.config.contract, firstRun]
-  )
+      }, proposalsReload);
+      return () => clearInterval(interval);
+    } else {
+      getProposals().then((r) => {
+        setProposals(r);
+        setShowLoading(false);
+      });
+      setFirstRun(false);
+    }
+  }, [stateCtx.config.contract, firstRun]);
 
-
-  useEffect(
-    () => {
-      if (stateCtx.config.contract !== "") {
-        getDaoState(stateCtx.config.contract).then(r => {
+  useEffect(() => {
+    if (stateCtx.config.contract !== "") {
+      getDaoState(stateCtx.config.contract)
+        .then((r) => {
           setDaoState(r);
-        }).catch((e) => {
+        })
+        .catch((e) => {
           console.log(e);
           setShowError(e);
-        })
-      }
-    },
-    [stateCtx.config.contract]
-  )
-
+        });
+    }
+  }, [stateCtx.config.contract]);
 
   const handleDaoChange = () => {
     mutationCtx.updateConfig({
-      contract: '',
-    })
-    routerCtx.history.push('/')
-  }
+      contract: "",
+    });
+    routerCtx.history.push("/");
+  };
 
   const validateString = (field, name, showMessage) => {
     if (name && name.length >= 1) {
       return true;
     } else {
-      showMessage(field + " > 1 chars", 'warning', field);
+      showMessage(field + " > 1 chars", "warning", field);
       return false;
     }
-  }
+  };
   const validateLongString = (field, name, showMessage) => {
     if (name && name.length >= 2 && name.length <= 4024) {
       return true;
     } else {
-      showMessage("> 2 and < 4024 chars", 'warning', field);
+      showMessage("> 2 and < 4024 chars", "warning", field);
       return false;
     }
-  }
+  };
 
   const validateProposalDiscussion = (field, name, showMessage) => {
     let categories = parseForumUrl(name);
     /* Hardcoded exclusion of rucommunity.sputnikdao.near from field validation */
-    if (categories === name && stateCtx.config.contract !== 'rucommunity.sputnikdao.near') {
-      showMessage("Wrong link format", 'warning', field);
+    if (
+      categories === name &&
+      stateCtx.config.contract !== "rucommunity.sputnikdao.near"
+    ) {
+      showMessage("Wrong link format", "warning", field);
       return false;
     } else {
       return true;
     }
-  }
+  };
 
   const validateNumber = (field, name, showMessage) => {
     if (name && !isNaN(name) && name.length > 0) {
       return true;
     } else {
-      showMessage("Please enter number", 'warning', field);
+      showMessage("Please enter number", "warning", field);
       return false;
     }
-  }
+  };
 
   const validateDecimals = (field, name, showMessage) => {
     if (name && !isNaN(name) && name > 0 && name <= 24) {
       return true;
     } else {
-      showMessage("Please enter number between 1 and 24", 'warning', field);
+      showMessage("Please enter number between 1 and 24", "warning", field);
       return false;
     }
-  }
+  };
 
   const validateTokenSupply = (field, name, showMessage) => {
-    if (name && !isNaN(name) && name > 0 && name < 100000000000000000000000000000) {
+    if (
+      name &&
+      !isNaN(name) &&
+      name > 0 &&
+      name < 100000000000000000000000000000
+    ) {
       return true;
     } else {
-      showMessage("Enter number between 1 and 10e30 (Maximum total supply u128)", 'warning', field);
+      showMessage(
+        "Enter number between 1 and 10e30 (Maximum total supply u128)",
+        "warning",
+        field
+      );
       return false;
     }
-  }
+  };
 
   const validateField = (field, value) => {
     switch (field) {
       case "proposalKind":
-        return value !== 'false';
+        return value !== "false";
       case "proposalTarget":
       case "changePurpose":
       case "proposalFT":
@@ -509,12 +548,23 @@ const Dao = () => {
     }
   };
 
+  function handleEditorChange(event) {
+    setProposalCustomArgs({
+      value: JSON.stringify({
+        post: { main: { type: "md", text: event.text } },
+        index: { post: { key: "main", value: { type: "md" } } },
+      }),
+      valid: !!event.text,
+      message: proposalCustomArgs.message,
+    });
+  }
+
   const changeHandler = (event) => {
     if (event.target.name === "proposalTarget") {
       setProposalTarget({
         value: event.target.value.toLowerCase(),
         valid: !!event.target.value,
-        message: proposalTarget.message
+        message: proposalTarget.message,
       });
     }
 
@@ -522,7 +572,7 @@ const Dao = () => {
       setProposalTokenOwner({
         value: event.target.value.toLowerCase(),
         valid: !!event.target.value,
-        message: proposalTokenOwner.message
+        message: proposalTokenOwner.message,
       });
     }
 
@@ -530,7 +580,7 @@ const Dao = () => {
       setProposalTokenSupply({
         value: event.target.value,
         valid: !!event.target.value,
-        message: proposalTokenSupply.message
+        message: proposalTokenSupply.message,
       });
     }
 
@@ -538,7 +588,7 @@ const Dao = () => {
       setProposalTokenName({
         value: event.target.value,
         valid: !!event.target.value,
-        message: proposalTokenName.message
+        message: proposalTokenName.message,
       });
     }
 
@@ -546,7 +596,7 @@ const Dao = () => {
       setProposalTokenSymbol({
         value: event.target.value,
         valid: !!event.target.value,
-        message: proposalTokenSymbol.message
+        message: proposalTokenSymbol.message,
       });
     }
 
@@ -554,7 +604,7 @@ const Dao = () => {
       setProposalTokenIcon({
         value: event.target.value.toLowerCase(),
         valid: !!event.target.value,
-        message: proposalTokenIcon.message
+        message: proposalTokenIcon.message,
       });
     }
 
@@ -562,7 +612,7 @@ const Dao = () => {
       setProposalTokenDecimals({
         value: event.target.value.toLowerCase(),
         valid: !!event.target.value,
-        message: proposalTokenDecimals.message
+        message: proposalTokenDecimals.message,
       });
     }
 
@@ -570,7 +620,7 @@ const Dao = () => {
       setProposalCustomMethodName({
         value: event.target.value.toLowerCase(),
         valid: !!event.target.value,
-        message: proposalCustomMethodName.message
+        message: proposalCustomMethodName.message,
       });
     }
 
@@ -578,7 +628,7 @@ const Dao = () => {
       setProposalCustomDeposit({
         value: event.target.value.toLowerCase(),
         valid: !!event.target.value,
-        message: proposalCustomDeposit.message
+        message: proposalCustomDeposit.message,
       });
     }
 
@@ -586,7 +636,7 @@ const Dao = () => {
       setProposalCustomArgs({
         value: event.target.value,
         valid: !!event.target.value,
-        message: proposalCustomArgs.message
+        message: proposalCustomArgs.message,
       });
     }
 
@@ -594,30 +644,50 @@ const Dao = () => {
       setProposalDescription({
         value: event.target.value,
         valid: !!event.target.value,
-        message: proposalDescription.message
+        message: proposalDescription.message,
       });
     }
     if (event.target.name === "proposalDiscussion") {
       setProposalDiscussion({
         value: event.target.value,
         valid: !!event.target.value,
-        message: proposalDiscussion.message
+        message: proposalDiscussion.message,
       });
     }
     if (event.target.name === "proposalAmount") {
-      setProposalAmount({value: event.target.value, valid: !!event.target.value, message: proposalAmount.message});
+      setProposalAmount({
+        value: event.target.value,
+        valid: !!event.target.value,
+        message: proposalAmount.message,
+      });
     }
     if (event.target.name === "proposalRoketoSpeed") {
-      setProposalRoketoSpeed({value: event.target.value, valid: !!event.target.value, message: proposalAmount.message});
+      setProposalRoketoSpeed({
+        value: event.target.value,
+        valid: !!event.target.value,
+        message: proposalAmount.message,
+      });
     }
     if (event.target.name === "proposalFT") {
-      setProposalFT({value: event.target.value, valid: !!event.target.value, message: proposalFT.message});
+      setProposalFT({
+        value: event.target.value,
+        valid: !!event.target.value,
+        message: proposalFT.message,
+      });
     }
     if (event.target.name === "votePeriod") {
-      setVotePeriod({value: event.target.value, valid: !!event.target.value, message: votePeriod.message});
+      setVotePeriod({
+        value: event.target.value,
+        valid: !!event.target.value,
+        message: votePeriod.message,
+      });
     }
     if (event.target.name === "changePurpose") {
-      setChangePurpose({value: event.target.value, valid: !!event.target.value, message: changePurpose.message});
+      setChangePurpose({
+        value: event.target.value,
+        valid: !!event.target.value,
+        message: changePurpose.message,
+      });
     }
 
     if (!validateField(event.target.name, event.target.value)) {
@@ -632,54 +702,92 @@ const Dao = () => {
     if (message) {
       switch (field) {
         case "proposalKind":
-          setProposalKind(prevState => ({...prevState, message: message}));
+          setProposalKind((prevState) => ({ ...prevState, message: message }));
           break;
         case "proposalTarget":
-          setProposalTarget(prevState => ({...prevState, message: message}));
+          setProposalTarget((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalDescription":
-          setProposalDescription(prevState => ({...prevState, message: message}));
+          setProposalDescription((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalFT":
-          setProposalFT(prevState => ({...prevState, message: message}));
+          setProposalFT((prevState) => ({ ...prevState, message: message }));
           break;
         case "proposalTokenOwner":
-          setProposalTokenOwner(prevState => ({...prevState, message: message}));
+          setProposalTokenOwner((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalTokenSupply":
-          setProposalTokenSupply(prevState => ({...prevState, message: message}));
+          setProposalTokenSupply((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalTokenName":
-          setProposalTokenName(prevState => ({...prevState, message: message}));
+          setProposalTokenName((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalTokenSymbol":
-          setProposalTokenSymbol(prevState => ({...prevState, message: message}));
+          setProposalTokenSymbol((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalTokenIcon":
-          setProposalTokenIcon(prevState => ({...prevState, message: message}));
+          setProposalTokenIcon((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalTokenDecimals":
-          setProposalTokenDecimals(prevState => ({...prevState, message: message}));
+          setProposalTokenDecimals((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalCustomMethodName":
-          setProposalCustomMethodName(prevState => ({...prevState, message: message}));
+          setProposalCustomMethodName((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalCustomDeposit":
-          setProposalCustomDeposit(prevState => ({...prevState, message: message}));
+          setProposalCustomDeposit((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalCustomArgs":
-          setProposalCustomArgs(prevState => ({...prevState, message: message}));
+          setProposalCustomArgs((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalDiscussion":
-          setProposalDiscussion(prevState => ({...prevState, message: message}));
+          setProposalDiscussion((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
         case "proposalAmount":
-          setProposalAmount(prevState => ({...prevState, message: message}));
+          setProposalAmount((prevState) => ({
+            ...prevState,
+            message: message,
+          }));
           break;
       }
     }
   };
-
 
   const [switchState, setSwitchState] = useState({
     switchAll: stateCtx.config.filter.switchAll,
@@ -689,57 +797,57 @@ const Dao = () => {
     switchExpired: stateCtx.config.filter.switchExpired,
   });
 
-  const handleSwitchChange = switchName => () => {
-    let switched = {}
+  const handleSwitchChange = (switchName) => () => {
+    let switched = {};
     switch (switchName) {
-      case 'switchAll':
+      case "switchAll":
         switched = {
           switchAll: !switchState.switchAll,
           switchInProgress: false,
           switchDone: false,
           switchNew: false,
           switchExpired: false,
-        }
+        };
         break;
 
-      case 'switchInProgress':
+      case "switchInProgress":
         switched = {
           switchAll: false,
           switchInProgress: !switchState.switchInProgress,
           switchDone: switchState.switchDone,
           switchNew: false,
           switchExpired: false,
-        }
+        };
         break;
 
-      case 'switchDone':
+      case "switchDone":
         switched = {
           switchAll: false,
           switchInProgress: switchState.switchInProgress,
           switchDone: !switchState.switchDone,
           switchNew: false,
           switchExpired: false,
-        }
+        };
         break;
 
-      case 'switchNew':
+      case "switchNew":
         switched = {
           switchAll: false,
           switchInProgress: false,
           switchDone: false,
           switchNew: !switchState.switchNew,
           switchExpired: false,
-        }
+        };
         break;
 
-      case 'switchExpired':
+      case "switchExpired":
         switched = {
           switchAll: false,
           switchInProgress: false,
           switchDone: false,
           switchNew: false,
           switchExpired: !switchState.switchExpired,
-        }
+        };
         break;
 
       default:
@@ -748,14 +856,12 @@ const Dao = () => {
           switchInProgress: false,
           switchDone: false,
           switchNew: false,
-        }
+        };
         break;
-
-
     }
     setSwitchState(switched);
-    mutationCtx.updateConfig({filter: switched})
-  }
+    mutationCtx.updateConfig({ filter: switched });
+  };
 
   const detectLink = (string) => {
     let urlRegex = /(((https?:\/\/)|(www\.))[^\s]+)/g;
@@ -763,17 +869,16 @@ const Dao = () => {
     if (!urlRegex.test(string)) {
       return false;
     } else {
-      console.log(string.match(urlRegex))
+      console.log(string.match(urlRegex));
       return string.match(urlRegex);
     }
-  }
+  };
   const submitProposal = async (e) => {
     e.preventDefault();
     e.persist();
 
-
     // Handle roketo stream creation
-    if (e.target.name === 'newProposalRoketoStream') {
+    if (e.target.name === "newProposalRoketoStream") {
       // const argsList = {
       //   args: {
       //     owner_id: e.target.proposalTokenOwner.value.trim(),
@@ -788,31 +893,55 @@ const Dao = () => {
       //   },
       // }
       const nearAccountValid = await accountExists(proposalTarget.value);
-      let validateTarget = validateField("proposalTarget", proposalTarget.value);
-      let validateDescription = validateField("proposalDescription", proposalDescription.value);
-      let validateSpeed = validateField("proposalRoketoSpeed", proposalRoketoSpeed.value);
+      let validateTarget = validateField(
+        "proposalTarget",
+        proposalTarget.value
+      );
+      let validateDescription = validateField(
+        "proposalDescription",
+        proposalDescription.value
+      );
+      let validateSpeed = validateField(
+        "proposalRoketoSpeed",
+        proposalRoketoSpeed.value
+      );
 
-
-      let validatePaymentOption = true
+      let validatePaymentOption = true;
       if (paymentOption === "FT") {
-        validatePaymentOption = validateField("proposalFT", e.target.proposalFT.value);
+        validatePaymentOption = validateField(
+          "proposalFT",
+          e.target.proposalFT.value
+        );
       }
 
       let ftMetadata = null;
       if (paymentOption === "FT") {
         try {
-          const tokenContract = new Contract(window.walletConnection.account(), e.target.proposalFT.value, {
-            viewMethods: ['ft_metadata'],
-            changeMethods: [],
-          })
-          ftMetadata = await tokenContract.ft_metadata({})
+          const tokenContract = new Contract(
+            window.walletConnection.account(),
+            e.target.proposalFT.value,
+            {
+              viewMethods: ["ft_metadata"],
+              changeMethods: [],
+            }
+          );
+          ftMetadata = await tokenContract.ft_metadata({});
         } catch (error) {
           // nu vse
           console.log(error);
         }
       }
 
-      if (validateTarget && nearAccountValid && validateDescription && validateSpeed && validatePaymentOption && (paymentOption === "FT" && ftMetadata) || (paymentOption === "NEAR" && !ftMetadata)) {
+      if (
+        (validateTarget &&
+          nearAccountValid &&
+          validateDescription &&
+          validateSpeed &&
+          validatePaymentOption &&
+          paymentOption === "FT" &&
+          ftMetadata) ||
+        (paymentOption === "NEAR" && !ftMetadata)
+      ) {
         const amount = new Decimal(e.target.proposalAmount.value);
 
         const isFt = paymentOption === "FT";
@@ -821,88 +950,104 @@ const Dao = () => {
         // tokens per second => tokens per tick
         const tpsToTpt = (speed) => {
           const nanosecPower = 9;
-          return new Decimal(speed).mul(Math.pow(10, tokenDecimals - nanosecPower)).divToInt(1)
-        }
+          return new Decimal(speed)
+            .mul(Math.pow(10, tokenDecimals - nanosecPower))
+            .divToInt(1);
+        };
 
         const speedPerTick = tpsToTpt(e.target.proposalRoketoSpeed.value);
-        if (speedPerTick.toFixed() === '0') {
-          throw new Error("This token is not supported")
+        if (speedPerTick.toFixed() === "0") {
+          throw new Error("This token is not supported");
         }
-        
+
         const roketoContractAddress = nearConfig.roketoContractAddress;
 
-        const bufferizeArgs = (args) => Buffer.from(JSON.stringify(args).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
+        const bufferizeArgs = (args) =>
+          Buffer.from(
+            JSON.stringify(args).replaceAll('^"', "").replaceAll('"^', "")
+          ).toString("base64");
 
         try {
           setShowSpinner(true);
           if (isFt) {
             // Handle fungible-tokens streams
             const tokenContractAddress = e.target.proposalFT.value;
-            const amountTokens = amount.mul("1e" + ftMetadata.decimals).toFixed()
+            const amountTokens = amount
+              .mul("1e" + ftMetadata.decimals)
+              .toFixed();
 
-            await window.contract.add_proposal({
+            await window.contract.add_proposal(
+              {
                 proposal: {
-                  description: (e.target.proposalDescription.value).trim(),
+                  description: e.target.proposalDescription.value.trim(),
                   kind: {
                     FunctionCall: {
                       receiver_id: tokenContractAddress,
-                      actions: [{
-                        method_name: 'ft_transfer_call',
-                        args: bufferizeArgs({
-                          receiver_id: roketoContractAddress,
-                          amount: amountTokens,
-                          memo: 'Sputnik-Roketo transfer',
-                          msg: JSON.stringify({
-                            Create: {
-                              description: (e.target.proposalDescription.value).trim(),
-                              owner_id: stateCtx.config.contract,
-                              receiver_id: e.target.proposalTarget.value,
-                              token_name: 'DACHA',
-                              tokens_per_tick: speedPerTick.toFixed(),
-                              balance: amountTokens,
-                              is_auto_start_enabled: true,
-                              is_auto_deposit_enabled: false,
-                            },
+                      actions: [
+                        {
+                          method_name: "ft_transfer_call",
+                          args: bufferizeArgs({
+                            receiver_id: roketoContractAddress,
+                            amount: amountTokens,
+                            memo: "Sputnik-Roketo transfer",
+                            msg: JSON.stringify({
+                              Create: {
+                                description:
+                                  e.target.proposalDescription.value.trim(),
+                                owner_id: stateCtx.config.contract,
+                                receiver_id: e.target.proposalTarget.value,
+                                token_name: "DACHA",
+                                tokens_per_tick: speedPerTick.toFixed(),
+                                balance: amountTokens,
+                                is_auto_start_enabled: true,
+                                is_auto_deposit_enabled: false,
+                              },
+                            }),
                           }),
-                        }),
-                        deposit: '1',
-                        gas: "150000000000000"
-                      }],
-                    }
-                  }
+                          deposit: "1",
+                          gas: "150000000000000",
+                        },
+                      ],
+                    },
+                  },
                 },
               },
-              new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
-            )
+              new Decimal("30000000000000").toString(),
+              daoPolicy.proposal_bond.toString()
+            );
           } else {
             const amountYokto = amount.mul(yoktoNear).toFixed();
             // Handle case of NEAR streams
-            await window.contract.add_proposal({
+            await window.contract.add_proposal(
+              {
                 proposal: {
-                  description: (e.target.proposalDescription.value).trim(),
+                  description: e.target.proposalDescription.value.trim(),
                   kind: {
                     FunctionCall: {
                       receiver_id: roketoContractAddress,
-                      actions: [{
-                        method_name: 'create_stream',
-                        args: bufferizeArgs({
-                          description: e.target.proposalDescription.value.trim(),
-                          receiver_id: e.target.proposalTarget.value,
-                          tokens_per_tick: speedPerTick.toFixed(),
-                          is_auto_start_enabled: true,
-                          is_auto_deposit_enabled: false,
-                        }),
-                        deposit: amountYokto,
-                        gas: "150000000000000"
-                      }],
-                    }
-                  }
+                      actions: [
+                        {
+                          method_name: "create_stream",
+                          args: bufferizeArgs({
+                            description:
+                              e.target.proposalDescription.value.trim(),
+                            receiver_id: e.target.proposalTarget.value,
+                            tokens_per_tick: speedPerTick.toFixed(),
+                            is_auto_start_enabled: true,
+                            is_auto_deposit_enabled: false,
+                          }),
+                          deposit: amountYokto,
+                          gas: "150000000000000",
+                        },
+                      ],
+                    },
+                  },
                 },
               },
-              new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
-            )
+              new Decimal("30000000000000").toString(),
+              daoPolicy.proposal_bond.toString()
+            );
           }
-
         } catch (e) {
           console.log(e);
           setShowError(e);
@@ -912,32 +1057,40 @@ const Dao = () => {
       }
     }
 
-    {/* --------------------------------------------------------------------------------------------------- */
+    {
+      /* --------------------------------------------------------------------------------------------------- */
     }
-    {/* --------------------------------------- Add council member ---------------------------------------- */
+    {
+      /* --------------------------------------- Add council member ---------------------------------------- */
     }
-    {/* --------------------------------------------------------------------------------------------------- */
+    {
+      /* --------------------------------------------------------------------------------------------------- */
     }
-    if (e.target.name === 'newProposalCouncilMember') {
+    if (e.target.name === "newProposalCouncilMember") {
       const nearAccountValid = await accountExists(proposalTarget.value);
-      let validateDescription = validateField("proposalDescription", proposalDescription.value);
+      let validateDescription = validateField(
+        "proposalDescription",
+        proposalDescription.value
+      );
 
       if (nearAccountValid && validateDescription) {
         try {
           setShowSpinner(true);
-          await window.contract.add_proposal({
+          await window.contract.add_proposal(
+            {
               proposal: {
-                description: (e.target.proposalDescription.value).trim(),
+                description: e.target.proposalDescription.value.trim(),
                 kind: {
                   AddMemberToRole: {
                     member_id: e.target.proposalTarget.value,
-                    role: "council"
-                  }
-                }
+                    role: "council",
+                  },
+                },
               },
             },
-            new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
-          )
+            new Decimal("30000000000000").toString(),
+            daoPolicy.proposal_bond.toString()
+          );
         } catch (e) {
           console.log(e);
           setShowError(e);
@@ -945,13 +1098,20 @@ const Dao = () => {
           setShowSpinner(false);
         }
       } else {
-
         if (!nearAccountValid) {
           e.target.proposalTarget.className += " is-invalid";
           e.target.proposalTarget.classList.remove("is-valid");
-          setProposalTarget({value: proposalTarget.value, valid: false, message: 'user account does not exist!'});
+          setProposalTarget({
+            value: proposalTarget.value,
+            valid: false,
+            message: "user account does not exist!",
+          });
         } else {
-          setProposalTarget({value: proposalTarget.value, valid: true, message: ''});
+          setProposalTarget({
+            value: proposalTarget.value,
+            valid: true,
+            message: "",
+          });
           e.target.proposalTarget.classList.remove("is-invalid");
           e.target.proposalTarget.className += " is-valid";
         }
@@ -966,33 +1126,43 @@ const Dao = () => {
       }
     }
 
-
-    {/* --------------------------------------------------------------------------------------------------- */
+    {
+      /* --------------------------------------------------------------------------------------------------- */
     }
-    {/* --------------------------------------- Remove council member ---------------------------------------- */
+    {
+      /* --------------------------------------- Remove council member ---------------------------------------- */
     }
-    {/* --------------------------------------------------------------------------------------------------- */
+    {
+      /* --------------------------------------------------------------------------------------------------- */
     }
-    if (e.target.name === 'removeProposalCouncilMember') {
-      const councilAccountValid = (daoPolicy && daoPolicy.roles[1] && daoPolicy.roles[1].kind.Group) ? daoPolicy.roles[1].kind.Group.includes(proposalTarget.value) : daoPolicy.roles[0].kind.Group.includes(proposalTarget.value)
-      let validateDescription = validateField("proposalDescription", proposalDescription.value);
+    if (e.target.name === "removeProposalCouncilMember") {
+      const councilAccountValid =
+        daoPolicy && daoPolicy.roles[1] && daoPolicy.roles[1].kind.Group
+          ? daoPolicy.roles[1].kind.Group.includes(proposalTarget.value)
+          : daoPolicy.roles[0].kind.Group.includes(proposalTarget.value);
+      let validateDescription = validateField(
+        "proposalDescription",
+        proposalDescription.value
+      );
 
       if (councilAccountValid && validateDescription) {
         try {
           setShowSpinner(true);
-          await window.contract.add_proposal({
+          await window.contract.add_proposal(
+            {
               proposal: {
-                description: (e.target.proposalDescription.value).trim(),
+                description: e.target.proposalDescription.value.trim(),
                 kind: {
                   RemoveMemberFromRole: {
                     member_id: e.target.proposalTarget.value,
-                    role: "council"
-                  }
-                }
+                    role: "council",
+                  },
+                },
               },
             },
-            new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
-          )
+            new Decimal("30000000000000").toString(),
+            daoPolicy.proposal_bond.toString()
+          );
         } catch (e) {
           console.log(e);
           setShowError(e);
@@ -1003,9 +1173,17 @@ const Dao = () => {
         if (!councilAccountValid) {
           e.target.proposalTarget.className += " is-invalid";
           e.target.proposalTarget.classList.remove("is-valid");
-          setProposalTarget({value: proposalTarget.value, valid: false, message: 'user account is not in council!'});
+          setProposalTarget({
+            value: proposalTarget.value,
+            valid: false,
+            message: "user account is not in council!",
+          });
         } else {
-          setProposalTarget({value: proposalTarget.value, valid: true, message: ''});
+          setProposalTarget({
+            value: proposalTarget.value,
+            valid: true,
+            message: "",
+          });
           e.target.proposalTarget.classList.remove("is-invalid");
           e.target.proposalTarget.className += " is-valid";
         }
@@ -1018,57 +1196,86 @@ const Dao = () => {
           e.target.proposalDescription.className += " is-valid";
         }
       }
-
     }
 
-    {/* --------------------------------------------------------------------------------------------------- */
+    {
+      /* --------------------------------------------------------------------------------------------------- */
     }
-    {/* ---------------------------------------- Add payout proposal -------------------------------------- */
+    {
+      /* ---------------------------------------- Add payout proposal -------------------------------------- */
     }
-    {/* --------------------------------------------------------------------------------------------------- */
+    {
+      /* --------------------------------------------------------------------------------------------------- */
     }
-    if (e.target.name === 'newProposalPayout') {
+    if (e.target.name === "newProposalPayout") {
       const nearAccountValid = await accountExists(proposalTarget.value);
-      let validateTarget = validateField("proposalTarget", proposalTarget.value);
-      let validateDescription = validateField("proposalDescription", proposalDescription.value);
+      let validateTarget = validateField(
+        "proposalTarget",
+        proposalTarget.value
+      );
+      let validateDescription = validateField(
+        "proposalDescription",
+        proposalDescription.value
+      );
 
-      let validatePaymentOption = true
+      let validatePaymentOption = true;
       if (paymentOption === "FT") {
-        validatePaymentOption = validateField("proposalFT", e.target.proposalFT.value);
+        validatePaymentOption = validateField(
+          "proposalFT",
+          e.target.proposalFT.value
+        );
       }
 
       let r = null;
       if (paymentOption === "FT") {
         const token = e.target.proposalFT.value.split(".");
         if (token.length === 3) {
-          const tokenContract = new Contract(window.walletConnection.account(), token[1] + "." + token[2], {
-            viewMethods: ['get_token'],
-            changeMethods: [],
-          })
-          r = await tokenContract.get_token({'token_id': token[0]})
+          const tokenContract = new Contract(
+            window.walletConnection.account(),
+            token[1] + "." + token[2],
+            {
+              viewMethods: ["get_token"],
+              changeMethods: [],
+            }
+          );
+          r = await tokenContract.get_token({ token_id: token[0] });
         }
       }
 
-      if (validateTarget && nearAccountValid && validateDescription && validatePaymentOption && (paymentOption === "FT" && r) || (paymentOption === "NEAR" && !r)) {
+      if (
+        (validateTarget &&
+          nearAccountValid &&
+          validateDescription &&
+          validatePaymentOption &&
+          paymentOption === "FT" &&
+          r) ||
+        (paymentOption === "NEAR" && !r)
+      ) {
         const amount = new Decimal(e.target.proposalAmount.value);
         const amountYokto = amount.mul(yoktoNear).toFixed();
 
         try {
           setShowSpinner(true);
-          await window.contract.add_proposal({
+          await window.contract.add_proposal(
+            {
               proposal: {
-                description: (e.target.proposalDescription.value).trim(),
+                description: e.target.proposalDescription.value.trim(),
                 kind: {
                   Transfer: {
-                    token_id: paymentOption === "NEAR" ? "" : e.target.proposalFT.value,
+                    token_id:
+                      paymentOption === "NEAR" ? "" : e.target.proposalFT.value,
                     receiver_id: e.target.proposalTarget.value,
-                    amount: paymentOption === "NEAR" ? amountYokto : amount.mul("1e" + r.metadata.decimals).toFixed(),
-                  }
-                }
+                    amount:
+                      paymentOption === "NEAR"
+                        ? amountYokto
+                        : amount.mul("1e" + r.metadata.decimals).toFixed(),
+                  },
+                },
               },
             },
-            new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
-          )
+            new Decimal("30000000000000").toString(),
+            daoPolicy.proposal_bond.toString()
+          );
         } catch (e) {
           console.log(e);
           setShowError(e);
@@ -1078,67 +1285,96 @@ const Dao = () => {
       }
     }
 
-    {/* --------------------------------------------------------------------------------------------------- */
+    {
+      /* --------------------------------------------------------------------------------------------------- */
     }
-    {/* ------------------------------------------- Token Farm -------------------------------------------- */
+    {
+      /* ------------------------------------------- Token Farm -------------------------------------------- */
     }
-    {/* --------------------------------------------------------------------------------------------------- */
+    {
+      /* --------------------------------------------------------------------------------------------------- */
     }
-    if (e.target.name === 'newProposalToken') {
-      let validateDescription = validateField("proposalDescription", proposalDescription.value);
-      let validateTokenDecimals = validateField("proposalTokenDecimals", proposalTokenDecimals.value);
-      let validateTokenSupply = validateField("proposalTokenSupply", proposalTokenSupply.value);
-      let validateTokenName = validateField("proposalTokenName", proposalTokenName.value);
-      let validateTokenSymbol = validateField("proposalTokenSymbol", proposalTokenSymbol.value);
+    if (e.target.name === "newProposalToken") {
+      let validateDescription = validateField(
+        "proposalDescription",
+        proposalDescription.value
+      );
+      let validateTokenDecimals = validateField(
+        "proposalTokenDecimals",
+        proposalTokenDecimals.value
+      );
+      let validateTokenSupply = validateField(
+        "proposalTokenSupply",
+        proposalTokenSupply.value
+      );
+      let validateTokenName = validateField(
+        "proposalTokenName",
+        proposalTokenName.value
+      );
+      let validateTokenSymbol = validateField(
+        "proposalTokenSymbol",
+        proposalTokenSymbol.value
+      );
 
-
-      if (validateDescription && validateTokenDecimals && validateTokenName && validateTokenSupply && validateTokenSymbol) {
+      if (
+        validateDescription &&
+        validateTokenDecimals &&
+        validateTokenName &&
+        validateTokenSupply &&
+        validateTokenSymbol
+      ) {
         const argsList = {
           args: {
             owner_id: e.target.proposalTokenOwner.value.trim(),
-            total_supply: new Decimal(e.target.proposalTokenSupply.value.trim()).mul(new Decimal(10).pow(e.target.proposalTokenDecimals.value)).round(0, 0).toFixed(0),
+            total_supply: new Decimal(e.target.proposalTokenSupply.value.trim())
+              .mul(new Decimal(10).pow(e.target.proposalTokenDecimals.value))
+              .round(0, 0)
+              .toFixed(0),
             metadata: {
               spec: "ft-1.0.0",
               name: e.target.proposalTokenName.value.trim(),
               symbol: e.target.proposalTokenSymbol.value.trim(),
               icon: e.target.proposalTokenIcon.value.trim(),
-              decimals: '^' + e.target.proposalTokenDecimals.value + '^',
+              decimals: "^" + e.target.proposalTokenDecimals.value + "^",
             },
           },
-        }
-        const args = Buffer.from(JSON.stringify(argsList).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
+        };
+        const args = Buffer.from(
+          JSON.stringify(argsList).replaceAll('^"', "").replaceAll('"^', "")
+        ).toString("base64");
         //console.log(argsList);
 
         try {
           setShowSpinner(true);
-          await window.contract.add_proposal({
+          await window.contract.add_proposal(
+            {
               proposal: {
-                description: (e.target.proposalDescription.value).trim(),
+                description: e.target.proposalDescription.value.trim(),
                 kind: {
                   FunctionCall: {
                     receiver_id: e.target.proposalTarget.value,
-                    actions: [{
-                      method_name: "create_token",
-                      args: args,
-                      deposit: "5000000000000000000000000",
-                      gas: "150000000000000"
-                    }],
-                  }
-                }
+                    actions: [
+                      {
+                        method_name: "create_token",
+                        args: args,
+                        deposit: "5000000000000000000000000",
+                        gas: "150000000000000",
+                      },
+                    ],
+                  },
+                },
               },
             },
-            new Decimal("200000000000000").toString(), daoPolicy.proposal_bond.toString(),
-          )
+            new Decimal("200000000000000").toString(),
+            daoPolicy.proposal_bond.toString()
+          );
         } catch (e) {
           console.log(e);
           setShowError(e);
         } finally {
           setShowSpinner(false);
         }
-
-
       } else {
-
         if (!validateDescription) {
           e.target.proposalDescription.className += " is-invalid";
           e.target.proposalDescription.classList.remove("is-valid");
@@ -1178,70 +1414,100 @@ const Dao = () => {
           e.target.proposalTokenDecimals.classList.remove("is-invalid");
           e.target.proposalTokenDecimals.className += " is-valid";
         }
-
       }
     }
 
-    {/* --------------------------------------------------------------------------------------------------- */
+    {
+      /* --------------------------------------------------------------------------------------------------- */
     }
-    {/* ------------------------------------------- Custom Call-------------------------------------------- */
+    {
+      /* ------------------------------------------- Custom Call-------------------------------------------- */
     }
-    {/* --------------------------------------------------------------------------------------------------- */
+    {
+      /* --------------------------------------------------------------------------------------------------- */
     }
-    if (e.target.name === 'newProposalCustomCall') {
+    if (e.target.name === "newProposalCustomCall") {
       const nearAccountValid = await accountExists(proposalTarget.value);
 
-      let validateDescription = validateField("proposalDescription", proposalDescription.value);
-      let validateCustomMethodName = validateField("proposalCustomMethodName", proposalCustomMethodName.value);
-      let validateCustomArgs = validateField("proposalCustomArgs", proposalCustomArgs.value);
-      let validateCustomDeposit = validateField("proposalCustomDeposit", proposalCustomDeposit.value);
+      let validateDescription = validateField(
+        "proposalDescription",
+        proposalDescription.value
+      );
+      let validateCustomMethodName = validateField(
+        "proposalCustomMethodName",
+        proposalCustomMethodName.value
+      );
+      let validateCustomArgs = validateField(
+        "proposalCustomArgs",
+        proposalCustomArgs.value
+      );
+      let validateCustomDeposit = validateField(
+        "proposalCustomDeposit",
+        proposalCustomDeposit.value
+      );
 
-
-      if (nearAccountValid && validateDescription && validateCustomMethodName && validateCustomArgs && validateCustomDeposit) {
+      if (
+        nearAccountValid &&
+        validateDescription &&
+        validateCustomMethodName &&
+        validateCustomArgs &&
+        validateCustomDeposit
+      ) {
         const argsList = JSON.parse(e.target.proposalCustomArgs.value.trim());
-        const args = Buffer.from(JSON.stringify(argsList).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
+        const args = Buffer.from(
+          JSON.stringify(argsList).replaceAll('^"', "").replaceAll('"^', "")
+        ).toString("base64");
         console.log(argsList);
 
         const deposit = new Decimal(e.target.proposalCustomDeposit.value);
         const depositYokto = deposit.mul(yoktoNear).toFixed();
 
-
         try {
           setShowSpinner(true);
-          await window.contract.add_proposal({
+          await window.contract.add_proposal(
+            {
               proposal: {
-                description: (e.target.proposalDescription.value).trim(),
+                description: e.target.proposalDescription.value.trim(),
                 kind: {
                   FunctionCall: {
                     receiver_id: e.target.proposalTarget.value,
-                    actions: [{
-                      method_name: e.target.proposalCustomMethodName.value.trim(),
-                      args: args,
-                      deposit: depositYokto,
-                      gas: "150000000000000"
-                    }],
-                  }
-                }
+                    actions: [
+                      {
+                        method_name:
+                          e.target.proposalCustomMethodName.value.trim(),
+                        args: args,
+                        deposit: depositYokto,
+                        gas: "150000000000000",
+                      },
+                    ],
+                  },
+                },
               },
             },
-            new Decimal("250000000000000").toString(), daoPolicy.proposal_bond.toString(),
-          )
+            new Decimal("250000000000000").toString(),
+            daoPolicy.proposal_bond.toString()
+          );
         } catch (e) {
           console.log(e);
           setShowError(e);
         } finally {
           setShowSpinner(false);
         }
-
-
       } else {
-
         if (!nearAccountValid) {
           e.target.proposalTarget.className += " is-invalid";
           e.target.proposalTarget.classList.remove("is-valid");
-          setProposalTarget({value: proposalTarget.value, valid: false, message: 'contract does not exist!'});
+          setProposalTarget({
+            value: proposalTarget.value,
+            valid: false,
+            message: "contract does not exist!",
+          });
         } else {
-          setProposalTarget({value: proposalTarget.value, valid: true, message: ''});
+          setProposalTarget({
+            value: proposalTarget.value,
+            valid: true,
+            message: "",
+          });
           e.target.proposalTarget.classList.remove("is-invalid");
           e.target.proposalTarget.className += " is-valid";
         }
@@ -1277,39 +1543,151 @@ const Dao = () => {
           e.target.proposalCustomDeposit.classList.remove("is-invalid");
           e.target.proposalCustomDeposit.className += " is-valid";
         }
-
-
       }
     }
-  }
 
+    if (e.target.name === "newProposalNearSocialPost") {
+      const nearAccountValid = await accountExists(
+        nearConfig.nearSocialContractName
+      );
+      let validateDescription = validateField(
+        "proposalDescription",
+        proposalDescription.value
+      );
+      let validateCustomArgs = validateField(
+        "proposalCustomArgs",
+        proposalCustomArgs.value
+      );
+      let validateCustomDeposit = validateField(
+        "proposalCustomDeposit",
+        proposalCustomDeposit.value
+      );
+      if (
+        nearAccountValid &&
+        validateDescription &&
+        validateCustomArgs &&
+        validateCustomDeposit
+      ) {
+        const argsList = JSON.parse(proposalCustomArgs.value);
+        const args = Buffer.from(
+          JSON.stringify(argsList).replaceAll('^"', "").replaceAll('"^', "")
+        ).toString("base64");
+
+        const deposit = new Decimal(e.target.proposalCustomDeposit.value);
+        const depositYokto = deposit.mul(yoktoNear).toFixed();
+
+        try {
+          setShowSpinner(true);
+          await window.contract.add_proposal(
+            {
+              proposal: {
+                description: e.target.proposalDescription.value.trim(),
+                kind: {
+                  FunctionCall: {
+                    receiver_id: nearConfig.nearSocialContractName,
+                    actions: [
+                      {
+                        method_name: "set",
+                        args: args,
+                        deposit: depositYokto,
+                        gas: "150000000000000",
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            new Decimal("250000000000000").toString(),
+            daoPolicy.proposal_bond.toString()
+          );
+        } catch (e) {
+          console.log(e);
+          setShowError(e);
+        } finally {
+          setShowSpinner(false);
+        }
+      } else {
+        if (!nearAccountValid) {
+          e.target.proposalTarget.className += " is-invalid";
+          e.target.proposalTarget.classList.remove("is-valid");
+          setProposalTarget({
+            value: proposalTarget.value,
+            valid: false,
+            message: "contract does not exist!",
+          });
+        } else {
+          setProposalTarget({
+            value: nearConfig.nearSocialContractName,
+            valid: true,
+            message: "",
+          });
+          e.target.proposalTarget.classList.remove("is-invalid");
+          e.target.proposalTarget.className += " is-valid";
+        }
+
+        if (!validateDescription) {
+          e.target.proposalDescription.className += " is-invalid";
+          e.target.proposalDescription.classList.remove("is-valid");
+        } else {
+          e.target.proposalDescription.classList.remove("is-invalid");
+          e.target.proposalDescription.className += " is-valid";
+        }
+
+        if (!validateCustomArgs) {
+          e.target.proposalCustomArgs.className += " is-invalid";
+          e.target.proposalCustomArgs.classList.remove("is-valid");
+        } else {
+          e.target.proposalCustomArgs.classList.remove("is-invalid");
+          e.target.proposalCustomArgs.className += " is-valid";
+        }
+
+        if (!validateCustomDeposit) {
+          e.target.proposalCustomDeposit.className += " is-invalid";
+          e.target.proposalCustomDeposit.classList.remove("is-valid");
+        } else {
+          e.target.proposalCustomDeposit.classList.remove("is-invalid");
+          e.target.proposalCustomDeposit.className += " is-valid";
+        }
+      }
+    }
+  };
 
   const handlePayOption = (e) => {
     e.preventDefault();
     e.persist();
     setPaymentOption(e.target.value);
-  }
+  };
 
-
-  const [batchVotes, setBatchVotes] = useState( []);
+  const [batchVotes, setBatchVotes] = useState([]);
   console.log(batchVotes);
 
-  let roles = daoPolicy ? daoPolicy.roles.filter((item) => item.name !== 'all') : []
+  let roles = daoPolicy
+    ? daoPolicy.roles.filter((item) => item.name !== "all")
+    : [];
   return (
     <>
-      <MDBView className="w-100 h-100" style={{minHeight: "100vh"}}>
-        <MDBMask className="d-flex justify-content-center align-items-center unique-color-dark gradient"/>
-        <Navbar/>
-        <MDBContainer style={{minHeight: "100vh"}}>
+      <MDBView className="w-100 h-100" style={{ minHeight: "100vh" }}>
+        <MDBMask className="d-flex justify-content-center align-items-center unique-color-dark gradient" />
+        <Navbar />
+        <MDBContainer style={{ minHeight: "100vh" }}>
           <MDBAlert color="danger" className="text-center">
-            Beta software. Test in prod. <b>Not audited.</b> Use at your own risk!
+            Beta software. Test in prod. <b>Not audited.</b> Use at your own
+            risk!
           </MDBAlert>
 
-          <MDBAlert color={stateCtx.config.network.networkId === "testnet" ? "danger" : "secondary"}
-                    className="text-center h3-responsive">
-            <b style={{textTransform: "uppercase"}}>{stateCtx.config.network.networkId}</b>
+          <MDBAlert
+            color={
+              stateCtx.config.network.networkId === "testnet"
+                ? "danger"
+                : "secondary"
+            }
+            className="text-center h3-responsive"
+          >
+            <b style={{ textTransform: "uppercase" }}>
+              {stateCtx.config.network.networkId}
+            </b>
           </MDBAlert>
-          {stateCtx.config.contract && !selectDao ?
+          {stateCtx.config.contract && !selectDao ? (
             <>
               <MDBRow>
                 <MDBCol className="col-12 p-3 mx-auto">
@@ -1317,68 +1695,117 @@ const Dao = () => {
                     <MDBCardBody>
                       <MDBRow>
                         <MDBCol>
-                          {roles.map((item, key) =>
-                            <MDBCard className="p-0 m-2 stylish-color-dark white-text" key={key}>
-                              <MDBCardHeader className="h4-responsive">{item.name}</MDBCardHeader>
+                          {roles.map((item, key) => (
+                            <MDBCard
+                              className="p-0 m-2 stylish-color-dark white-text"
+                              key={key}
+                            >
+                              <MDBCardHeader className="h4-responsive">
+                                {item.name}
+                              </MDBCardHeader>
                               <MDBCardBody className="p-4">
-                                {item.kind.Group.map((i, k) => <div
-                                  key={k}>{i}</div>)}
+                                {item.kind.Group.map((i, k) => (
+                                  <div key={k}>{i}</div>
+                                ))}
                               </MDBCardBody>
-                            </MDBCard>)}
+                            </MDBCard>
+                          ))}
                         </MDBCol>
                         <MDBCol className="col-12 col-md-6">
                           <MDBCard className="p-0 m-2 stylish-color-dark white-text">
                             <MDBCardHeader className="h5-responsive">
                               <MDBRow>
-                                <MDBCol>
-                                  Properties:
-                                </MDBCol>
+                                <MDBCol>Properties:</MDBCol>
                                 <MDBCol className="">
                                   <MDBBox className="text-right">
-                                    <MDBBtn size="sm" onClick={handleDaoChange} color="elegant">Change DAO</MDBBtn>
+                                    <MDBBtn
+                                      size="sm"
+                                      onClick={handleDaoChange}
+                                      color="elegant"
+                                    >
+                                      Change DAO
+                                    </MDBBtn>
                                   </MDBBox>
                                 </MDBCol>
                               </MDBRow>
                             </MDBCardHeader>
                             <MDBCardBody className="p-2">
-
-
                               <ul>
-                                <li>Network: <a className="white-text btn-link" target="_blank"
-                                                href={stateCtx.config.network.explorerUrl}>{stateCtx.config.network.networkId}</a>
+                                <li>
+                                  Network:{" "}
+                                  <a
+                                    className="white-text btn-link"
+                                    target="_blank"
+                                    href={stateCtx.config.network.explorerUrl}
+                                  >
+                                    {stateCtx.config.network.networkId}
+                                  </a>
                                 </li>
                                 <li>DAO: {stateCtx.config.contract}</li>
-                                <li>Bond:{" "}
-                                  <span
-                                    style={{fontSize: 12}}>Ⓝ{" "}</span>{daoPolicy && daoPolicy.proposal_bond !== null ? (new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear)).toString() : ''}
+                                <li>
+                                  Bond: <span style={{ fontSize: 12 }}>Ⓝ </span>
+                                  {daoPolicy && daoPolicy.proposal_bond !== null
+                                    ? new Decimal(
+                                        daoPolicy.proposal_bond.toString()
+                                      )
+                                        .div(yoktoNear)
+                                        .toString()
+                                    : ""}
                                 </li>
-                                <li>Purpose:{" "}
-                                  {
-                                    daoConfig ? daoConfig.purpose.split(" ").map((item, key) => (
-                                      /(((https?:\/\/)|(www\.))[^\s]+)/g.test(item) ?
-                                        <a className="white-text btn-link" target="_blank"
-                                           href={item}>{item}{" "}</a> : <>{item}{" "}</>
-                                    )) : null
-                                  }
+                                <li>
+                                  Purpose:{" "}
+                                  {daoConfig
+                                    ? daoConfig.purpose
+                                        .split(" ")
+                                        .map((item, key) =>
+                                          /(((https?:\/\/)|(www\.))[^\s]+)/g.test(
+                                            item
+                                          ) ? (
+                                            <a
+                                              className="white-text btn-link"
+                                              target="_blank"
+                                              href={item}
+                                            >
+                                              {item}{" "}
+                                            </a>
+                                          ) : (
+                                            <>{item} </>
+                                          )
+                                        )
+                                    : null}
                                 </li>
-                                <li>Vote
-                                  Period: {daoPolicy ? timestampToReadable(daoPolicy.proposal_period) : ''}</li>
-                                <li>Staking Contract: {daoStaking ? daoStaking : ''}</li>
-                                <li>DAO Funds: Ⓝ {daoState ? daoState : ''}</li>
+                                <li>
+                                  Vote Period:{" "}
+                                  {daoPolicy
+                                    ? timestampToReadable(
+                                        daoPolicy.proposal_period
+                                      )
+                                    : ""}
+                                </li>
+                                <li>
+                                  Staking Contract:{" "}
+                                  {daoStaking ? daoStaking : ""}
+                                </li>
+                                <li>DAO Funds: Ⓝ {daoState ? daoState : ""}</li>
                               </ul>
                             </MDBCardBody>
                           </MDBCard>
                         </MDBCol>
                       </MDBRow>
-                      {window.walletConnection.getAccountId() ?
+                      {window.walletConnection.getAccountId() ? (
                         <MDBRow className="mx-auto p-2">
                           <MDBCol className="text-center">
-                            <MDBBtn style={{borderRadius: 10}} size="sm" onClick={toggleProposalModal}
-                                    color="elegant">ADD
-                              NEW PROPOSAL</MDBBtn>
+                            <MDBBtn
+                              style={{ borderRadius: 10 }}
+                              size="sm"
+                              onClick={toggleProposalModal}
+                              color="elegant"
+                            >
+                              ADD NEW PROPOSAL
+                            </MDBBtn>
                           </MDBCol>
                         </MDBRow>
-                        : null}
+                      ) : null}
                     </MDBCardBody>
                   </MDBCard>
                 </MDBCol>
@@ -1390,81 +1817,95 @@ const Dao = () => {
                     <MDBCardBody>
                       <MDBRow center>
                         <MDBCard className="p-2 mr-2 mb-2 elegant-color white-text">
-                          <div className='custom-control custom-switch mr-2'>
+                          <div className="custom-control custom-switch mr-2">
                             <input
-                              type='checkbox'
-                              className='custom-control-input'
-                              id='batchVote'
+                              type="checkbox"
+                              className="custom-control-input"
+                              id="batchVote"
                               checked={false}
-                              onChange={handleSwitchChange('batchVote')}
+                              onChange={handleSwitchChange("batchVote")}
                               readOnly
                             />
-                            <label className='custom-control-label' htmlFor='batchVote'>
+                            <label
+                              className="custom-control-label"
+                              htmlFor="batchVote"
+                            >
                               Multi Vote
                             </label>
                           </div>
                         </MDBCard>
                         <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
-                          <div className='custom-control custom-switch mr-2'>
+                          <div className="custom-control custom-switch mr-2">
                             <input
-                              type='checkbox'
-                              className='custom-control-input'
-                              id='switchAll'
+                              type="checkbox"
+                              className="custom-control-input"
+                              id="switchAll"
                               checked={switchState.switchAll}
-                              onChange={handleSwitchChange('switchAll')}
+                              onChange={handleSwitchChange("switchAll")}
                               readOnly
                             />
-                            <label className='custom-control-label' htmlFor='switchAll'>
+                            <label
+                              className="custom-control-label"
+                              htmlFor="switchAll"
+                            >
                               Show All
                             </label>
                           </div>
                         </MDBCard>
                         <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
-                          <div className='custom-control custom-switch mr-2'>
+                          <div className="custom-control custom-switch mr-2">
                             <input
-                              type='checkbox'
-                              className='custom-control-input'
-                              id='switchInProgress'
+                              type="checkbox"
+                              className="custom-control-input"
+                              id="switchInProgress"
                               checked={switchState.switchInProgress}
-                              onChange={handleSwitchChange('switchInProgress')}
+                              onChange={handleSwitchChange("switchInProgress")}
                               readOnly
                             />
-                            <label className='custom-control-label' htmlFor='switchInProgress'>
+                            <label
+                              className="custom-control-label"
+                              htmlFor="switchInProgress"
+                            >
                               In Progress
                             </label>
                           </div>
                         </MDBCard>
                         <MDBCard className="p-2 mr-2 mb-2 stylish-color-dark white-text">
-                          <div className='custom-control custom-switch mr-2'>
+                          <div className="custom-control custom-switch mr-2">
                             <input
-                              type='checkbox'
-                              className='custom-control-input'
-                              id='switchDone'
+                              type="checkbox"
+                              className="custom-control-input"
+                              id="switchDone"
                               checked={switchState.switchDone}
-                              onChange={handleSwitchChange('switchDone')}
+                              onChange={handleSwitchChange("switchDone")}
                               readOnly
                             />
-                            <label className='custom-control-label' htmlFor='switchDone'>
+                            <label
+                              className="custom-control-label"
+                              htmlFor="switchDone"
+                            >
                               Done
                             </label>
                           </div>
                         </MDBCard>
                         <MDBCard className="p-2 mb-2 stylish-color-dark white-text">
-                          <div className='custom-control custom-switch mr-2'>
+                          <div className="custom-control custom-switch mr-2">
                             <input
-                              type='checkbox'
-                              className='custom-control-input'
-                              id='switchExpired'
+                              type="checkbox"
+                              className="custom-control-input"
+                              id="switchExpired"
                               checked={switchState.switchExpired}
-                              onChange={handleSwitchChange('switchExpired')}
+                              onChange={handleSwitchChange("switchExpired")}
                               readOnly
                             />
-                            <label className='custom-control-label' htmlFor='switchExpired'>
+                            <label
+                              className="custom-control-label"
+                              htmlFor="switchExpired"
+                            >
                               Expired
                             </label>
                           </div>
                         </MDBCard>
-
                       </MDBRow>
                     </MDBCardBody>
                   </MDBCard>
@@ -1472,34 +1913,59 @@ const Dao = () => {
               </MDBRow>
 
               <MDBRow className="">
-                {daoPolicy && numberProposals > 0 && proposals !== null ?
-                  proposals.sort((a, b) => b.key >= a.key ? 1 : -1).map((item, key) => (
-                    <>
-                      {
-                        (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) > new Date() && item.status === 'InProgress' && switchState.switchInProgress)
-                        || (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) < new Date() && item.status === 'InProgress' && switchState.switchExpired)
-                        || item.status === 'Expired' && switchState.switchExpired
-                        || switchState.switchAll
-                        || (item.status === 'Rejected' && switchState.switchDone)
-                        || (item.status === 'Approved' && switchState.switchDone)
-                        || (item.status === 'Removed' && switchState.switchDone)
-                        || (convertDuration(new Decimal(item.submission_time).plus(daoPolicy.proposal_period)) > new Date() && item.status === 'InProgress' && item.key >= stateCtx.config.lastShownProposal && switchState.switchNew)
-
-                          ?
-                          <Proposal dao={stateCtx.config.contract} data={item} key={item.id} id={item.id}
-                                    daoPolicy={daoPolicy}
-                                    setShowError={setShowError}
-                                    isBatchVote={true}
-                                    setBatchVotes={setBatchVotes}
-                                    roles={roles}/>
-                          : null
-                      }
-                    </>
-                  ))
-                  : null
-                }
+                {daoPolicy && numberProposals > 0 && proposals !== null
+                  ? proposals
+                      .sort((a, b) => (b.key >= a.key ? 1 : -1))
+                      .map((item, key) => (
+                        <>
+                          {(convertDuration(
+                            new Decimal(item.submission_time).plus(
+                              daoPolicy.proposal_period
+                            )
+                          ) > new Date() &&
+                            item.status === "InProgress" &&
+                            switchState.switchInProgress) ||
+                          (convertDuration(
+                            new Decimal(item.submission_time).plus(
+                              daoPolicy.proposal_period
+                            )
+                          ) < new Date() &&
+                            item.status === "InProgress" &&
+                            switchState.switchExpired) ||
+                          (item.status === "Expired" &&
+                            switchState.switchExpired) ||
+                          switchState.switchAll ||
+                          (item.status === "Rejected" &&
+                            switchState.switchDone) ||
+                          (item.status === "Approved" &&
+                            switchState.switchDone) ||
+                          (item.status === "Removed" &&
+                            switchState.switchDone) ||
+                          (convertDuration(
+                            new Decimal(item.submission_time).plus(
+                              daoPolicy.proposal_period
+                            )
+                          ) > new Date() &&
+                            item.status === "InProgress" &&
+                            item.key >= stateCtx.config.lastShownProposal &&
+                            switchState.switchNew) ? (
+                            <Proposal
+                              dao={stateCtx.config.contract}
+                              data={item}
+                              key={item.id}
+                              id={item.id}
+                              daoPolicy={daoPolicy}
+                              setShowError={setShowError}
+                              isBatchVote={true}
+                              setBatchVotes={setBatchVotes}
+                              roles={roles}
+                            />
+                          ) : null}
+                        </>
+                      ))
+                  : null}
               </MDBRow>
-              {showError !== null ?
+              {showError !== null ? (
                 <MDBNotification
                   autohide={36000}
                   bodyClassName="p-5 font-weight-bold white-text"
@@ -1517,13 +1983,12 @@ const Dao = () => {
                     position: "fixed",
                     top: "60px",
                     right: "10px",
-                    zIndex: 9999
+                    zIndex: 9999,
                   }}
                 />
-                : null
-              }
+              ) : null}
 
-              {showNewProposalNotification ?
+              {showNewProposalNotification ? (
                 <MDBNotification
                   autohide={36000}
                   bodyClassName="p-5 font-weight-bold white-text"
@@ -1541,188 +2006,296 @@ const Dao = () => {
                     position: "fixed",
                     top: "60px",
                     left: "10px",
-                    zIndex: 9999
+                    zIndex: 9999,
                   }}
                 />
-                : null
-              }
-              {daoPolicy ?
-                <MDBModal isOpen={addProposalModal} toggle={toggleProposalModal} centered position="center" size="lg">
-                  <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                                  titleClass="w-100 font-weight-bold"
-                                  toggle={toggleProposalModal}>
+              ) : null}
+              {daoPolicy ? (
+                <MDBModal
+                  isOpen={addProposalModal}
+                  toggle={toggleProposalModal}
+                  centered
+                  position="center"
+                  size="lg"
+                >
+                  <MDBModalHeader
+                    className="text-center stylish-color white-text border-dark"
+                    titleClass="w-100 font-weight-bold"
+                    toggle={toggleProposalModal}
+                  >
                     Select Proposal Type
                   </MDBModalHeader>
-                  <MDBModalBody style={{background: 'rgb(213, 211, 211)'}}>
+                  <MDBModalBody style={{ background: "rgb(213, 211, 211)" }}>
                     <MDBRow>
                       <MDBCol className="col-12 col-md-6 col-lg-5 mb-1">
                         <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                           <MDBCardBody className="text-center white-text">
-                            <MDBIcon icon="user-secret" size="4x"/>
-                            <hr/>
-                            <div>Council
-                              Member
-                            </div>
-                            <MDBBtn onClick={toggleNewCouncilMember}
-                                    color="blue-grey" size="sm" className="float-left">Add</MDBBtn>
-                            <MDBBtn onClick={toggleRemoveCouncilMember} color="red" size="sm"
-                                    className="float-right">Remove</MDBBtn>
+                            <MDBIcon icon="user-secret" size="4x" />
+                            <hr />
+                            <div>Council Member</div>
+                            <MDBBtn
+                              onClick={toggleNewCouncilMember}
+                              color="blue-grey"
+                              size="sm"
+                              className="float-left"
+                            >
+                              Add
+                            </MDBBtn>
+                            <MDBBtn
+                              onClick={toggleRemoveCouncilMember}
+                              color="red"
+                              size="sm"
+                              className="float-right"
+                            >
+                              Remove
+                            </MDBBtn>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
                       <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
                         <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                           <MDBCardBody className="text-center white-text">
-                            <MDBIcon icon="hand-holding-usd" size="4x"/>
-                            <hr/>
-                            <a href="#" onClick={toggleNewPayout}
-                               className="stretched-link grey-text white-hover">Payout</a>
+                            <MDBIcon icon="hand-holding-usd" size="4x" />
+                            <hr />
+                            <a
+                              href="#"
+                              onClick={toggleNewPayout}
+                              className="stretched-link grey-text white-hover"
+                            >
+                              Payout
+                            </a>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
                       <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
                         <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                           <MDBCardBody className="text-center white-text">
-                            <MDBIcon icon="tractor" size="4x"/>
-                            <hr/>
-                            <a href="#" onClick={toggleNewToken}
-                               className="stretched-link grey-text white-hover">Token farm</a>
+                            <MDBIcon icon="tractor" size="4x" />
+                            <hr />
+                            <a
+                              href="#"
+                              onClick={toggleNewToken}
+                              className="stretched-link grey-text white-hover"
+                            >
+                              Token farm
+                            </a>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
                       <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
                         <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                           <MDBCardBody className="text-center white-text">
-                            <MDBIcon icon="cogs" size="4x"/>
-                            <hr/>
-                            <a href="#" onClick={toggleCustomCall}
-                               className="stretched-link grey-text white-hover">Custom function</a>
+                            <MDBIcon icon="cogs" size="4x" />
+                            <hr />
+                            <a
+                              href="#"
+                              onClick={toggleCustomCall}
+                              className="stretched-link grey-text white-hover"
+                            >
+                              Custom function
+                            </a>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
                       <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
                         <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                           <MDBCardBody className="text-center white-text">
-                            <img src={roketoLogoSvg} style={{ height: 64 , marginLeft: -20}}>
-                            </img>
-                           
-                            <hr/>
-                            <a href="#" onClick={toggleRoketoStream}
-                               className="stretched-link grey-text white-hover">Roketo stream</a>
+                            <img
+                              src={nearSocialLogoSvg}
+                              style={{ height: 64, margin: "0 auto" }}
+                            />
+                            <hr />
+                            <a
+                              href="#"
+                              onClick={toggleNearSocialPost}
+                              className="stretched-link grey-text white-hover"
+                            >
+                              near.social
+                            </a>
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                          <MDBCardBody className="text-center white-text">
+                            <img
+                              src={roketoLogoSvg}
+                              style={{ height: 64, marginLeft: -20 }}
+                            ></img>
+
+                            <hr />
+                            <a
+                              href="#"
+                              onClick={toggleRoketoStream}
+                              className="stretched-link grey-text white-hover"
+                            >
+                              Roketo stream
+                            </a>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
                     </MDBRow>
                   </MDBModalBody>
                 </MDBModal>
-                : null}
-
+              ) : null}
 
               {/* --------------------------------------------------------------------------------------------------- */}
               {/* --------------------------------------- Add council member ---------------------------------------- */}
               {/* --------------------------------------------------------------------------------------------------- */}
-              <MDBModal isOpen={newProposalCouncilMember} toggle={toggleNewCouncilMember} centered position="center"
-                        size="lg">
-                <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                                titleClass="w-100 font-weight-bold"
-                                toggle={toggleNewCouncilMember}>
+              <MDBModal
+                isOpen={newProposalCouncilMember}
+                toggle={toggleNewCouncilMember}
+                centered
+                position="center"
+                size="lg"
+              >
+                <MDBModalHeader
+                  className="text-center stylish-color white-text border-dark"
+                  titleClass="w-100 font-weight-bold"
+                  toggle={toggleNewCouncilMember}
+                >
                   Add Council Member
                 </MDBModalHeader>
-                <form className="needs-validation mx-3 grey-text"
-                      name="newProposalCouncilMember"
-                      noValidate
-                      method="post"
-                      onSubmit={submitProposal}
+                <form
+                  className="needs-validation mx-3 grey-text"
+                  name="newProposalCouncilMember"
+                  noValidate
+                  method="post"
+                  onSubmit={submitProposal}
                 >
                   <MDBModalBody>
-                    <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
-                              onChange={changeHandler} label="Enter account"
-                              required group>
+                    <MDBInput
+                      disabled={disableTarget}
+                      name="proposalTarget"
+                      value={proposalTarget.value}
+                      onChange={changeHandler}
+                      label="Enter account"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTarget.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
-                              required label="Enter description" group>
+                    <MDBInput
+                      name="proposalDescription"
+                      value={proposalDescription.value}
+                      onChange={changeHandler}
+                      required
+                      label="Enter description"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalDescription.message}
                       </div>
                     </MDBInput>
-                    {daoPolicy ?
+                    {daoPolicy ? (
                       <MDBAlert color="warning">
-                        You will pay a deposit of <span
-                        style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
-                        add this proposal!
+                        You will pay a deposit of{" "}
+                        <span style={{ fontSize: 13 }}>Ⓝ</span>
+                        {new Decimal(daoPolicy.proposal_bond.toString())
+                          .div(yoktoNear)
+                          .toFixed(2)}{" "}
+                        to add this proposal!
                       </MDBAlert>
-                      : null}
-                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
-                      or
-                      expired.</MDBBox>
+                    ) : null}
+                    <MDBBox className="text-muted font-small ml-2">
+                      *the deposit will be refunded if proposal rejected or
+                      expired.
+                    </MDBBox>
                   </MDBModalBody>
                   <MDBModalFooter className="justify-content-center">
                     <MDBBtn color="elegant" type="submit">
                       Submit
-                      {showSpinner ?
-                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                      {showSpinner ? (
+                        <div
+                          className="spinner-border spinner-border-sm ml-2"
+                          role="status"
+                        >
                           <span className="sr-only">Loading...</span>
                         </div>
-                        : null}
+                      ) : null}
                     </MDBBtn>
                   </MDBModalFooter>
                 </form>
               </MDBModal>
 
-
               {/* --------------------------------------------------------------------------------------------------- */}
               {/* --------------------------------------- Remove council member ---------------------------------------- */}
               {/* --------------------------------------------------------------------------------------------------- */}
-              <MDBModal isOpen={removeProposalCouncilMember} toggle={toggleRemoveCouncilMember} centered
-                        position="center"
-                        size="lg">
-                <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                                titleClass="w-100 font-weight-bold"
-                                toggle={toggleRemoveCouncilMember}>
+              <MDBModal
+                isOpen={removeProposalCouncilMember}
+                toggle={toggleRemoveCouncilMember}
+                centered
+                position="center"
+                size="lg"
+              >
+                <MDBModalHeader
+                  className="text-center stylish-color white-text border-dark"
+                  titleClass="w-100 font-weight-bold"
+                  toggle={toggleRemoveCouncilMember}
+                >
                   Remove Council Member
                 </MDBModalHeader>
-                <form className="needs-validation mx-3 grey-text"
-                      name="removeProposalCouncilMember"
-                      noValidate
-                      method="post"
-                      onSubmit={submitProposal}
+                <form
+                  className="needs-validation mx-3 grey-text"
+                  name="removeProposalCouncilMember"
+                  noValidate
+                  method="post"
+                  onSubmit={submitProposal}
                 >
                   <MDBModalBody>
-                    <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
-                              onChange={changeHandler} label="Enter account"
-                              required group>
+                    <MDBInput
+                      disabled={disableTarget}
+                      name="proposalTarget"
+                      value={proposalTarget.value}
+                      onChange={changeHandler}
+                      label="Enter account"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTarget.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
-                              required label="Enter description" group>
+                    <MDBInput
+                      name="proposalDescription"
+                      value={proposalDescription.value}
+                      onChange={changeHandler}
+                      required
+                      label="Enter description"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalDescription.message}
                       </div>
                     </MDBInput>
-                    {daoPolicy ?
+                    {daoPolicy ? (
                       <MDBAlert color="warning">
-                        You will pay a deposit of <span
-                        style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
-                        add this proposal!
+                        You will pay a deposit of{" "}
+                        <span style={{ fontSize: 13 }}>Ⓝ</span>
+                        {new Decimal(daoPolicy.proposal_bond.toString())
+                          .div(yoktoNear)
+                          .toFixed(2)}{" "}
+                        to add this proposal!
                       </MDBAlert>
-                      : null}
-                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
-                      or
-                      expired.</MDBBox>
+                    ) : null}
+                    <MDBBox className="text-muted font-small ml-2">
+                      *the deposit will be refunded if proposal rejected or
+                      expired.
+                    </MDBBox>
                   </MDBModalBody>
                   <MDBModalFooter className="justify-content-center">
                     <MDBBtn color="elegant" type="submit">
                       Submit
-                      {showSpinner ?
-                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                      {showSpinner ? (
+                        <div
+                          className="spinner-border spinner-border-sm ml-2"
+                          role="status"
+                        >
                           <span className="sr-only">Loading...</span>
                         </div>
-                        : null}
+                      ) : null}
                     </MDBBtn>
                   </MDBModalFooter>
                 </form>
@@ -1731,79 +2304,128 @@ const Dao = () => {
               {/* --------------------------------------------------------------------------------------------------- */}
               {/* --------------------------------------- Roketo Stream ------------------------------------------------ */}
               {/* --------------------------------------------------------------------------------------------------- */}
-              <MDBModal isOpen={newProposalRoketoStream} toggle={toggleRoketoStream} centered position="center"
-                        size="lg">
-                <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                                titleClass="w-100 font-weight-bold"
-                                toggle={toggleRoketoStream}>
+              <MDBModal
+                isOpen={newProposalRoketoStream}
+                toggle={toggleRoketoStream}
+                centered
+                position="center"
+                size="lg"
+              >
+                <MDBModalHeader
+                  className="text-center stylish-color white-text border-dark"
+                  titleClass="w-100 font-weight-bold"
+                  toggle={toggleRoketoStream}
+                >
                   Add Payout
                 </MDBModalHeader>
-                <form className="needs-validation mx-3 grey-text"
-                      name="newProposalRoketoStream"
-                      noValidate
-                      method="post"
-                      onSubmit={submitProposal}
+                <form
+                  className="needs-validation mx-3 grey-text"
+                  name="newProposalRoketoStream"
+                  noValidate
+                  method="post"
+                  onSubmit={submitProposal}
                 >
                   <MDBModalBody>
-                    <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
-                              onChange={changeHandler} label="Enter receiver account"
-                              required group>
+                    <MDBInput
+                      disabled={disableTarget}
+                      name="proposalTarget"
+                      value={proposalTarget.value}
+                      onChange={changeHandler}
+                      label="Enter receiver account"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTarget.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
-                              required label="Enter description" group>
+                    <MDBInput
+                      name="proposalDescription"
+                      value={proposalDescription.value}
+                      onChange={changeHandler}
+                      required
+                      label="Enter description"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalDescription.message}
                       </div>
                     </MDBInput>
                     <MDBBox>Pay with</MDBBox>
-                    <select onChange={handlePayOption} name="paymentOption" className="browser-default custom-select">
-                      <option selected value="NEAR">NEAR</option>
+                    <select
+                      onChange={handlePayOption}
+                      name="paymentOption"
+                      className="browser-default custom-select"
+                    >
+                      <option selected value="NEAR">
+                        NEAR
+                      </option>
                       <option value="FT">Fungible Token</option>
                     </select>
-                    {paymentOption === "FT" ?
-                      <MDBInput value={proposalFT.value} name="proposalFT"
-                                onChange={changeHandler} required
-                                label="Fungible token address" group>
+                    {paymentOption === "FT" ? (
+                      <MDBInput
+                        value={proposalFT.value}
+                        name="proposalFT"
+                        onChange={changeHandler}
+                        required
+                        label="Fungible token address"
+                        group
+                      >
                         <div className="invalid-feedback">
                           {proposalFT.message}
                         </div>
                       </MDBInput>
-                      : null}
-                    <MDBInput value={proposalAmount.value} name="proposalAmount" onChange={changeHandler} required
-                              label="Enter amount" group>
+                    ) : null}
+                    <MDBInput
+                      value={proposalAmount.value}
+                      name="proposalAmount"
+                      onChange={changeHandler}
+                      required
+                      label="Enter amount"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalAmount.message}
                       </div>
                     </MDBInput>
-                    <MDBInput value={proposalRoketoSpeed.value} name="proposalRoketoSpeed" onChange={changeHandler}
-                              required
-                              label="Enter stream speed per second" group>
+                    <MDBInput
+                      value={proposalRoketoSpeed.value}
+                      name="proposalRoketoSpeed"
+                      onChange={changeHandler}
+                      required
+                      label="Enter stream speed per second"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalRoketoSpeed.message}
                       </div>
                     </MDBInput>
-                    {daoPolicy ?
+                    {daoPolicy ? (
                       <MDBAlert color="warning">
-                        You will pay a deposit of <span
-                        style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
-                        add this proposal!
+                        You will pay a deposit of{" "}
+                        <span style={{ fontSize: 13 }}>Ⓝ</span>
+                        {new Decimal(daoPolicy.proposal_bond.toString())
+                          .div(yoktoNear)
+                          .toFixed(2)}{" "}
+                        to add this proposal!
                       </MDBAlert>
-                      : null}
-                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
-                      or
-                      expired.</MDBBox>
+                    ) : null}
+                    <MDBBox className="text-muted font-small ml-2">
+                      *the deposit will be refunded if proposal rejected or
+                      expired.
+                    </MDBBox>
                   </MDBModalBody>
                   <MDBModalFooter className="justify-content-center">
                     <MDBBtn color="elegant" type="submit">
                       Submit
-                      {showSpinner ?
-                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                      {showSpinner ? (
+                        <div
+                          className="spinner-border spinner-border-sm ml-2"
+                          role="status"
+                        >
                           <span className="sr-only">Loading...</span>
                         </div>
-                        : null}
+                      ) : null}
                     </MDBBtn>
                   </MDBModalFooter>
                 </form>
@@ -1811,72 +2433,116 @@ const Dao = () => {
               {/* --------------------------------------------------------------------------------------------------- */}
               {/* --------------------------------------- Add payout ------------------------------------------------ */}
               {/* --------------------------------------------------------------------------------------------------- */}
-              <MDBModal isOpen={newProposalPayout} toggle={toggleNewPayout} centered position="center"
-                        size="lg">
-                <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                                titleClass="w-100 font-weight-bold"
-                                toggle={toggleNewPayout}>
+              <MDBModal
+                isOpen={newProposalPayout}
+                toggle={toggleNewPayout}
+                centered
+                position="center"
+                size="lg"
+              >
+                <MDBModalHeader
+                  className="text-center stylish-color white-text border-dark"
+                  titleClass="w-100 font-weight-bold"
+                  toggle={toggleNewPayout}
+                >
                   Add Payout
                 </MDBModalHeader>
-                <form className="needs-validation mx-3 grey-text"
-                      name="newProposalPayout"
-                      noValidate
-                      method="post"
-                      onSubmit={submitProposal}
+                <form
+                  className="needs-validation mx-3 grey-text"
+                  name="newProposalPayout"
+                  noValidate
+                  method="post"
+                  onSubmit={submitProposal}
                 >
                   <MDBModalBody>
-                    <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
-                              onChange={changeHandler} label="Enter receiver account"
-                              required group>
+                    <MDBInput
+                      disabled={disableTarget}
+                      name="proposalTarget"
+                      value={proposalTarget.value}
+                      onChange={changeHandler}
+                      label="Enter receiver account"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTarget.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
-                              required label="Enter description" group>
+                    <MDBInput
+                      name="proposalDescription"
+                      value={proposalDescription.value}
+                      onChange={changeHandler}
+                      required
+                      label="Enter description"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalDescription.message}
                       </div>
                     </MDBInput>
                     <MDBBox>Pay with</MDBBox>
-                    <select onChange={handlePayOption} name="paymentOption" className="browser-default custom-select">
-                      <option selected value="NEAR">NEAR</option>
+                    <select
+                      onChange={handlePayOption}
+                      name="paymentOption"
+                      className="browser-default custom-select"
+                    >
+                      <option selected value="NEAR">
+                        NEAR
+                      </option>
                       <option value="FT">Fungible Token</option>
                     </select>
-                    {paymentOption === "FT" ?
-                      <MDBInput value={proposalFT.value} name="proposalFT"
-                                onChange={changeHandler} required
-                                label="Fungible token address" group>
+                    {paymentOption === "FT" ? (
+                      <MDBInput
+                        value={proposalFT.value}
+                        name="proposalFT"
+                        onChange={changeHandler}
+                        required
+                        label="Fungible token address"
+                        group
+                      >
                         <div className="invalid-feedback">
                           {proposalFT.message}
                         </div>
                       </MDBInput>
-                      : null}
-                    <MDBInput value={proposalAmount.value} name="proposalAmount" onChange={changeHandler} required
-                              label="Enter amount" group>
+                    ) : null}
+                    <MDBInput
+                      value={proposalAmount.value}
+                      name="proposalAmount"
+                      onChange={changeHandler}
+                      required
+                      label="Enter amount"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalAmount.message}
                       </div>
                     </MDBInput>
-                    {daoPolicy ?
+                    {daoPolicy ? (
                       <MDBAlert color="warning">
-                        You will pay a deposit of <span
-                        style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
-                        add this proposal!
+                        You will pay a deposit of{" "}
+                        <span style={{ fontSize: 13 }}>Ⓝ</span>
+                        {new Decimal(daoPolicy.proposal_bond.toString())
+                          .div(yoktoNear)
+                          .toFixed(2)}{" "}
+                        to add this proposal!
                       </MDBAlert>
-                      : null}
-                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
-                      or
-                      expired.</MDBBox>
+                    ) : null}
+                    <MDBBox className="text-muted font-small ml-2">
+                      *the deposit will be refunded if proposal rejected or
+                      expired.
+                    </MDBBox>
                   </MDBModalBody>
                   <MDBModalFooter className="justify-content-center">
                     <MDBBtn color="elegant" type="submit">
                       Submit
-                      {showSpinner ?
-                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                      {showSpinner ? (
+                        <div
+                          className="spinner-border spinner-border-sm ml-2"
+                          role="status"
+                        >
                           <span className="sr-only">Loading...</span>
                         </div>
-                        : null}
+                      ) : null}
                     </MDBBtn>
                   </MDBModalFooter>
                 </form>
@@ -1885,196 +2551,380 @@ const Dao = () => {
               {/* --------------------------------------------------------------------------------------------------- */}
               {/* --------------------------------------- Token Farm ------------------------------------------------ */}
               {/* --------------------------------------------------------------------------------------------------- */}
-              <MDBModal isOpen={newProposalToken} toggle={toggleNewToken} centered position="center"
-                        size="lg">
-                <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                                titleClass="w-100 font-weight-bold"
-                                toggle={toggleNewToken}>
+              <MDBModal
+                isOpen={newProposalToken}
+                toggle={toggleNewToken}
+                centered
+                position="center"
+                size="lg"
+              >
+                <MDBModalHeader
+                  className="text-center stylish-color white-text border-dark"
+                  titleClass="w-100 font-weight-bold"
+                  toggle={toggleNewToken}
+                >
                   Create a new Token
                 </MDBModalHeader>
-                <form className="needs-validation mx-3 grey-text"
-                      name="newProposalToken"
-                      noValidate
-                      method="post"
-                      onSubmit={submitProposal}
+                <form
+                  className="needs-validation mx-3 grey-text"
+                  name="newProposalToken"
+                  noValidate
+                  method="post"
+                  onSubmit={submitProposal}
                 >
                   <MDBModalBody>
-                    <MDBInput disabled={true} name="proposalTokenOwner" value={proposalTokenOwner.value}
-                              onChange={changeHandler} label="Enter owner account"
-                              required group>
+                    <MDBInput
+                      disabled={true}
+                      name="proposalTokenOwner"
+                      value={proposalTokenOwner.value}
+                      onChange={changeHandler}
+                      label="Enter owner account"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTokenOwner.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalTokenSupply" value={proposalTokenSupply.value}
-                              onChange={changeHandler} label="Total Supply"
-                              required group>
+                    <MDBInput
+                      name="proposalTokenSupply"
+                      value={proposalTokenSupply.value}
+                      onChange={changeHandler}
+                      label="Total Supply"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTokenSupply.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalTokenName" value={proposalTokenName.value}
-                              onChange={changeHandler} label="Token Name"
-                              required group>
+                    <MDBInput
+                      name="proposalTokenName"
+                      value={proposalTokenName.value}
+                      onChange={changeHandler}
+                      label="Token Name"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTokenName.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalTokenSymbol" value={proposalTokenSymbol.value}
-                              onChange={changeHandler} label="Token Symbol"
-                              required group>
+                    <MDBInput
+                      name="proposalTokenSymbol"
+                      value={proposalTokenSymbol.value}
+                      onChange={changeHandler}
+                      label="Token Symbol"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTokenSymbol.message}
                       </div>
                     </MDBInput>
-                    <MDBInput disabled={true} name="proposalTokenIcon" value={proposalTokenIcon.value}
-                              onChange={changeHandler} label="Token Icon URL"
-                              required group>
+                    <MDBInput
+                      disabled={true}
+                      name="proposalTokenIcon"
+                      value={proposalTokenIcon.value}
+                      onChange={changeHandler}
+                      label="Token Icon URL"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTokenIcon.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalTokenDecimals" value={proposalTokenDecimals.value}
-                              onChange={changeHandler} label="Token Decimals"
-                              required group>
+                    <MDBInput
+                      name="proposalTokenDecimals"
+                      value={proposalTokenDecimals.value}
+                      onChange={changeHandler}
+                      label="Token Decimals"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTokenDecimals.message}
                       </div>
                     </MDBInput>
-                    <MDBInput disabled={true} name="proposalTarget" value={proposalTarget.value}
-                              onChange={changeHandler} label="Enter receiver account"
-                              group>
+                    <MDBInput
+                      disabled={true}
+                      name="proposalTarget"
+                      value={proposalTarget.value}
+                      onChange={changeHandler}
+                      label="Enter receiver account"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTarget.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
-                              required label="Enter description" group>
+                    <MDBInput
+                      name="proposalDescription"
+                      value={proposalDescription.value}
+                      onChange={changeHandler}
+                      required
+                      label="Enter description"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalDescription.message}
                       </div>
                     </MDBInput>
-                    {daoPolicy ?
+                    {daoPolicy ? (
                       <>
                         <MDBAlert color="warning">
-                          You will pay a deposit of <span
-                          style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
-                          add this proposal!
+                          You will pay a deposit of{" "}
+                          <span style={{ fontSize: 13 }}>Ⓝ</span>
+                          {new Decimal(daoPolicy.proposal_bond.toString())
+                            .div(yoktoNear)
+                            .toFixed(2)}{" "}
+                          to add this proposal!
                         </MDBAlert>
                         <MDBAlert color="warning">
-                          Please make sure DAO has at least <span
-                          style={{fontSize: 13}}>Ⓝ</span>5 (for deposit) at the time of approval!
+                          Please make sure DAO has at least{" "}
+                          <span style={{ fontSize: 13 }}>Ⓝ</span>5 (for deposit)
+                          at the time of approval!
                         </MDBAlert>
                       </>
-                      : null}
-                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
-                      or
-                      expired.</MDBBox>
+                    ) : null}
+                    <MDBBox className="text-muted font-small ml-2">
+                      *the deposit will be refunded if proposal rejected or
+                      expired.
+                    </MDBBox>
                   </MDBModalBody>
                   <MDBModalFooter className="justify-content-center">
                     <MDBBtn color="elegant" type="submit">
                       Submit
-                      {showSpinner ?
-                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                      {showSpinner ? (
+                        <div
+                          className="spinner-border spinner-border-sm ml-2"
+                          role="status"
+                        >
                           <span className="sr-only">Loading...</span>
                         </div>
-                        : null}
+                      ) : null}
                     </MDBBtn>
                   </MDBModalFooter>
                 </form>
               </MDBModal>
-
 
               {/* --------------------------------------------------------------------------------------------------- */}
               {/* --------------------------------------- Custom Call ----------------------------------------------- */}
               {/* --------------------------------------------------------------------------------------------------- */}
-              <MDBModal isOpen={newProposalCustomCall} toggle={toggleCustomCall} centered position="center"
-                        size="lg">
-                <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                                titleClass="w-100 font-weight-bold"
-                                toggle={toggleCustomCall}>
+              <MDBModal
+                isOpen={newProposalCustomCall}
+                toggle={toggleCustomCall}
+                centered
+                position="center"
+                size="lg"
+              >
+                <MDBModalHeader
+                  className="text-center stylish-color white-text border-dark"
+                  titleClass="w-100 font-weight-bold"
+                  toggle={toggleCustomCall}
+                >
                   Custom function call
                 </MDBModalHeader>
-                <form className="needs-validation mx-3 grey-text"
-                      name="newProposalCustomCall"
-                      noValidate
-                      method="post"
-                      onSubmit={submitProposal}
+                <form
+                  className="needs-validation mx-3 grey-text"
+                  name="newProposalCustomCall"
+                  noValidate
+                  method="post"
+                  onSubmit={submitProposal}
                 >
                   <MDBModalBody>
-                    <MDBInput name="proposalTarget" value={proposalTarget.value}
-                              onChange={changeHandler} label="Enter receiver contract id"
-                              group>
+                    <MDBInput
+                      name="proposalTarget"
+                      value={proposalTarget.value}
+                      onChange={changeHandler}
+                      label="Enter receiver contract id"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalTarget.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
-                              required label="Enter description" group>
+                    <MDBInput
+                      name="proposalDescription"
+                      value={proposalDescription.value}
+                      onChange={changeHandler}
+                      required
+                      label="Enter description"
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalDescription.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalCustomMethodName" value={proposalCustomMethodName.value}
-                              onChange={changeHandler} label="Method Name"
-                              required group>
+                    <MDBInput
+                      name="proposalCustomMethodName"
+                      value={proposalCustomMethodName.value}
+                      onChange={changeHandler}
+                      label="Method Name"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalCustomMethodName.message}
                       </div>
                     </MDBInput>
-                    <MDBInput type="textarea" rows={10} name="proposalCustomArgs" value={proposalCustomArgs.value}
-                              onChange={changeHandler} label="Args in JSON format"
-                              required group>
+                    <MDBInput
+                      type="textarea"
+                      rows={10}
+                      name="proposalCustomArgs"
+                      value={proposalCustomArgs.value}
+                      onChange={changeHandler}
+                      label="Args in JSON format"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalCustomArgs.message}
                       </div>
                     </MDBInput>
-                    <MDBInput name="proposalCustomDeposit" value={proposalCustomDeposit.value}
-                              onChange={changeHandler} label="Deposit in NEAR"
-                              required group>
+                    <MDBInput
+                      name="proposalCustomDeposit"
+                      value={proposalCustomDeposit.value}
+                      onChange={changeHandler}
+                      label="Deposit in NEAR"
+                      required
+                      group
+                    >
                       <div className="invalid-feedback">
                         {proposalCustomDeposit.message}
                       </div>
                     </MDBInput>
-                    {daoPolicy ?
+                    {daoPolicy ? (
                       <>
                         <MDBAlert color="warning">
-                          You will pay a deposit of <span
-                          style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
-                          add this proposal!
+                          You will pay a deposit of{" "}
+                          <span style={{ fontSize: 13 }}>Ⓝ</span>
+                          {new Decimal(daoPolicy.proposal_bond.toString())
+                            .div(yoktoNear)
+                            .toFixed(2)}{" "}
+                          to add this proposal!
                         </MDBAlert>
                       </>
-                      : null}
-                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
-                      or
-                      expired.</MDBBox>
+                    ) : null}
+                    <MDBBox className="text-muted font-small ml-2">
+                      *the deposit will be refunded if proposal rejected or
+                      expired.
+                    </MDBBox>
                   </MDBModalBody>
                   <MDBModalFooter className="justify-content-center">
                     <MDBBtn color="elegant" type="submit">
                       Submit
-                      {showSpinner ?
-                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                      {showSpinner ? (
+                        <div
+                          className="spinner-border spinner-border-sm ml-2"
+                          role="status"
+                        >
                           <span className="sr-only">Loading...</span>
                         </div>
-                        : null}
+                      ) : null}
                     </MDBBtn>
                   </MDBModalFooter>
                 </form>
               </MDBModal>
 
-
+              {/* --------------------------------------------------------------------------------------------------- */}
+              {/* --------------------------------------- near.social ----------------------------------------------- */}
+              {/* --------------------------------------------------------------------------------------------------- */}
+              <MDBModal
+                isOpen={newProposalNearSocialPost}
+                toggle={toggleNearSocialPost}
+                centered
+                position="center"
+                size="lg"
+              >
+                <MDBModalHeader
+                  className="text-center stylish-color white-text border-dark"
+                  titleClass="w-100 font-weight-bold"
+                  toggle={toggleNearSocialPost}
+                >
+                  near.social Post
+                </MDBModalHeader>
+                <form
+                  className="needs-validation mx-3 grey-text"
+                  name="newProposalNearSocialPost"
+                  noValidate
+                  method="post"
+                  onSubmit={submitProposal}
+                >
+                  <MDBModalBody>
+                    <MDBInput
+                      name="proposalDescription"
+                      value={proposalDescription.value}
+                      onChange={changeHandler}
+                      required
+                      label="Enter description"
+                      group
+                    >
+                      <div className="invalid-feedback">
+                        {proposalDescription.message}
+                      </div>
+                    </MDBInput>
+                    <MdEditor
+                      name="proposalCustomArgs"
+                      renderHTML={(text) => mdParser.render(text)}
+                      onChange={handleEditorChange}
+                    />
+                    <MDBInput
+                      name="proposalCustomDeposit"
+                      value={proposalCustomDeposit.value}
+                      onChange={changeHandler}
+                      label="Deposit in NEAR"
+                      required
+                      group
+                    >
+                      <div className="invalid-feedback">
+                        {proposalCustomDeposit.message}
+                      </div>
+                    </MDBInput>
+                    {daoPolicy ? (
+                      <>
+                        <MDBAlert color="warning">
+                          You will pay a deposit of{" "}
+                          <span style={{ fontSize: 13 }}>Ⓝ</span>
+                          {new Decimal(daoPolicy.proposal_bond.toString())
+                            .div(yoktoNear)
+                            .toFixed(2)}{" "}
+                          to add this proposal!
+                        </MDBAlert>
+                      </>
+                    ) : null}
+                    <MDBBox className="text-muted font-small ml-2">
+                      *the deposit will be refunded if proposal rejected or
+                      expired.
+                    </MDBBox>
+                  </MDBModalBody>
+                  <MDBModalFooter className="justify-content-center">
+                    <MDBBtn color="elegant" type="submit">
+                      Submit
+                      {showSpinner ? (
+                        <div
+                          className="spinner-border spinner-border-sm ml-2"
+                          role="status"
+                        >
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                      ) : null}
+                    </MDBBtn>
+                  </MDBModalFooter>
+                </form>
+              </MDBModal>
             </>
-            : null}
-          {selectDao ?
-            <Selector setShowError={setShowError} setSelectDao={setSelectDao}/>
-            : null
-          }
-          {showLoading && !selectDao ? <Loading/> : null}
+          ) : null}
+          {selectDao ? (
+            <Selector setShowError={setShowError} setSelectDao={setSelectDao} />
+          ) : null}
+          {showLoading && !selectDao ? <Loading /> : null}
         </MDBContainer>
-        <Footer/>
+        <Footer />
       </MDBView>
     </>
-  )
-}
+  );
+};
 
 export default Dao;
