@@ -14,8 +14,7 @@ function getConfig(env) {
         pk: "2gtDEwdLuUBawzFLAnCS9gUso3Ph76bRzMpVrtb66f3J",
         tokenFactory: "tkn.near",
         roketoContractAddress: "roketodapp.near",
-        nearSocialContractName:
-          "v1.social08.testnet" /*TODO: change mainnet contract name*/,
+        nearSocialContractName: "social.near",
       };
     case "development":
     case "testnet":
