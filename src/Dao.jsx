@@ -46,6 +46,7 @@ import MarkdownIt from "markdown-it";
 import MdEditor from "react-markdown-editor-lite";
 // import style manually
 import "react-markdown-editor-lite/lib/index.css";
+import { async } from "regenerator-runtime";
 
 const Dao = () => {
   const routerCtx = useRouter();
@@ -558,6 +559,36 @@ const Dao = () => {
       message: proposalCustomArgs.message,
     });
   }
+
+  const ipfsUpload = async (f) => {
+    const formData = new FormData();
+
+    formData.append("file", f);
+    const res = await fetch("https://ipfs.near.social/add", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
+      body: f,
+    });
+    return (await res.json()).cid;
+  };
+
+  const ipfsUrl = (cid) => `https://ipfs.near.social/ipfs/${cid}`;
+
+  const handleEditorImageUpload = async (file) => {
+    console.log(file);
+    const img = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (data) => {
+        resolve(data.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+    console.log("img", img);
+    const cid = await ipfsUpload(file);
+    return ipfsUrl(cid);
+  };
 
   const changeHandler = (event) => {
     if (event.target.name === "proposalTarget") {
@@ -1457,7 +1488,6 @@ const Dao = () => {
         const args = Buffer.from(
           JSON.stringify(argsList).replaceAll('^"', "").replaceAll('"^', "")
         ).toString("base64");
-        console.log(argsList);
 
         const deposit = new Decimal(e.target.proposalCustomDeposit.value);
         const depositYokto = deposit.mul(yoktoNear).toFixed();
@@ -1546,6 +1576,16 @@ const Dao = () => {
       }
     }
 
+    {
+      /* --------------------------------------------------------------------------------------------------- */
+    }
+    {
+      /* ------------------------------------------- near.social -------------------------------------------- */
+    }
+    {
+      /* --------------------------------------------------------------------------------------------------- */
+    }
+
     if (e.target.name === "newProposalNearSocialPost") {
       const nearAccountValid = await accountExists(
         nearConfig.nearSocialContractName
@@ -1558,6 +1598,14 @@ const Dao = () => {
         "proposalCustomArgs",
         proposalCustomArgs.value
       );
+
+      function replacer(key, value) {
+        if (key === "text") {
+          return e.target.proposalCustomArgs.value;
+        }
+        return value;
+      }
+
       let validateCustomDeposit = validateField(
         "proposalCustomDeposit",
         proposalCustomDeposit.value
@@ -1568,14 +1616,31 @@ const Dao = () => {
         validateCustomArgs &&
         validateCustomDeposit
       ) {
-        const argsList = JSON.parse(proposalCustomArgs.value);
         const args = Buffer.from(
-          JSON.stringify(argsList).replaceAll('^"', "").replaceAll('"^', "")
+          JSON.stringify({
+            data: {
+              [stateCtx.config.contract]: {
+                post: {
+                  main: JSON.stringify({
+                    type: "md",
+                    text: e.target.proposalCustomArgs.value,
+                  }),
+                },
+                index: {
+                  post: JSON.stringify({
+                    key: "main",
+                    value: {
+                      type: "md",
+                    },
+                  }),
+                },
+              },
+            },
+          })
         ).toString("base64");
 
         const deposit = new Decimal(e.target.proposalCustomDeposit.value);
         const depositYokto = deposit.mul(yoktoNear).toFixed();
-
         try {
           setShowSpinner(true);
           await window.contract.add_proposal(
@@ -2869,7 +2934,11 @@ const Dao = () => {
                       name="proposalCustomArgs"
                       renderHTML={(text) => mdParser.render(text)}
                       onChange={handleEditorChange}
+                      onImageUpload={handleEditorImageUpload}
                     />
+                    <div className="invalid-feedback">
+                      {proposalCustomArgs.message}
+                    </div>
                     <MDBInput
                       name="proposalCustomDeposit"
                       value={proposalCustomDeposit.value}
