@@ -577,15 +577,6 @@ const Dao = () => {
   const ipfsUrl = (cid) => `https://ipfs.near.social/ipfs/${cid}`;
 
   const handleEditorImageUpload = async (file) => {
-    console.log(file);
-    const img = await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (data) => {
-        resolve(data.target.result);
-      };
-      reader.readAsDataURL(file);
-    });
-    console.log("img", img);
     const cid = await ipfsUpload(file);
     return ipfsUrl(cid);
   };
