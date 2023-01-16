@@ -20,6 +20,8 @@ import { timestampToReadable, yoktoNear } from '../../utils/funcs';
 import Loading from '../../utils/Loading';
 import { login, accountExists, nearConfig } from '../../utils/utils';
 import NewDao from './NewDao';
+import { useDaoList } from '../../hooks/useDaoList';
+import { useDaoCount } from '../../hooks/useDaoCount';
 
 const DaoInfo = (props) => {
   const contractId = props.item;
@@ -224,43 +226,15 @@ async function getDaos(fromIndex, limit) {
 
 const Selector = (props) => {
   const routerCtx = useRouter();
-  const stateCtx = useGlobalState();
   const mutationCtx = useGlobalMutation();
-  const [daoList, setDaoList] = useState([]);
-  const [daoCount, setDaoCount] = useState(0);
-  const [daoListFixed, setDaoListFixed] = useState([]);
-  const [showNewDaoModal, setShowNewDaoModal] = useState(false);
+  const daoLimit = 50;
   const [fromIndex, setFromIndex] = useState(0);
   const [showLoading, setShowLoading] = useState(true);
-  const daoLimit = 50;
+  const { daoList } = useDaoList({ fromIndex, limit: daoLimit, setShowLoading });
+  const { daoCount } = useDaoCount({ fromIndex, limit: daoLimit, setShowLoading });
+  const [daoListFixed, setDaoListFixed] = useState([]);
+  const [showNewDaoModal, setShowNewDaoModal] = useState(false);
   const query = useQuery();
-
-  useEffect(() => {
-    getDaos(fromIndex, daoLimit)
-      .then((r) => {
-        setDaoList(r);
-        setShowLoading(false);
-      })
-      .catch((e) => {
-        setShowLoading(false);
-        console.log(e);
-        mutationCtx.toastError(e);
-      });
-  }, [fromIndex]);
-
-  useEffect(() => {
-    window.factoryContract
-      .get_number_daos()
-      .then((r) => {
-        setDaoCount(r);
-        setShowLoading(false);
-      })
-      .catch((e) => {
-        setShowLoading(false);
-        console.log(e);
-        mutationCtx.toastError(e);
-      });
-  }, []);
 
   useEffect(() => {
     console.log(query.get('createdao'));
@@ -339,7 +313,12 @@ const Selector = (props) => {
           <MDBRow>
             <MDBCol>
               <hr color="white" />
-              <Pagination daoCount={daoCount} daoLimit={daoLimit} togglePage={togglePage} />
+              <Pagination
+                onPageChange={togglePage}
+                totalCount={daoCount}
+                currentPage={fromIndex}
+                pageSize={daoLimit}
+              />
             </MDBCol>
           </MDBRow>
         </MDBCardBody>

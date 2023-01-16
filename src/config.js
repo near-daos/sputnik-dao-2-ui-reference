@@ -13,7 +13,8 @@ function getConfig(env) {
         explorerUrl: 'https://explorer.mainnet.near.org',
         pk: '2gtDEwdLuUBawzFLAnCS9gUso3Ph76bRzMpVrtb66f3J',
         tokenFactory: 'tkn.near',
-        roketoContractAddress: 'roketodapp.near'
+        roketoContractAddress: 'roketodapp.near',
+        nearSocialContractName: 'social.near'
       };
     case 'development':
     case 'testnet':
@@ -26,7 +27,8 @@ function getConfig(env) {
         explorerUrl: 'https://explorer.testnet.near.org',
         pk: 'G8JpvUhKqfr89puEKgbBqUxQzCMfJfPSRvKw4EJoiZpZ',
         tokenFactory: 'tokenfactory.testnet',
-        roketoContractAddress: 'dev-1635510732093-17387698050424'
+        roketoContractAddress: 'dev-1635510732093-17387698050424',
+        nearSocialContractName: 'v1.social08.testnet'
       };
     case 'betanet':
       return {
@@ -38,7 +40,8 @@ function getConfig(env) {
         explorerUrl: 'https://explorer.betanet.near.org',
         pk: 'G8JpvUhKqfr89puEKgbBqUxQzCMfJfPSRvKw4EJoiZpZ',
         tokenFactory: 'tokenfactory.testnet',
-        roketoContractAddress: 'dev-1635510732093-17387698050424'
+        roketoContractAddress: 'dev-1635510732093-17387698050424',
+        nearSocialContractName: 'v1.social08.testnet'
       };
     case 'local':
       return {

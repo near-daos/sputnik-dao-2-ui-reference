@@ -3,7 +3,7 @@ import DaosContext from '../../contexts/DaosContext';
 import {
   DAOS_LIST_START,
   DAOS_LIST_SUCCESS,
-  DAOS_LIST_FAIL,
+  DAOS_LIST_FAILURE,
   DAOS_LIST_RESET,
   DAOS_LIST_FILTER,
   DAOS_LIST_STATUS_PENDING,
@@ -27,7 +27,7 @@ const daosReducer = (state, action) => {
         daosFiltered: action.daos
       };
     }
-    case DAOS_LIST_FAIL: {
+    case DAOS_LIST_FAILURE: {
       return {
         ...state,
         status: DAOS_LIST_STATUS_REJECTED,

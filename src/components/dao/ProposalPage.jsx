@@ -691,7 +691,9 @@ export const Proposal = (props) => {
                           name={false}
                           theme="tomorrow"
                           style={{ wordBreak: 'break-all' }}
-                          src={JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args))}
+                          src={JSON.parse(
+                            Buffer.from(props.data.kind.FunctionCall.actions[0].args, 'base64')
+                          )}
                         />
                       </MDBCard>
                     </MDBBox>

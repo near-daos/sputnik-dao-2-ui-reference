@@ -4,6 +4,7 @@ import Footer from '../shared/Footer';
 import useRouter from '../../utils/use-router';
 import { useParams } from 'react-router-dom';
 import roketoLogoSvg from '../../assets/roketo-logo.svg';
+import nearSocialLogoSvg from '../../assets/near-social.svg';
 import {
   MDBBox,
   MDBBtn,
@@ -42,6 +43,9 @@ import Loading from '../../utils/Loading';
 import useChangeDao from '../../hooks/useChangeDao';
 import { nearConfig, getDaoState, accountExists } from '../../utils/utils';
 import './dao.css';
+import MarkdownIt from 'markdown-it';
+import MdEditor from 'react-markdown-editor-lite';
+import 'react-markdown-editor-lite/lib/index.css';
 
 const Dao = () => {
   const routerCtx = useRouter();
@@ -57,6 +61,13 @@ const Dao = () => {
   const [newProposalToken, setNewProposalToken] = useState(false);
   const [newProposalRoketoStream, setNewProposalRoketoStream] = useState(false);
   const [newProposalCustomCall, setNewProposalCustomCall] = useState(false);
+  const [newProposalNearSocialPost, setNewProposalNearSocialPost] = useState(false);
+  const mdParser = new MarkdownIt({
+    html: true,
+    typographer: false,
+    breaks: true,
+    linkify: true
+  });
   const [selectDao, setSelectDao] = useState(false);
   const [showNewProposalNotification, setShowNewProposalNotification] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
@@ -66,7 +77,7 @@ const Dao = () => {
   const [daoStaking, setDaoStaking] = useState(null);
   const [disableTarget, setDisableTarget] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
-
+  console.log(routerCtx);
   const handleDaoChange = useChangeDao({ routerCtx, mutationCtx });
 
   const [MultiVoteOpen, setMultiVoteOpen] = useState(false);
@@ -329,6 +340,11 @@ const Dao = () => {
     setAddProposalModal(false);
   };
 
+  const toggleNearSocialPost = () => {
+    setNewProposalNearSocialPost(!newProposalNearSocialPost);
+    setAddProposalModal(false);
+  };
+
   const toggleRoketoStream = () => {
     setNewProposalRoketoStream(!newProposalRoketoStream);
     setAddProposalModal(false);
@@ -528,6 +544,38 @@ const Dao = () => {
         console.log(e);
       });
     }
+  };
+
+  function handleEditorChange(event) {
+    setProposalCustomArgs({
+      value: JSON.stringify({
+        post: { main: { type: 'md', text: event.text } },
+        index: { post: { key: 'main', value: { type: 'md' } } }
+      }),
+      valid: !!event.text,
+      message: proposalCustomArgs.message
+    });
+  }
+
+  const ipfsUpload = async (f) => {
+    const formData = new FormData();
+
+    formData.append('file', f);
+    const res = await fetch('https://ipfs.near.social/add', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json'
+      },
+      body: f
+    });
+    return (await res.json()).cid;
+  };
+
+  const ipfsUrl = (cid) => `https://ipfs.near.social/ipfs/${cid}`;
+
+  const handleEditorImageUpload = async (file) => {
+    const cid = await ipfsUpload(file);
+    return ipfsUrl(cid);
   };
 
   const changeHandler = async (event) => {
@@ -1374,6 +1422,133 @@ const Dao = () => {
       /* --------------------------------------------------------------------------------------------------- */
     }
     {
+      /* ------------------------------------------- near.social -------------------------------------------- */
+    }
+    {
+      /* --------------------------------------------------------------------------------------------------- */
+    }
+
+    if (e.target.name === 'newProposalNearSocialPost') {
+      const nearAccountValid = await accountExists(nearConfig.nearSocialContractName);
+      let validateDescription = validateField('proposalDescription', proposalDescription.value);
+      let validateCustomArgs = validateField('proposalCustomArgs', proposalCustomArgs.value);
+
+      function replacer(key, value) {
+        if (key === 'text') {
+          return e.target.proposalCustomArgs.value;
+        }
+        return value;
+      }
+
+      let validateCustomDeposit = validateField(
+        'proposalCustomDeposit',
+        proposalCustomDeposit.value
+      );
+      if (nearAccountValid && validateDescription && validateCustomArgs && validateCustomDeposit) {
+        const args = Buffer.from(
+          JSON.stringify({
+            data: {
+              [stateCtx.config.contract]: {
+                post: {
+                  main: JSON.stringify({
+                    type: 'md',
+                    text: e.target.proposalCustomArgs.value
+                  })
+                },
+                index: {
+                  post: JSON.stringify({
+                    key: 'main',
+                    value: {
+                      type: 'md'
+                    }
+                  })
+                }
+              }
+            }
+          })
+        ).toString('base64');
+
+        const deposit = new Decimal(e.target.proposalCustomDeposit.value);
+        const depositYokto = deposit.mul(yoktoNear).toFixed();
+        try {
+          setShowSpinner(true);
+          await window.contract.add_proposal(
+            {
+              proposal: {
+                description: e.target.proposalDescription.value.trim(),
+                kind: {
+                  FunctionCall: {
+                    receiver_id: nearConfig.nearSocialContractName,
+                    actions: [
+                      {
+                        method_name: 'set',
+                        args: args,
+                        deposit: depositYokto,
+                        gas: '150000000000000'
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            new Decimal('250000000000000').toString(),
+            daoPolicy.proposal_bond.toString()
+          );
+        } catch (e) {
+          console.log(e);
+          setShowError(e);
+        } finally {
+          setShowSpinner(false);
+        }
+      } else {
+        if (!nearAccountValid) {
+          e.target.proposalTarget.className += ' is-invalid';
+          e.target.proposalTarget.classList.remove('is-valid');
+          setProposalTarget({
+            value: proposalTarget.value,
+            valid: false,
+            message: 'contract does not exist!'
+          });
+        } else {
+          setProposalTarget({
+            value: nearConfig.nearSocialContractName,
+            valid: true,
+            message: ''
+          });
+          e.target.proposalTarget.classList.remove('is-invalid');
+          e.target.proposalTarget.className += ' is-valid';
+        }
+
+        if (!validateDescription) {
+          e.target.proposalDescription.className += ' is-invalid';
+          e.target.proposalDescription.classList.remove('is-valid');
+        } else {
+          e.target.proposalDescription.classList.remove('is-invalid');
+          e.target.proposalDescription.className += ' is-valid';
+        }
+
+        if (!validateCustomArgs) {
+          e.target.proposalCustomArgs.className += ' is-invalid';
+          e.target.proposalCustomArgs.classList.remove('is-valid');
+        } else {
+          e.target.proposalCustomArgs.classList.remove('is-invalid');
+          e.target.proposalCustomArgs.className += ' is-valid';
+        }
+
+        if (!validateCustomDeposit) {
+          e.target.proposalCustomDeposit.className += ' is-invalid';
+          e.target.proposalCustomDeposit.classList.remove('is-valid');
+        } else {
+          e.target.proposalCustomDeposit.classList.remove('is-invalid');
+          e.target.proposalCustomDeposit.className += ' is-valid';
+        }
+      }
+    }
+
+    {
+      /* --------------------------------------------------------------------------------------------------- */
+    }
+    {
       /* ------------------------------------------- Custom Call-------------------------------------------- */
     }
     {
@@ -2012,8 +2187,22 @@ const Dao = () => {
                       <MDBCol className="col-12 col-md-6 col-lg-4 mb-2">
                         <MDBCard className="p-md-3 m-md-3 stylish-color-dark proposal-card">
                           <MDBCardBody className="text-center white-text">
+                            <img src={nearSocialLogoSvg} style={{ height: 64, margin: '0 auto' }} />
+                            <hr />
+                            <a
+                              href="#"
+                              onClick={toggleNearSocialPost}
+                              className="stretched-link grey-text white-hover"
+                            >
+                              near.social
+                            </a>
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-2">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark proposal-card">
+                          <MDBCardBody className="text-center white-text">
                             <img src={roketoLogoSvg} style={{ height: 64, marginLeft: -20 }}></img>
-
                             <hr />
                             <a
                               href="#"
@@ -2598,6 +2787,85 @@ const Dao = () => {
                     >
                       <div className="invalid-feedback">{proposalCustomArgs.message}</div>
                     </MDBInput>
+                    <MDBInput
+                      name="proposalCustomDeposit"
+                      value={proposalCustomDeposit.value}
+                      onChange={changeHandler}
+                      label="Deposit in NEAR"
+                      required
+                      group
+                    >
+                      <div className="invalid-feedback">{proposalCustomDeposit.message}</div>
+                    </MDBInput>
+                    {daoPolicy ? (
+                      <>
+                        <MDBAlert color="warning">
+                          You will pay a deposit of <span style={{ fontSize: 13 }}>Ⓝ</span>
+                          {new Decimal(daoPolicy.proposal_bond.toString())
+                            .div(yoktoNear)
+                            .toFixed(2)}{' '}
+                          to add this proposal!
+                        </MDBAlert>
+                      </>
+                    ) : null}
+                    <MDBBox className="text-muted font-small ml-2">
+                      *the deposit will be refunded if proposal rejected or expired.
+                    </MDBBox>
+                  </MDBModalBody>
+                  <MDBModalFooter className="justify-content-center">
+                    <MDBBtn color="elegant" type="submit">
+                      Submit
+                      {showSpinner ? (
+                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                      ) : null}
+                    </MDBBtn>
+                  </MDBModalFooter>
+                </form>
+              </MDBModal>
+              {/* --------------------------------------------------------------------------------------------------- */}
+              {/* --------------------------------------- near.social ----------------------------------------------- */}
+              {/* --------------------------------------------------------------------------------------------------- */}
+              <MDBModal
+                isOpen={newProposalNearSocialPost}
+                toggle={toggleNearSocialPost}
+                centered
+                position="center"
+                size="lg"
+              >
+                <MDBModalHeader
+                  className="text-center stylish-color white-text border-dark"
+                  titleClass="w-100 font-weight-bold"
+                  toggle={toggleNearSocialPost}
+                >
+                  near.social Post
+                </MDBModalHeader>
+                <form
+                  className="needs-validation mx-3 grey-text"
+                  name="newProposalNearSocialPost"
+                  noValidate
+                  method="post"
+                  onSubmit={submitProposal}
+                >
+                  <MDBModalBody>
+                    <MDBInput
+                      name="proposalDescription"
+                      value={proposalDescription.value}
+                      onChange={changeHandler}
+                      required
+                      label="Enter description"
+                      group
+                    >
+                      <div className="invalid-feedback">{proposalDescription.message}</div>
+                    </MDBInput>
+                    <MdEditor
+                      name="proposalCustomArgs"
+                      renderHTML={(text) => mdParser.render(text)}
+                      onChange={handleEditorChange}
+                      onImageUpload={handleEditorImageUpload}
+                    />
+                    <div className="invalid-feedback">{proposalCustomArgs.message}</div>
                     <MDBInput
                       name="proposalCustomDeposit"
                       value={proposalCustomDeposit.value}
