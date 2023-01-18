@@ -1045,6 +1045,8 @@ const ProposalPage = () => {
                 ))
               : null}
 
+            <div>Pagination</div>
+
             {proposals !== null && proposals.length === 0 ? (
               <MDBCard className="text-center p-4 m-4">
                 <MDBBox>Sorry, nothing was found</MDBBox>

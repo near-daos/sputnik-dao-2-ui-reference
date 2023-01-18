@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Navbar from '../shared/Navbar';
 import Footer from '../shared/Footer';
 import useRouter from '../../utils/use-router';
@@ -46,12 +46,15 @@ import './dao.css';
 import MarkdownIt from 'markdown-it';
 import MdEditor from 'react-markdown-editor-lite';
 import 'react-markdown-editor-lite/lib/index.css';
+import { useNumberProposals } from '../../hooks/useNumberProposals';
+import Pagination from '../list/Pagination';
 
 const Dao = () => {
   const routerCtx = useRouter();
+  const proposalsPerPage = 100;
   const stateCtx = useGlobalState();
   const mutationCtx = useGlobalMutation();
-  const [numberProposals, setNumberProposals] = useState(0);
+  const [showLoading, setShowLoading] = useState(true);
   const [proposals, setProposals] = useState(null);
   const [showError, setShowError] = useState(null);
   const [addProposalModal, setAddProposalModal] = useState(false);
@@ -70,14 +73,12 @@ const Dao = () => {
   });
   const [selectDao, setSelectDao] = useState(false);
   const [showNewProposalNotification, setShowNewProposalNotification] = useState(false);
-  const [showLoading, setShowLoading] = useState(true);
   const [daoState, setDaoState] = useState(0);
   const [daoConfig, setDaoConfig] = useState(null);
   const [daoPolicy, setDaoPolicy] = useState(null);
   const [daoStaking, setDaoStaking] = useState(null);
   const [disableTarget, setDisableTarget] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
-  console.log(routerCtx);
   const handleDaoChange = useChangeDao({ routerCtx, mutationCtx });
 
   const [MultiVoteOpen, setMultiVoteOpen] = useState(false);
@@ -351,46 +352,50 @@ const Dao = () => {
   };
 
   const [firstRun, setFirstRun] = useState(true);
+  const { numberProposals } = useNumberProposals({ setShowLoading });
+  const [pageIndex, setPageIndex] = useState(0);
+
+  const totalPages = useMemo(() => {
+    return Math.ceil(numberProposals / proposalsPerPage) || 0;
+  }, [numberProposals]);
+
+  const fromIndex = useMemo(() => {
+    let startIndex = 0;
+    if (totalPages) {
+      startIndex = Math.floor(numberProposals - (pageIndex + 1) * proposalsPerPage);
+    }
+    return startIndex > 0 ? startIndex : 0;
+  }, [pageIndex, numberProposals]);
+
+  const limit = useMemo(() => {
+    if (totalPages) {
+      return fromIndex > 0 ? proposalsPerPage : numberProposals % proposalsPerPage;
+    }
+    return proposalsPerPage;
+  }, [fromIndex]);
+
+  const isFirstRun = useMemo(() => {
+    return firstRun;
+  }, [firstRun]);
+
+  const handlePageChange = (i) => {
+    setPageIndex(i);
+  };
 
   async function getProposals() {
-    let limit = 100;
-    let fromIndex = 0;
-    const numberProposals = window.contract ? await window.contract.get_last_proposal_id() : 0;
-    setNumberProposals(numberProposals);
     mutationCtx.updateConfig({
       lastShownProposal: numberProposals,
       contract: dao
     });
-    let proposals = [];
-    if (numberProposals > 100) {
-      let pages = new Decimal(numberProposals / limit).toFixed(0);
-      let i;
-      for (i = 0; i <= pages; i++) {
-        fromIndex = limit * i;
-        let proposals2;
-        try {
-          if (window.contract) {
-            proposals2 = await window.contract.get_proposals({
-              from_index: fromIndex,
-              limit: limit
-            });
-          }
-        } catch (e) {
-          console.log(e);
-        }
-        Array.prototype.push.apply(proposals, proposals2);
-      }
-    } else {
-      if (window.contract) {
-        proposals = await window.contract.get_proposals({
+    let data = [];
+    data = window.contract
+      ? await window.contract.get_proposals({
           from_index: fromIndex,
           limit: limit
-        });
-      }
-    }
-
+        })
+      : [];
     const t = [];
-    proposals.map((item, key) => {
+    data.map((item, key) => {
       const t2 = {};
       Object.assign(t2, { key: key }, item);
       t.push(t2);
@@ -399,8 +404,8 @@ const Dao = () => {
     return t;
   }
 
-  useEffect(async () => {
-    if (!firstRun) {
+  useEffect(() => {
+    if (!isFirstRun) {
       const interval = setInterval(async () => {
         console.log('loading proposals');
         getProposals().then((r) => {
@@ -409,14 +414,18 @@ const Dao = () => {
         });
       }, proposalsReload);
       return () => clearInterval(interval);
-    } else {
+    }
+  }, [firstRun]);
+
+  useEffect(async () => {
+    if (numberProposals) {
       getProposals().then((r) => {
         setProposals(r);
         setShowLoading(false);
       });
       setFirstRun(false);
     }
-  }, [stateCtx.config.contract, firstRun]);
+  }, [stateCtx.config.contract, pageIndex, numberProposals]);
 
   useEffect(() => {
     if (stateCtx.config.contract !== '') {
@@ -2000,7 +2009,6 @@ const Dao = () => {
                   </MDBCard>
                 </MDBCol>
               </MDBRow>
-
               <div className="proposal-list">
                 {daoPolicy && numberProposals > 0 && proposals !== null
                   ? proposals
@@ -2051,6 +2059,19 @@ const Dao = () => {
                       ))
                   : null}
               </div>
+              <MDBRow>
+                <MDBCol className="col-12">
+                  <hr color="white" className="white-text" />
+                  <div className="d-flex justify-content-center mt-2">
+                    <Pagination
+                      onPageChange={handlePageChange}
+                      totalCount={numberProposals}
+                      currentPage={pageIndex}
+                      pageSize={proposalsPerPage}
+                    />
+                  </div>
+                </MDBCol>
+              </MDBRow>
 
               {showError !== null ? (
                 <MDBNotification
