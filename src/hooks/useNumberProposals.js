@@ -7,17 +7,15 @@ export const useNumberProposals = (props) => {
   const [numberProposals, setNumberProposals] = useState(0);
 
   const getLastProposalId = async () => {
-    return window.contract ? await contract.get_last_proposal_id() : 0;
+    return window.contract ? await window.contract.get_last_proposal_id() : 0;
   };
 
   useEffect(() => {
     (async () => {
       try {
         const proposalId = await getLastProposalId();
-        if (proposalId) {
-          setNumberProposals(proposalId);
-          setShowLoading(false);
-        }
+        setNumberProposals(proposalId);
+        setShowLoading(false);
       } catch (e) {
         setShowLoading(false);
         mutationCtx.toastError(e);
