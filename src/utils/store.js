@@ -1,12 +1,12 @@
-import getConfig from "../config";
+import getConfig from '../config';
 
 const readDefaultState = () => {
   try {
-    return JSON.parse(window.localStorage.getItem('sputnik_v2_storage'))
+    return JSON.parse(window.localStorage.getItem('sputnik_v2_storage'));
   } catch (err) {
-    return {}
+    return {};
   }
-}
+};
 
 const defaultState = {
   loading: false,
@@ -19,25 +19,25 @@ const defaultState = {
       switchInProgress: false,
       switchDone: false,
       switchNew: false,
-      switchExpired: false,
+      switchExpired: false
     },
     lastShownProposal: 0,
     lastJsonData: 0,
-    ...readDefaultState(),
+    ...readDefaultState()
   }
-}
+};
 
 const reducer = (state, action) => {
   switch (action.type) {
     case 'config': {
-      return {...state, config: action.payload}
+      return { ...state, config: action.payload };
     }
     case 'loading': {
-      return {...state, loading: action.payload}
+      return { ...state, loading: action.payload };
     }
     default:
-      throw new Error('mutation type not defined')
+      throw new Error('mutation type not defined');
   }
-}
+};
 
-export {reducer, defaultState}
+export { reducer, defaultState };
