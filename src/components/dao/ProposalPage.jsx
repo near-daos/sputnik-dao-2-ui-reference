@@ -723,7 +723,7 @@ export const Proposal = (props) => {
                       className="h5-responsive"
                       size="sm"
                     >
-                      <MDBIcon icon="thumbs-up" size="2x" className="white-text m-2 p-2" />
+                      <MDBIcon icon="thumbs-up" size="2x" className="white-text m-2" />
                     </MDBBtn>
                     <span>Vote YES</span>
                   </MDBTooltip>
@@ -744,7 +744,7 @@ export const Proposal = (props) => {
                       className="h5-responsive float-right"
                       size="sm"
                     >
-                      <MDBIcon icon="check-circle" size="2x" className="white-text m-2 p-2" />
+                      <MDBIcon icon="check-circle" size="2x" className="white-text m-2" />
                     </MDBBtn>
                     <span>Finalise</span>
                   </MDBTooltip>
@@ -769,7 +769,7 @@ export const Proposal = (props) => {
                       className="h5-responsive float-right"
                       size="sm"
                     >
-                      <MDBIcon icon="thumbs-down" size="2x" className="white-text m-2 p-2" />
+                      <MDBIcon icon="thumbs-down" size="2x" className="white-text m-2" />
                     </MDBBtn>
                     <span>Vote NO</span>
                   </MDBTooltip>
@@ -794,7 +794,7 @@ export const Proposal = (props) => {
                       className="h5-responsive float-right"
                       size="sm"
                     >
-                      <MDBIcon icon="trash-alt" size="2x" className="white-text m-2 p-2" />
+                      <MDBIcon icon="trash-alt" size="2x" className="white-text m-2" />
                     </MDBBtn>
                     <span>Remove Proposal</span>
                   </MDBTooltip>

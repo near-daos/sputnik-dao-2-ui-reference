@@ -49,9 +49,7 @@ const Navbar = () => {
             </MDBNavItem>
           </MDBNavbarNav>
           <MDBNavbarNav right>
-            <MDBNavItem>
-              <DaoSearch />
-            </MDBNavItem>
+            <MDBNavItem>{/* <DaoSearch /> */}</MDBNavItem>
             {!window.walletConnection.isSignedIn() ? (
               <MDBNavItem active>
                 <MDBNavLink to="#" onClick={login}>
