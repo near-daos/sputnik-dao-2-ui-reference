@@ -1,0 +1,54 @@
+.dao-card__header {
+  align-items: center;
+}
+
+.dao-details__col {
+  height: 100%;
+}
+
+.proposal-card {
+  height: calc(100% - 40px);
+}
+
+.proposal-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 32px;
+  margin-top: 16px;
+}
+
+.proposal-item,
+.proposal-item__container,
+.proposal-item__card {
+  height: 100%;
+}
+
+.proposal-item__body {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.proposal-item__text {
+  flex-grow: 1;
+}
+
+.proposal-item__text-description {
+  word-break: break-all;
+}
+
+@media only screen and (max-width: 992px) {
+  .proposal-card {
+    height: 100%;
+  }
+
+  .proposal-card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .proposal-list {
+    grid-template-columns: 1fr;
+  }
+}
