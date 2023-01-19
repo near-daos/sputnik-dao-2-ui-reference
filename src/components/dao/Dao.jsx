@@ -51,7 +51,7 @@ import Pagination from '../list/Pagination';
 
 const Dao = () => {
   const routerCtx = useRouter();
-  const proposalsPerPage = 100;
+  const proposalsPerPage = 30;
   const stateCtx = useGlobalState();
   const mutationCtx = useGlobalMutation();
   const [showLoading, setShowLoading] = useState(true);
