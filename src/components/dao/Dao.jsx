@@ -2165,13 +2165,12 @@ const Dao = () => {
                           <MDBCardBody className="text-center white-text">
                             <MDBIcon icon="hand-holding-usd" size="4x" />
                             <hr />
-                            <a
-                              href="#"
+                            <span
                               onClick={toggleNewPayout}
-                              className="stretched-link grey-text white-hover"
+                              className="stretched-link grey-text white-hover cursor-pointer"
                             >
                               Payout
-                            </a>
+                            </span>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
@@ -2180,13 +2179,12 @@ const Dao = () => {
                           <MDBCardBody className="text-center white-text">
                             <MDBIcon icon="tractor" size="4x" />
                             <hr />
-                            <a
-                              href="#"
+                            <span
                               onClick={toggleNewToken}
-                              className="stretched-link grey-text white-hover"
+                              className="stretched-link grey-text white-hover cursor-pointer"
                             >
                               Token farm
-                            </a>
+                            </span>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
@@ -2195,13 +2193,12 @@ const Dao = () => {
                           <MDBCardBody className="text-center white-text">
                             <MDBIcon icon="cogs" size="4x" />
                             <hr />
-                            <a
-                              href="#"
+                            <span
                               onClick={toggleCustomCall}
-                              className="stretched-link grey-text white-hover"
+                              className="stretched-link grey-text white-hover cursor-pointer"
                             >
                               Custom function
-                            </a>
+                            </span>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
@@ -2210,13 +2207,12 @@ const Dao = () => {
                           <MDBCardBody className="text-center white-text">
                             <img src={nearSocialLogoSvg} style={{ height: 64, margin: '0 auto' }} />
                             <hr />
-                            <a
-                              href="#"
+                            <span
                               onClick={toggleNearSocialPost}
-                              className="stretched-link grey-text white-hover"
+                              className="stretched-link grey-text white-hover cursor-pointer"
                             >
                               near.social
-                            </a>
+                            </span>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
@@ -2225,13 +2221,12 @@ const Dao = () => {
                           <MDBCardBody className="text-center white-text">
                             <img src={roketoLogoSvg} style={{ height: 64, marginLeft: -20 }}></img>
                             <hr />
-                            <a
-                              href="#"
+                            <span
                               onClick={toggleRoketoStream}
-                              className="stretched-link grey-text white-hover"
+                              className="stretched-link grey-text white-hover cursor-pointer"
                             >
                               Roketo stream
-                            </a>
+                            </span>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
